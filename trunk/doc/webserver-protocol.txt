@@ -1,0 +1,132 @@
+Kommunikation mit dem CoDeSys Webserver
+=======================================
+
+Der CoDeSys Webserver auf der Steuerung lauscht auf POST-Requests auf der URL 
+"/plc/webvisu.htm" und beantwortet diese jeweils abhängig von der Anfrage.
+
+Die POST-Daten werden dabei als Zahlenkolonne, getrennt mit einem Pipe "|" 
+übertragen. Die Antwort besteht ebenfalls aus Zahlen mit Pipe getrennt.
+
+Eine Anfrage zum Lesen besteht aus
+	- Befehl (0)
+	- Anzahl Werte
+	und Anzahl Werte mal
+		- Zähler (0-based)
+		- Adresse
+
+Antworten auf Leseanfragen
+	Anzahl Werte mal
+		- Wert
+
+
+Schreibende Anfragen
+	- Befehl (1)
+	- Anzahl Werte
+		- Zähler (0-based)
+		- Adresse
+		- Wert
+
+
+
+Variablen identifizieren
+------------------------
+
+In den Visu-Dateien (*.xml) sind in der Sektion "variablelist" die Zuordnung
+von Variablennamen zu "Adressen" hinterlegt:
+
+Beispiel
+	<variablelist>
+		<variable name="PLC_PRG.bAlarmFarbe">4,146,1,0</variable>
+		<variable name="PLC_PRG.bVarToggeln">4,147,1,0</variable>
+		<variable name="PLC_PRG.bVarTasten">4,152,1,0</variable>
+		<variable name="PLC_PRG.bVarFalseTasten">4,153,1,0</variable>
+	</variablelist>
+
+Die Adressen (z.B. 4,146,1,0) sind sogenannte ARTI-Adressen. Sie bilden 
+die Laufzeit-Interne Adressierung ab. Die Bedeutung ist (glaube ich)
+	RefId, Offset, Size, [unbekannt]
+und ist nur vom Compiler zuordenbar. Es gibt auch Symboldatenbanken,
+jedoch habe ich damit noch nichts gemacht.
+RefId und Offset interessieren uns nicht - die müssen wir nur immer 
+dem Webserver geben. Die Size (in Bytes) ist interessanter, da daran die 
+zurückgelieferten Werte richtig einkategorisiert werden können.
+Den letzten Wert beachte ich aktuell nicht; er könnte aber den Datentyp
+angeben (siehe 3S-Doku Symbolic CDG.pdf, enum TypeClass):
+	0 = TYPE_BOOL
+	1 = TYPE_INT
+	2 = TYPE_BYTE
+	3 = TYPE_WORD
+	4 = TYPE_DINT
+	5 = TYPE_DWORD
+	6 = TYPE_REAL
+	7 = TYPE_TIME
+	8 = TYPE_STRING
+	9 = TYPE_ARRAY
+	10 = TYPE_ENUM
+	11 = TYPE_USERDEF
+	12 = TYPE_BITORBYTE
+	13 = TYPE_POINTER
+	14 = TYPE_SINT
+	15 = TYPE_USINT
+	16 = TYPE_UINT
+	17 = TYPE_UDINT
+	18 = TYPE_DATE
+	19 = TYPE_TOD
+	20 = TYPE_DT
+	21 = TYPE_VOID
+	22 = TYPE_LREAL
+	23 = TYPE_REF
+	24 = TYPE_NONE
+
+Variablen abfragen
+------------------
+
+Um Variablenwerte zu erfragen muss man dem Server folgenden Befehl
+senden:
+
+	|0| [Anzahl Werte] | [Zähler] | [Adresse] | [Zähler] | [Adresse]
+
+Beispiel
+
+	|0|1|0|4|572|4|5|
+
+	erfragt den Inhalt einer Variablen mit der Adresse "4,572,4,5".
+
+Die Antwort ist z.B.
+
+	|123|
+
+	also der Wert 123
+
+Will man mehrere Variablen abfragen sieht das z.B. so aus:
+
+	|0|6
+	|0|4|572|4|5	// visu_ini.xml .CurrentWriteAccessClientId
+	|1|4|398|2|1 	// visu_ini.xml .CurrentUserLevel
+	|2|4|272|41|8	// visu_ini.xml .CurrentLanguage
+	|3|4|231|41|8	// visu_ini.xml .CurrentCaller
+	|4|4|190|41|8	// visu_ini.xml .CurrentVisu
+	|5|4|146|2|1	// plc_visu.xml PLC_PRG.counter
+	|
+
+	natürlich ohne Kommentare und ohne Zeilenumbrüche:
+
+	|0|6|0|4|572|4|5|1|4|398|2|1|2|4|272|41|8|3|4|231|41|8...
+
+
+Variablen setzen
+----------------
+
+Zum Setzen der Variablen sendet man den Befehl "1":
+
+	|1| [Anzahl Werte] | [Zähler] | [Adresse] | [Wert] |...
+
+Beispiel
+
+	|1|1|0|4|572|4|5|0|
+
+	setzt den Inhalt einer Variablen mit der Adresse "4,572,4,5"
+	auf "0".
+
+
+
