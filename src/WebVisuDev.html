@@ -1,0 +1,24 @@
+﻿<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>WebVisu (development)</title>
+		<script src="jquery-2.0.3.min.js"></script>
+	</head>
+	<body>
+		<!-- Die eigentliche Groesse des Canvas setzen wir abhaengig von der Visu -->
+		<canvas id="canvas" width="50" height="50"></canvas>
+		<script src="drawing.js"></script>
+		<script src="codesys.js"></script>
+		<script>
+			switchToVisu("plc_visu");
+			$('#canvas').click(onClick);
+			$('#canvas').mousedown(onMouseDown);
+			$('#canvas').mouseup(onMouseUp);
+
+			// update all 500ms aufrufen
+			setInterval(update, 500);
+		</script>
+	</body>
+</html>
+
