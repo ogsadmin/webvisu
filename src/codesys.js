@@ -181,12 +181,12 @@ function load_visu_success(content) {
 
 		var size = $myMedia.find('size').text();
 		var sizeFields = size.split(',');
-		visuSizeX = sizeFields[0];
-		visuSizeY = sizeFields[1];
+		visuSizeX = parseInt(sizeFields[0]);
+		visuSizeY = parseInt(sizeFields[1]);
 
 		var canvas = document.getElementsByTagName('canvas')[0];
-		canvas.width = visuSizeX;
-		canvas.height = visuSizeY;
+		canvas.width = visuSizeX+1;
+		canvas.height = visuSizeY+1;
 		//$('#canvas').WIDTH = visuSizeX;
 		//$('#canvas').HEIGHT = visuSizeY;
 	});
