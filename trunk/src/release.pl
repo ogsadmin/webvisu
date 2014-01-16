@@ -4,6 +4,8 @@ use strict;
 
 my $ver = `svnversion .`;
 chomp($ver);
+my @verFields = split(/\:/, $ver);
+if( scalar(@verFields) == 2 ) { $ver = $verFields[1]; }
 
 open( INPUT, $ARGV[0] ) || die "can't open $ARGV[0]: $!";
 while( <INPUT> ) {
@@ -11,14 +13,15 @@ while( <INPUT> ) {
 	$line =~ s/\(development\)/\(r$ver\)/;
 	if( $line =~ /<script\ssrc="([^\"]+)"><\/script>/) { 
 		my $file = $1;
-		open( EMBED, $file ); 
+		#open( EMBED, $file ); 
 		print "\n<script>\n"; 
-		while( <EMBED> ) {
-			my $embLine = $_;
-			print $embLine;
-		}
+		print `java -jar ../tools/yuicompressor-2.4.8.jar $file`;
+		#while( <EMBED> ) {
+		#	my $embLine = $_;
+		#	print $embLine;
+		#}
 		print "\n</script>\n"; 
-		close(EMBED);
+		#close(EMBED);
 	} else {
 		print $line;
 	};
