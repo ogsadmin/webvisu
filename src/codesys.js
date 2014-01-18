@@ -36,22 +36,6 @@ function load_ini(filename) {
 	});
 }
 
-/*
-OK:
-		<expr-toggle-color>
-			<expr>
-				<var>LICHTSTEUERUNG.SSLichtKueche3.xAktor</var>
-			</expr>
-		</expr-toggle-color>
-OK:
-		<expr-toggle-color>
-			<expr>
-				<var>ROLLOSTEUERUNG.jalKueche.xActor1</var>
-				<var>ROLLOSTEUERUNG.jalKueche.xActor2</var>
-				<op>OR(2)</op>
-			</expr>
-		</expr-toggle-color>
-*/
 function parseExpression(parentTag) {
 	var expr = [];
 	var exprTag = parentTag.find('expr');
@@ -166,8 +150,8 @@ function parseClickInfo(myMedia, rectFields) {
 }
 
 function load_visu_success(content) {
-    var xmlstr = content.xml ? content.xml : (new XMLSerializer()).serializeToString(content);
-    console.debug("content: " + xmlstr);
+    //var xmlstr = content.xml ? content.xml : (new XMLSerializer()).serializeToString(content);
+    //console.debug("content: " + xmlstr);
 
 	extract_var_addr( content );
 
@@ -199,7 +183,7 @@ function load_visu_success(content) {
 		// tags: nach dem tag suchen & text auslesen
 		var type = $myMedia.attr("type");
 
-		console.debug("parse " + type);
+		//console.debug("parse " + type);
 		if (type == 'simple') {
 			var shape = $myMedia.find('simple-shape').text();
 			//console.log("parse " + shape);
@@ -285,11 +269,40 @@ function load_visu_success(content) {
 				parseTextInfo($myMedia, centerFields, rectFields, value);
 
 				parseClickInfo($myMedia, rectFields);
+			} else if (shape == 'circle') {
+			    var rect = $myMedia.find('rect').text();
+			    var rectFields = rect.split(',');
+			    var fill_color = $myMedia.find('fill-color').text();
+			    var fill_color_alarm = $myMedia.find('fill-color-alarm').text();
+			    var line_width = $myMedia.find('line-width').text();
+			    var frame_color = $myMedia.find('frame-color').text();
+			    var center = $myMedia.find('center').text();
+			    var centerFields = center.split(',');
+
+			    // parse expression
+			    var exprToggleColor = [];
+			    var expr_toggle_color = $myMedia.find('expr-toggle-color');
+			    if (expr_toggle_color.length) {
+			        exprToggleColor = parseExpression(expr_toggle_color);
+			    }
+
+			    registerCircle(
+                    rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+                    "rgb(" + fill_color + ")",
+                    line_width,
+                    "rgb(" + frame_color + ")",
+                    exprToggleColor,
+                    "rgb(" + fill_color_alarm + ")"
+                );
+
+			    parseTextInfo($myMedia, centerFields, rectFields);
+
+			    parseClickInfo($myMedia, rectFields);
 			} else {
 				console.log("unknown simple-shape: " + shape);
 			}
 		} else if (type == 'bitmap') {
-		    console.debug("register bitmap");
+		    //console.debug("register bitmap");
 		    var filename = $myMedia.find('file-name').text();
 			var fileFields = filename.split('\\');
 			filename = fileFields[fileFields.length - 1];
