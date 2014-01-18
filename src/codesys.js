@@ -104,19 +104,17 @@ function parseTextInfo(myMedia, centerFields, rectFields) {
 		textAlignVert = 'bottom';
 	}
 
-	var text_display = myMedia.find('text-display');
-	var variable = '';
-	if (text_display.length) {
-		var text_display_exp = text_display.find('expr');
-		if (text_display_exp.length) {
-			variable = text_display_exp.find('var').text();
-		}
+
+	var exprTextDisplay = [];
+	var expr_text_display = myMedia.find('text-display');
+	if (expr_text_display.length) {
+	    exprTextDisplay = parseExpression(expr_text_display);
 	}
 
 	registerText(
 			textX, textY,
 			text_format,
-			variable,
+			exprTextDisplay,
 			'rgb('+font_color+')',
 			textAlignHorz,
 			textAlignVert,
