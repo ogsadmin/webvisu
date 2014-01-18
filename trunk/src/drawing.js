@@ -1,10 +1,8 @@
 // drawing.js
 
 var visuVariables = {};
-var drawRectangles = [];
-var drawRoundRects = [];
+var drawObjects = [];
 var drawTexts = [];
-var drawBitmaps = [];
 var clickToggles = [];
 var clickTap = [];
 var clickZoom = [];
@@ -16,10 +14,8 @@ var visuSizeY = 0;
 function switchToVisu(visu) {
     // alle Arrays und Variablenzuordnungen löschen
     visuVariables = {};
-    drawRectangles = [];
-    drawRoundRects = [];
+    drawObjects = [];
     drawTexts = [];
-    drawBitmaps = [];
     clickToggles = [];
     clickTap = [];
     clickZoom = [];
@@ -56,7 +52,8 @@ function registerVariable(name, addr, value) {
 
 // constructor
 function newRectangle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm, leftExpr, topExpr, rightExpr, bottomExpr) {
-	this.x = parseInt(x);
+    this.isA = "Rectangle";
+    this.x = parseInt(x);
 	this.y = parseInt(y);
 	this.w = parseInt(w);
 	this.h = parseInt(h);
@@ -72,7 +69,7 @@ function newRectangle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, 
 }
 
 function registerRectangle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm, leftExpr, topExpr, rightExpr, bottomExpr) {
-	drawRectangles.push(new newRectangle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm, leftExpr, topExpr, rightExpr, bottomExpr));
+    drawObjects.push(new newRectangle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm, leftExpr, topExpr, rightExpr, bottomExpr));
 }
 
 // ****************************************************************************
@@ -80,6 +77,7 @@ function registerRectangle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmE
 
 // constructor
 function newRoundRect(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm) {
+    this.isA = "RoundRect";
 	this.x = parseInt(x);
 	this.y = parseInt(y);
 	this.w = parseInt(w);
@@ -92,18 +90,19 @@ function newRoundRect(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, 
 }
 
 function registerRoundRect(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm) {
-	drawRoundRects.push(new newRoundRect(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm));
+    drawObjects.push(new newRoundRect(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm));
 }
 
 // ****************************************************************************
 // Text
 
 // constructor
-function newText(x, y, format, value, fillStyle, textAlignHorz, textAlignVert, fontName, fontHeight) {
-	this.x = parseInt(x);
+function newText(x, y, format, exprTextDisplay, fillStyle, textAlignHorz, textAlignVert, fontName, fontHeight) {
+    this.isA = "Text";
+    this.x = parseInt(x);
 	this.y = parseInt(y);
 	this.format = format;
-	this.value = value;
+	this.exprTextDisplay = exprTextDisplay;
 	this.fillStyle = fillStyle;
 	this.textAlignHorz = textAlignHorz;
 	this.textAlignVert = textAlignVert;
@@ -111,8 +110,8 @@ function newText(x, y, format, value, fillStyle, textAlignHorz, textAlignVert, f
 	this.fontHeight = fontHeight;
 }
 
-function registerText(x, y, format, value, fillStyle, textAlignHorz, textAlignVert, fontName, fontHeight) {
-	drawTexts.push(new newText(x, y, format, value, fillStyle, textAlignHorz, textAlignVert, fontName, fontHeight));
+function registerText(x, y, format, exprTextDisplay, fillStyle, textAlignHorz, textAlignVert, fontName, fontHeight) {
+    drawTexts.push(new newText(x, y, format, exprTextDisplay, fillStyle, textAlignHorz, textAlignVert, fontName, fontHeight));
 }
 
 // ****************************************************************************
@@ -120,7 +119,8 @@ function registerText(x, y, format, value, fillStyle, textAlignHorz, textAlignVe
 
 // constructor
 function newBitmap(x, y, w, h, fileName) {
-	this.x = parseInt(x);
+    this.isA = "Bitmap";
+    this.x = parseInt(x);
 	this.y = parseInt(y);
 	this.w = parseInt(w);
 	this.h = parseInt(h);
@@ -130,7 +130,7 @@ function newBitmap(x, y, w, h, fileName) {
 }
 
 function registerBitmap(x, y, w, h, fileName) {
-	drawBitmaps.push(new newBitmap(x, y, w, h, fileName));
+    drawObjects.push(new newBitmap(x, y, w, h, fileName));
 }
 
 // ****************************************************************************
@@ -249,16 +249,38 @@ function evalExpression(expr) {
 	var result = [];
 	//console.log("evalExpression");
 	for (var i = 0; i < expr.length; i = i + 1) {
-		if (expr[i].operation == 'var') {
-			//console.log("push var " + expr[i].value + " ( " + visuVariables[expr[i].value].value + " ) ");
-			result.push(visuVariables[expr[i].value].value);
-		} else if (expr[i].operation == 'op') {
-			if (expr[i].value == 'OR(2)') {
-				var v1 = result.pop();
-				var v2 = result.pop();
-				result.push(v1 || v2);
-			}
-		}
+	    if (expr[i].operation == 'var') {
+	        //console.log("push var " + expr[i].value + " ( " + visuVariables[expr[i].value].value + " ) ");
+	        result.push(visuVariables[expr[i].value].value);
+	    } else if (expr[i].operation == 'const') {
+	        result.push(parseFloat(expr[i].value));
+	    } else if (expr[i].operation == 'op') {
+	        if (expr[i].value == 'OR(2)') {
+	            var v1 = result.pop();
+	            var v2 = result.pop();
+	            result.push(v1 || v2);
+	        } else if (expr[i].value == 'AND(2)') {
+	            var v1 = result.pop();
+	            var v2 = result.pop();
+	            result.push(v1 && v2);
+	        } else if (expr[i].value == '/(2)') {
+	            var v1 = result.pop();
+	            var v2 = result.pop();
+	            result.push(v2 / v1);
+	        } else if (expr[i].value == '*(2)') {
+	            var v1 = result.pop();
+	            var v2 = result.pop();
+	            result.push(v2 * v1);
+	        } else if (expr[i].value == '+(2)') {
+	            var v1 = result.pop();
+	            var v2 = result.pop();
+	            result.push(v2 + v1);
+	        } else if (expr[i].value == '-(2)') {
+	            var v1 = result.pop();
+	            var v2 = result.pop();
+	            result.push(v2 - v1);
+	        }
+	    }
 	}
 	return result[0];
 }
@@ -272,70 +294,67 @@ function draw() {
 	ctx.clearRect(0, 0, visuSizeX, visuSizeY);
 	ctx.closePath();
 
-	for (var i in drawRectangles) {
-		obj = drawRectangles[i];
+	for (var i in drawObjects) {
+	    obj = drawObjects[i];
+	    if (obj.isA == "Rectangle") {
+	        ctx.beginPath();
 
-		ctx.beginPath();
+	        var left = 0;
+	        if (obj.leftExpr.length > 0) { left = evalExpression(obj.leftExpr); }
+	        var top = 0;
+	        if (obj.topExpr.length > 0) { top = evalExpression(obj.topExpr); }
+	        var right = 0;
+	        if (obj.rightExpr.length > 0) { right = evalExpression(obj.rightExpr); }
+	        var bottom = 0;
+	        if (obj.bottomExpr.length > 0) { bottom = evalExpression(obj.bottomExpr); }
 
-		var left = 0;
-		if (obj.leftExpr.length > 0) { left = evalExpression(obj.leftExpr); }
-		var top = 0;
-		if (obj.topExpr.length > 0) { top = evalExpression(obj.topExpr); }
-		var right = 0;
-		if (obj.rightExpr.length > 0) { right = evalExpression(obj.rightExpr); }
-		var bottom = 0;
-		if (obj.bottomExpr.length > 0) { bottom = evalExpression(obj.bottomExpr); }
+	        ctx.rect(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom);
+	        // ctx.fillStyle = "rgba("+fill_color+",1)";
+	        if (obj.alarmExpr.length > 0) {
+	            if (evalExpression(obj.alarmExpr) > 0) {
+	                ctx.fillStyle = obj.fillStyleAlarm;
+	            } else {
+	                ctx.fillStyle = obj.fillStyle;
+	            }
+	        } else {
+	            ctx.fillStyle = obj.fillStyle;
+	        }
+	        ctx.fill();
+	        ctx.lineWidth = obj.lineWidth;
+	        ctx.strokeStyle = obj.strokeStyle;
+	        ctx.stroke();
+	        ctx.closePath();
+	    } else if (obj.isA == "RoundRect") {
+	        radius = obj.w / 20;
 
-		ctx.rect(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom);
-		// ctx.fillStyle = "rgba("+fill_color+",1)";
-		if (obj.alarmExpr.length > 0) {
-			if (evalExpression(obj.alarmExpr) > 0) {
-				ctx.fillStyle = obj.fillStyleAlarm;
-			} else {
-				ctx.fillStyle = obj.fillStyle;
-			}
-		} else {
-			ctx.fillStyle = obj.fillStyle;
-		}
-		ctx.fill();
-		ctx.lineWidth = obj.lineWidth;
-		ctx.strokeStyle = obj.strokeStyle;
-		ctx.stroke();
-		ctx.closePath();
+	        ctx.beginPath();
+	        ctx.roundRect(obj.x, obj.y, obj.w, obj.h, radius);
+	        // ctx.rect(obj.x, obj.y, obj.w, obj.h);
+	        // ctx.fillStyle = "rgba("+fill_color+",1)";
+	        if (obj.alarmExpr.length > 0) {
+	            if (evalExpression(obj.alarmExpr) > 0) {
+	                ctx.fillStyle = obj.fillStyleAlarm;
+	            } else {
+	                ctx.fillStyle = obj.fillStyle;
+	            }
+	        } else {
+	            ctx.fillStyle = obj.fillStyle;
+	        }
+	        ctx.fill();
+	        ctx.lineWidth = obj.lineWidth;
+	        ctx.strokeStyle = obj.strokeStyle;
+	        ctx.stroke();
+	        ctx.closePath();
+	    } else if (obj.isA == "Bitmap") {
+	        ctx.beginPath();
+	        ctx.drawImage(obj.img, 0, 0, obj.img.width, obj.img.height, obj.x, obj.y, obj.w, obj.h);
+	        ctx.closePath();
+	    } else {
+            // unknown
+	    }
 	}
 
-	for (var i in drawRoundRects) {
-		obj = drawRoundRects[i];
-		radius = obj.w / 20;
-
-		ctx.beginPath();
-		ctx.roundRect(obj.x, obj.y, obj.w, obj.h, radius);
-		// ctx.rect(obj.x, obj.y, obj.w, obj.h);
-		// ctx.fillStyle = "rgba("+fill_color+",1)";
-		if (obj.alarmExpr.length > 0) {
-			if (evalExpression(obj.alarmExpr) > 0) {
-				ctx.fillStyle = obj.fillStyleAlarm;
-			} else {
-				ctx.fillStyle = obj.fillStyle;
-			}
-		} else {
-			ctx.fillStyle = obj.fillStyle;
-		}
-		ctx.fill();
-		ctx.lineWidth = obj.lineWidth;
-		ctx.strokeStyle = obj.strokeStyle;
-		ctx.stroke();
-		ctx.closePath();
-	}
-
-	for (var i in drawBitmaps) {
-	    obj = drawBitmaps[i];
-
-	    ctx.beginPath();
-	    ctx.drawImage(obj.img, 0, 0, obj.img.width, obj.img.height, obj.x, obj.y, obj.w, obj.h);
-	    ctx.closePath();
-	}
-
+    // sollten wir die Texte auch in die Objects nehmen um die Reichenfolge einzuhalten?
 	for (var i in drawTexts) {
 		obj = drawTexts[i];
 
@@ -345,13 +364,11 @@ function draw() {
 		ctx.fillStyle = obj.fillStyle;
 		ctx.textAlign = obj.textAlignHorz;
 		ctx.textBaseline = obj.textAlignVert;
-		if (obj.value != '') {
-			txt = strformat(obj.format, visuVariables[obj.value].value);
-			ctx.fillText(txt, obj.x, obj.y);
-		} else {
-			txt = strformat(obj.format, '');
-			ctx.fillText(txt, obj.x, obj.y);
-		}
+
+		var textDisplay = 0;
+		if (obj.exprTextDisplay.length > 0) { textDisplay = evalExpression(obj.exprTextDisplay); }
+		txt = strformat(obj.format, textDisplay);
+		ctx.fillText(txt, obj.x, obj.y);
 		ctx.closePath();
 	}
 }
