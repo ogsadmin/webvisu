@@ -10,6 +10,7 @@ var clickZoom = [];
 var visuName = "";
 var visuSizeX = 0;
 var visuSizeY = 0;
+var visuCompressed = 0;
 
 function switchToVisu(visu) {
     // alle Arrays und Variablenzuordnungen löschen
@@ -27,7 +28,13 @@ function switchToVisu(visu) {
     // INIs neu laden
     load_ini("../PLC/visu_ini.xml");
     // neue Visu laden
-    load_visu("../PLC/" + visu + ".xml");
+    var filename = "../PLC/" + visu;
+    if (visuCompressed == 1) {
+        filename += "_xml.zip";
+    } else {
+        filename += ".xml";
+    }
+    load_visu(filename);
 }
 
 // ****************************************************************************
