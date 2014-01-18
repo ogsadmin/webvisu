@@ -23,8 +23,16 @@ function extract_var_addr( content ) {
 	});
 }
 
-function load_ini_success( content ) {
-	extract_var_addr( content );
+function load_ini_success(content) {
+
+    $(content).find("visu-ini-file").each(function () {
+        // gefundenen abschnitt in variable zwischenspeichern (cachen)
+        var $myMedia = $(this);
+
+        visuCompressed = $myMedia.find('compression').text() == "true" ? 1 : 0;
+
+        extract_var_addr($myMedia);
+    });
 }
 
 function load_ini(filename) {
@@ -327,13 +335,18 @@ function load_visu_success(content) {
 
 function load_visu(filename) {
     console.debug("load " + filename);
-	$.ajax({
-		type: 'GET',
-		async: false,
-		url: filename,
-		dataType: 'xml',
-		success: load_visu_success
-	});
+
+    $.ajax({
+        type: 'GET',
+        async: false,
+        cache: false,
+        url: filename,
+        dataType: 'xml',
+        success: load_visu_success,
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log("load_visu " + textStatus + " " + errorThrown);
+        }
+    });
 }
 
 // holt Aktualisierungen für alle bekannten Variablen vom webserver
