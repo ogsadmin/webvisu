@@ -94,6 +94,27 @@ function registerRoundRect(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmE
 }
 
 // ****************************************************************************
+// Circles
+
+// constructor
+function newCircle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm) {
+    this.isA = "Circle";
+    this.x = parseInt(x);
+    this.y = parseInt(y);
+    this.w = parseInt(w);
+    this.h = parseInt(h);
+    this.fillStyle = fillStyle;
+    this.lineWidth = lineWidth;
+    this.strokeStyle = strokeStyle;
+    this.alarmExpr = alarmExpr;
+    this.fillStyleAlarm = fillStyleAlarm;
+}
+
+function registerCircle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm) {
+    drawObjects.push(new newCircle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm));
+}
+
+// ****************************************************************************
 // Text
 
 // constructor
@@ -245,6 +266,32 @@ CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
 	return this;
 }
 
+CanvasRenderingContext2D.prototype.ellipse = function (x, y, w, h) {
+    var kappa = .5522848,
+        ox = (w / 2) * kappa, // control point offset horizontal
+        oy = (h / 2) * kappa, // control point offset vertical
+        xe = x + w,           // x-end
+        ye = y + h,           // y-end
+        xm = x + w / 2,       // x-middle
+        ym = y + h / 2;       // y-middle
+
+    this.beginPath();
+    this.moveTo(x, ym);
+    this.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+    this.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+    this.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+    this.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+    this.closePath();
+    this.stroke();
+    return this;
+}
+
+CanvasRenderingContext2D.prototype.ellipseByCenter = function (cx, cy, w, h) {
+    this.ellipse(cx - w / 2.0, cy - h / 2.0, w, h);
+    return this;
+}
+
+
 function evalExpression(expr) {
 	var result = [];
 	//console.log("evalExpression");
@@ -345,12 +392,30 @@ function draw() {
 	        ctx.strokeStyle = obj.strokeStyle;
 	        ctx.stroke();
 	        ctx.closePath();
+	    } else if (obj.isA == "Circle") {
+	        ctx.beginPath();
+
+	        ctx.ellipse(obj.x, obj.y, obj.w, obj.h);
+	        if (obj.alarmExpr.length > 0) {
+	            if (evalExpression(obj.alarmExpr) > 0) {
+	                ctx.fillStyle = obj.fillStyleAlarm;
+	            } else {
+	                ctx.fillStyle = obj.fillStyle;
+	            }
+	        } else {
+	            ctx.fillStyle = obj.fillStyle;
+	        }
+	        ctx.fill();
+	        ctx.lineWidth = obj.lineWidth;
+	        ctx.strokeStyle = obj.strokeStyle;
+	        ctx.stroke();
+	        ctx.closePath();
 	    } else if (obj.isA == "Bitmap") {
 	        ctx.beginPath();
 	        ctx.drawImage(obj.img, 0, 0, obj.img.width, obj.img.height, obj.x, obj.y, obj.w, obj.h);
 	        ctx.closePath();
 	    } else {
-            // unknown
+	        // unknown
 	    }
 	}
 
