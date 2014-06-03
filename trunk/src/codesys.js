@@ -25,14 +25,14 @@ function extract_var_addr( content ) {
 
 function load_ini_success(content) {
 
-    $(content).find("visu-ini-file").each(function () {
-        // gefundenen abschnitt in variable zwischenspeichern (cachen)
-        var $myMedia = $(this);
+	$(content).find("visu-ini-file").each(function () {
+		// gefundenen abschnitt in variable zwischenspeichern (cachen)
+		var $myMedia = $(this);
 
-        visuCompressed = $myMedia.find('compression').text() == "true" ? 1 : 0;
+		visuCompressed = $myMedia.find('compression').text() == "true" ? 1 : 0;
 
-        extract_var_addr($myMedia);
-    });
+		extract_var_addr($myMedia);
+	});
 }
 
 function load_ini(filename) {
@@ -100,14 +100,22 @@ function parseTextInfo(myMedia, centerFields, rectFields) {
 	var exprTextDisplay = [];
 	var expr_text_display = myMedia.find('text-display');
 	if (expr_text_display.length) {
-	    exprTextDisplay = parseExpression(expr_text_display);
+		exprTextDisplay = parseExpression(expr_text_display);
 	}
+
+	var exprTextColor = [];
+	var expr_text_color = myMedia.find('expr-text-color');
+	if (expr_text_color.length) {
+		exprTextColor = parseExpression(expr_text_color);
+	}
+
 
 	registerText(
 			textX, textY,
 			text_format,
 			exprTextDisplay,
 			'rgb('+font_color+')',
+			exprTextColor,
 			textAlignHorz,
 			textAlignVert,
 			font_name,
@@ -116,133 +124,150 @@ function parseTextInfo(myMedia, centerFields, rectFields) {
 }
 
 function parseClickInfo(myMedia, rectFields) {
-    var expr_toggle_var = myMedia.find('expr-toggle-var');
-    value = '';
-    if (expr_toggle_var.length) {
-        var expr_toggle_var_exp = expr_toggle_var.find('expr');
-        if (expr_toggle_var_exp.length) {
-            value = expr_toggle_var_exp.find('var').text();
-            registerClickToggle(
-                rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-                value
-                );
-        }
-    }
 
-    var expr_tap_var = myMedia.find('expr-tap-var');
-    value = '';
-    if (expr_tap_var.length) {
-        var expr_tap_var_exp = expr_tap_var.find('expr');
-        if (expr_tap_var_exp.length) {
-            value = expr_tap_var_exp.find('var').text();
-            var tap_false = myMedia.find('tap-false').text();
-            registerClickTap(
-                rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-                value, (tap_false == 'true' ? 0 : 1)
-                );
-        }
-    }
+	/*
+		<expr-toggle-var>
+			<expr>
+				<var>PLC_PRG.bVarToggeln</var>
+			</expr>
+		</expr-toggle-var>
+	*/
+	var expr_toggle_var = myMedia.find('expr-toggle-var');
+	value = '';
+	if (expr_toggle_var.length) {
+		var expr_toggle_var_exp = expr_toggle_var.find('expr');
+		if (expr_toggle_var_exp.length) {
+			value = expr_toggle_var_exp.find('var').text();
+			registerClickToggle(
+				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+				value
+				);
+		}
+	}
 
-    var expr_zoom = myMedia.find('expr-zoom');
-    value = '';
-    if (expr_zoom.length) {
-        var expr_zoom_exp = expr_zoom.find('expr');
-        if (expr_zoom_exp.length) {
-            newvisu = expr_zoom_exp.find('placeholder').text();
-            registerClickZoom(
-                rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-                newvisu
-                );
-        }
-    }
+	/*
+		<expr-tap-var>
+			<expr>
+				<var>PLC_PRG.bVarTasten</var>
+			</expr>
+		</expr-tap-var>
+	*/
+	var expr_tap_var = myMedia.find('expr-tap-var');
+	value = '';
+	if (expr_tap_var.length) {
+		var expr_tap_var_exp = expr_tap_var.find('expr');
+		if (expr_tap_var_exp.length) {
+			value = expr_tap_var_exp.find('var').text();
+			var tap_false = myMedia.find('tap-false').text();
+			registerClickTap(
+				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+				value, (tap_false == 'true' ? 0 : 1)
+				);
+		}
+	}
+
+	/*
+		<expr-zoom>
+			<expr>
+				<placeholder>PLC_VISU</placeholder>
+			</expr>
+		</expr-zoom>
+	*/
+	var expr_zoom = myMedia.find('expr-zoom');
+	value = '';
+	if (expr_zoom.length) {
+		var expr_zoom_exp = expr_zoom.find('expr');
+		if (expr_zoom_exp.length) {
+			newvisu = expr_zoom_exp.find('placeholder').text();
+			registerClickZoom(
+				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+				newvisu
+				);
+		}
+	}
+
+	/* TODO:
+		<input-action-list>
+			<expr-assign>
+				<lvalue>
+					<expr>
+						<var>.rSollwertBuero</var>
+					</expr>
+				</lvalue>
+				<rvalue>
+					<expr>
+						<var>.rSollwertBuero</var>
+						<const>0.5</const>
+						<op>+(2)</op>
+					</expr>
+				</rvalue>
+			</expr-assign>
+		</input-action-list>
+	*/
 }
 
 function array_buffer_8_to_string(buf) {
-    return String.fromCharCode.apply(null, new Uint8Array(buf));
+	return String.fromCharCode.apply(null, new Uint8Array(buf));
 }
 
 function array_buffer_16_to_string(buf) {
-    return String.fromCharCode.apply(null, new Uint16Array(buf));
+	return String.fromCharCode.apply(null, new Uint16Array(buf));
 }
 
 function string_to_array_buffer_16(str) {
-    var buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
-    var bufView = new Uint16Array(buf);
-    for (var i = 0, strLen = str.length; i < strLen; i++) {
-        bufView[i] = str.charCodeAt(i);
-    }
-    return buf;
+	var buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
+	var bufView = new Uint16Array(buf);
+	for (var i = 0, strLen = str.length; i < strLen; i++) {
+		bufView[i] = str.charCodeAt(i);
+	}
+	return buf;
 }
 
 function CheckStr8(str) {
-    for (var i = 0, strLen = str.length; i < strLen; i++) {
-        if (str.charCodeAt(i) > 127) {
-            console.log("WARNING: " + str.charCodeAt(i).toString() + ">127");
-        }
-        if (str.charCodeAt(i) > 255) {
-            console.log("ERROR: " + str.charCodeAt(i).toString() + ">255");
-        }
-    }
+	for (var i = 0, strLen = str.length; i < strLen; i++) {
+		if (str.charCodeAt(i) > 127) {
+			console.log("WARNING: " + str.charCodeAt(i).toString() + ">127");
+		}
+		if (str.charCodeAt(i) > 255) {
+			console.log("ERROR: " + str.charCodeAt(i).toString() + ">255");
+		}
+	}
 }
 
 // mit zip.js und inflate.js
 function load_visu_compressed_success(content) {
-    console.log("visu is compressed - try to inflate");
+	console.log("visu is compressed - try to inflate");
 
-    zip.useWebWorkers = false;
-    // use a zip.BlobReader object to read zipped data stored into blob variable
-    zip.createReader(new zip.BlobReader(content), function (zipReader) {
-        // get entries from the zip file
-        zipReader.getEntries(function (entries) {
-            // get data from the first file - using the right encoding!
-            entries[0].getData(new zip.TextWriter("ISO-8859-1"), function (data) {
-                // close the reader and calls callback function with uncompressed data as parameter
-                zipReader.close();
-                CheckStr8(data);
-                var xml = $.parseXML(data);
-                load_visu_success(xml);
-            });
-        });
-    }, function(message) { 
-        console.error(message); 
-    });
+	zip.useWebWorkers = false;
+	// use a zip.BlobReader object to read zipped data stored into blob variable
+	zip.createReader(new zip.BlobReader(content), function (zipReader) {
+		// get entries from the zip file
+		zipReader.getEntries(function (entries) {
+			// get data from the first file - using the right encoding!
+			entries[0].getData(new zip.TextWriter("ISO-8859-1"), function (data) {
+				// close the reader and calls callback function with uncompressed data as parameter
+				zipReader.close();
+				//CheckStr8(data);
+				var xml = $.parseXML(data);
+				load_visu_success(xml);
+			});
+		});
+	}, function(message) { 
+		console.error(message); 
+	});
 }
 
-
-/*
-// mit js-unzip.js und js-inflate.js
-function load_visu_compressed_success(content) {
-    console.log("visu is compressed - try to inflate");
-
-    compressed = array_buffer_8_to_string(content);
-    var unzipper = new JSUnzip(compressed);
-    if (unzipper.isZipFile()) {
-        unzipper.readEntries();
-        for (var i = 0; i < unzipper.entries.length; i++) {
-            var entry = unzipper.entries[i];
-            if (entry.compressionMethod === 0) {
-                // Uncompressed
-                var uncompressed = entry.data;
-                var xml = $.parseXML(uncompressed);
-                load_visu_success(xml);
-            } else if (entry.compressionMethod === 8) {
-                // Deflated
-                var uncompressed = JSInflate.inflate(entry.data);
-                var xml = $.parseXML(uncompressed);
-                load_visu_success(xml);
-            }
-        }
-    }
-}
-*/
 
 function load_visu_success(content) {
-    console.log("load_visu_success");
+	perfLoadEnd = new Date().getTime();
+	perfLoad = perfLoadEnd - perfLoadStart;
 
-    //var xmlstr = content.xml ? content.xml : (new XMLSerializer()).serializeToString(content);
-    //console.debug("content: " + xmlstr);
+	//console.log("load_visu_success in " + perfLoad + "ms");
 
-    //console.debug("content: " + content);
+	//var xmlstr = content.xml ? content.xml : (new XMLSerializer()).serializeToString(content);
+	//console.debug("content: " + xmlstr);
+
+	//console.debug("content: " + content);
 
 	extract_var_addr( content );
 
@@ -361,40 +386,40 @@ function load_visu_success(content) {
 
 				parseClickInfo($myMedia, rectFields);
 			} else if (shape == 'circle') {
-			    var rect = $myMedia.find('rect').text();
-			    var rectFields = rect.split(',');
-			    var fill_color = $myMedia.find('fill-color').text();
-			    var fill_color_alarm = $myMedia.find('fill-color-alarm').text();
-			    var line_width = $myMedia.find('line-width').text();
-			    var frame_color = $myMedia.find('frame-color').text();
-			    var center = $myMedia.find('center').text();
-			    var centerFields = center.split(',');
+				var rect = $myMedia.find('rect').text();
+				var rectFields = rect.split(',');
+				var fill_color = $myMedia.find('fill-color').text();
+				var fill_color_alarm = $myMedia.find('fill-color-alarm').text();
+				var line_width = $myMedia.find('line-width').text();
+				var frame_color = $myMedia.find('frame-color').text();
+				var center = $myMedia.find('center').text();
+				var centerFields = center.split(',');
 
-			    // parse expression
-			    var exprToggleColor = [];
-			    var expr_toggle_color = $myMedia.find('expr-toggle-color');
-			    if (expr_toggle_color.length) {
-			        exprToggleColor = parseExpression(expr_toggle_color);
-			    }
+				// parse expression
+				var exprToggleColor = [];
+				var expr_toggle_color = $myMedia.find('expr-toggle-color');
+				if (expr_toggle_color.length) {
+					exprToggleColor = parseExpression(expr_toggle_color);
+				}
 
-			    registerCircle(
-                    rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-                    "rgb(" + fill_color + ")",
-                    line_width,
-                    "rgb(" + frame_color + ")",
-                    exprToggleColor,
-                    "rgb(" + fill_color_alarm + ")"
-                );
+				registerCircle(
+					rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+					"rgb(" + fill_color + ")",
+					line_width,
+					"rgb(" + frame_color + ")",
+					exprToggleColor,
+					"rgb(" + fill_color_alarm + ")"
+				);
 
-			    parseTextInfo($myMedia, centerFields, rectFields);
+				parseTextInfo($myMedia, centerFields, rectFields);
 
-			    parseClickInfo($myMedia, rectFields);
+				parseClickInfo($myMedia, rectFields);
 			} else {
 				console.log("unknown simple-shape: " + shape);
 			}
 		} else if (type == 'bitmap') {
-		    //console.debug("register bitmap");
-		    var filename = $myMedia.find('file-name').text();
+			//console.debug("register bitmap");
+			var filename = $myMedia.find('file-name').text();
 			var fileFields = filename.split('\\');
 			filename = fileFields[fileFields.length - 1];
 			var rect = $myMedia.find('rect').text();
@@ -411,45 +436,52 @@ function load_visu_success(content) {
 
 			parseClickInfo($myMedia, rectFields);
 		} else {
-		    console.log("unknown type: " + type);
+			console.log("unknown type: " + type);
 		}
 	});
 }
 
 function load_visu(filename) {
-    console.debug("load " + filename);
+	console.debug("load " + filename);
 
-    if (visuCompressed == 1) {
-        $.ajax({
-            type: 'GET',
-            async: false,
-            cache: false,
-            url: filename,
-            //dataType: 'arraybuffer', // mit js-unzip.js und js-inflate.js
-            dataType: 'blob', // mit zip.js und inflate.js
-            //dataType: 'application/zip',
-            //dataType: 'text/plain',
-            success: load_visu_compressed_success,
-            error: function (jqXHR, textStatus, errorThrown) {
-                console.log("load_visu " + textStatus + " " + errorThrown);
-            }
-        });
-    } else {
-        $.ajax({
-            type: 'GET',
-            async: false,
-            cache: false,
-            url: filename,
-            success: load_visu_success,
-            error: function (jqXHR, textStatus, errorThrown) {
-                console.log("load_visu " + textStatus + " " + errorThrown);
-            }
-        });
-    }
+	perfLoadStart = new Date().getTime();
+
+	if (visuCompressed == 1) {
+		$.ajax({
+			type: 'GET',
+			async: false,
+			cache: false,
+			url: filename,
+			//dataType: 'arraybuffer', // mit js-unzip.js und js-inflate.js
+			dataType: 'blob', // mit zip.js und inflate.js
+			//dataType: 'application/zip',
+			//dataType: 'text/plain',
+			success: load_visu_compressed_success,
+			error: function (jqXHR, textStatus, errorThrown) {
+				console.log("load_visu " + textStatus + " " + errorThrown);
+			}
+		});
+	} else {
+		$.ajax({
+			type: 'GET',
+			async: false,
+			cache: false,
+			url: filename,
+			success: load_visu_success,
+			error: function (jqXHR, textStatus, errorThrown) {
+				console.log("load_visu " + textStatus + " " + errorThrown);
+			}
+		});
+	}
 }
 
 // holt Aktualisierungen für alle bekannten Variablen vom webserver
 function update_vars() {
+	if (perfUpdateStart > perfUpdateEnd)
+		return;
+
+	perfUpdateStart = new Date().getTime();
+
 	var req = "";
 	var count = 0;
 	$.each(visuVariables, function (key, obj) {
@@ -464,7 +496,8 @@ function update_vars() {
 
 	$.ajax({
 		type: 'POST',
-		async: false,
+		//async: false,
+		async: true,
 		url: "/plc/webvisu.htm",
 		data: req,
 		success: function (data) {
@@ -483,7 +516,9 @@ function update_vars() {
 				}
 				count++;
 			});
-			//console.log("update_vars finished");
+			perfUpdateEnd = new Date().getTime();
+			perfUpdate = perfUpdateEnd - perfUpdateStart;
+			//console.log("update_vars finished in " + perfUpdate + "ms");
 		}
 	});
 }
@@ -541,8 +576,8 @@ function onMouseDown(e) {
 	//console.log("X " + e.pageX + " Y " + e.pageY);
 	//console.log("X " + x + " Y " + y);
 
-    // ein neuer MouseDown hatte sicherlich einen MouseUp voran - nur, falls der verloren ging
-    // passiert komischerweise ab und zu bei Firefox
+	// ein neuer MouseDown hatte sicherlich einen MouseUp voran - nur, falls der verloren ging
+	// passiert komischerweise ab und zu bei Firefox
 	HandlePendingMouseUps();
 
 	for (var i in clickTap) {
@@ -569,7 +604,7 @@ function onMouseDown(e) {
 
 }
 
-// Ein MouseDowqn registriert die betroffenen Objekte in der PendingMouseUp Liste.
+// Ein MouseDown registriert die betroffenen Objekte in der PendingMouseUp Liste.
 // Diese wird bei einem echten MouseUp, aber auch vor einem erneuten MouseDown abgearbeitet.
 function HandlePendingMouseUps() {
 	for (var i in PendingMouseUpObjects) {
