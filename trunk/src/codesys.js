@@ -157,9 +157,92 @@ function parseClickInfo(myMedia, rectFields) {
     }
 }
 
+function array_buffer_8_to_string(buf) {
+    return String.fromCharCode.apply(null, new Uint8Array(buf));
+}
+
+function array_buffer_16_to_string(buf) {
+    return String.fromCharCode.apply(null, new Uint16Array(buf));
+}
+
+function string_to_array_buffer_16(str) {
+    var buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
+    var bufView = new Uint16Array(buf);
+    for (var i = 0, strLen = str.length; i < strLen; i++) {
+        bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+}
+
+function CheckStr8(str) {
+    for (var i = 0, strLen = str.length; i < strLen; i++) {
+        if (str.charCodeAt(i) > 127) {
+            console.log("WARNING: " + str.charCodeAt(i).toString() + ">127");
+        }
+        if (str.charCodeAt(i) > 255) {
+            console.log("ERROR: " + str.charCodeAt(i).toString() + ">255");
+        }
+    }
+}
+
+// mit zip.js und inflate.js
+function load_visu_compressed_success(content) {
+    console.log("visu is compressed - try to inflate");
+
+    zip.useWebWorkers = false;
+    // use a zip.BlobReader object to read zipped data stored into blob variable
+    zip.createReader(new zip.BlobReader(content), function (zipReader) {
+        // get entries from the zip file
+        zipReader.getEntries(function (entries) {
+            // get data from the first file - using the right encoding!
+            entries[0].getData(new zip.TextWriter("ISO-8859-1"), function (data) {
+                // close the reader and calls callback function with uncompressed data as parameter
+                zipReader.close();
+                CheckStr8(data);
+                var xml = $.parseXML(data);
+                load_visu_success(xml);
+            });
+        });
+    }, function(message) { 
+        console.error(message); 
+    });
+}
+
+
+/*
+// mit js-unzip.js und js-inflate.js
+function load_visu_compressed_success(content) {
+    console.log("visu is compressed - try to inflate");
+
+    compressed = array_buffer_8_to_string(content);
+    var unzipper = new JSUnzip(compressed);
+    if (unzipper.isZipFile()) {
+        unzipper.readEntries();
+        for (var i = 0; i < unzipper.entries.length; i++) {
+            var entry = unzipper.entries[i];
+            if (entry.compressionMethod === 0) {
+                // Uncompressed
+                var uncompressed = entry.data;
+                var xml = $.parseXML(uncompressed);
+                load_visu_success(xml);
+            } else if (entry.compressionMethod === 8) {
+                // Deflated
+                var uncompressed = JSInflate.inflate(entry.data);
+                var xml = $.parseXML(uncompressed);
+                load_visu_success(xml);
+            }
+        }
+    }
+}
+*/
+
 function load_visu_success(content) {
+    console.log("load_visu_success");
+
     //var xmlstr = content.xml ? content.xml : (new XMLSerializer()).serializeToString(content);
     //console.debug("content: " + xmlstr);
+
+    //console.debug("content: " + content);
 
 	extract_var_addr( content );
 
@@ -177,8 +260,8 @@ function load_visu_success(content) {
 		var canvas = document.getElementsByTagName('canvas')[0];
 		canvas.width = visuSizeX+1;
 		canvas.height = visuSizeY+1;
-		//$('#canvas').WIDTH = visuSizeX;
-		//$('#canvas').HEIGHT = visuSizeY;
+		//$('#canvas').WIDTH = visuSizeX+1;
+		//$('#canvas').HEIGHT = visuSizeY+1;
 	});
 
 
@@ -336,17 +419,33 @@ function load_visu_success(content) {
 function load_visu(filename) {
     console.debug("load " + filename);
 
-    $.ajax({
-        type: 'GET',
-        async: false,
-        cache: false,
-        url: filename,
-        dataType: 'xml',
-        success: load_visu_success,
-        error: function (jqXHR, textStatus, errorThrown) {
-            console.log("load_visu " + textStatus + " " + errorThrown);
-        }
-    });
+    if (visuCompressed == 1) {
+        $.ajax({
+            type: 'GET',
+            async: false,
+            cache: false,
+            url: filename,
+            //dataType: 'arraybuffer', // mit js-unzip.js und js-inflate.js
+            dataType: 'blob', // mit zip.js und inflate.js
+            //dataType: 'application/zip',
+            //dataType: 'text/plain',
+            success: load_visu_compressed_success,
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log("load_visu " + textStatus + " " + errorThrown);
+            }
+        });
+    } else {
+        $.ajax({
+            type: 'GET',
+            async: false,
+            cache: false,
+            url: filename,
+            success: load_visu_success,
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log("load_visu " + textStatus + " " + errorThrown);
+            }
+        });
+    }
 }
 
 // holt Aktualisierungen für alle bekannten Variablen vom webserver
@@ -384,6 +483,7 @@ function update_vars() {
 				}
 				count++;
 			});
+			//console.log("update_vars finished");
 		}
 	});
 }
