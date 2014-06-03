@@ -1,7 +1,8 @@
 Voraussetzungen
 ---------------
-Die Web-Visualisierung der Steuerung muss im Projekt aktiviert sein und die 
-Option "Komprimierung" muss abgeschaltet sein. (siehe Wiki)
+Die Web-Visualisierung der Steuerung muss im Projekt aktiviert sein. Seit v18 
+kann die Option "Komprimierung" aktiviert oder deaktiviert sein - die Visu kann
+jetzt beides verarbeiten. (Wiki ist noch nicht aktualisiert)
 
 Installation
 ------------
@@ -14,4 +15,4 @@ Danach mit einem beliebigen Browser (auch iPad oder iPhone) die Adresse
 http://[IpMeinerSteuerung]/webserv/WebVisu.html
 aufrufen und die bisher integrierten Features sollten tun.
 
-Viel Spaﬂ!
+Viel Spa√ü!
