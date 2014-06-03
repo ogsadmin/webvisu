@@ -1,15 +1,16 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebVisu", "WebVisu", "{E5E7808B-3F11-4ABB-B40C-68EA5A96C37C}"
 	ProjectSection(SolutionItems) = preProject
 		..\src\codesys.js = ..\src\codesys.js
 		..\src\drawing.js = ..\src\drawing.js
+		..\src\inflate.js = ..\src\inflate.js
 		..\src\jquery-2.0.3.js = ..\src\jquery-2.0.3.js
-		..\src\WebVisuDev.html = ..\src\WebVisuDev.html
 		..\doc\webserver-protocol.txt = ..\doc\webserver-protocol.txt
+		..\src\WebVisuDev.html = ..\src\WebVisuDev.html
+		..\src\zip.js = ..\src\zip.js
 	EndProjectSection
 EndProject
 Global
