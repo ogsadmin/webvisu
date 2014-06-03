@@ -15,7 +15,7 @@ var visuCompressed = 0;
 var updateTimeout = 500;
 
 // performance-Zähler
-var perfWriteout = 1;
+var perfWriteout = 0;
 var perfCount = 0;
 var perfLoadStart = 0;
 var perfLoadEnd = 0;
