@@ -1,19 +1,21 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebVisu", "WebVisu", "{E5E7808B-3F11-4ABB-B40C-68EA5A96C37C}"
-	ProjectSection(SolutionItems) = preProject
-		..\src\codesys.js = ..\src\codesys.js
-		..\src\drawing.js = ..\src\drawing.js
-		..\src\inflate.js = ..\src\inflate.js
-		..\src\jquery-2.0.3.js = ..\src\jquery-2.0.3.js
-		..\doc\webserver-protocol.txt = ..\doc\webserver-protocol.txt
-		..\src\WebVisuDev.html = ..\src\WebVisuDev.html
-		..\src\zip.js = ..\src\zip.js
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VS2013Solution", "VS2013Solution\VS2013Solution.csproj", "{8B8E24C9-E3EB-4DB8-B251-A75B71FED474}"
 EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8B8E24C9-E3EB-4DB8-B251-A75B71FED474}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B8E24C9-E3EB-4DB8-B251-A75B71FED474}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B8E24C9-E3EB-4DB8-B251-A75B71FED474}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B8E24C9-E3EB-4DB8-B251-A75B71FED474}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
