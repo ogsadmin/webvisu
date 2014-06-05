@@ -12,7 +12,7 @@ var visuSizeX = 0;
 var visuSizeY = 0;
 var visuCompressed = 0;
 
-var updateTimeout = 500;
+var updateInterval = 500;
 
 // performance-Zähler
 var perfWriteout = 0;
@@ -489,14 +489,8 @@ function draw() {
 	//console.log("display finished in " + perfDisplay + "ms");
 }
 
-var updateTimer = undefined;
-
 function update() {
 	update_vars();
 	draw();
-	// erneut in <updateTimeout> diese Funktion aufrufen
-	if (updateTimer)
-		clearTimeout(updateTimer);
-	updateTimer = setTimeout(update, updateTimeout);
 }
 

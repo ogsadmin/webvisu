@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8" />
 		<title>WebVisu (development)</title>
-		<script src="jquery-2.0.3.min.js"></script>
+        <script src="jquery-2.0.3.min.js"></script>
 		<script src="jquery-ajax-blob-arraybuffer.js"></script>
 		<script src="zip.js"></script>
 		<script src="inflate.js"></script>
@@ -14,13 +14,18 @@
 		<script src="drawing.js"></script>
 		<script src="codesys.js"></script>
 		<script>
+            // wenn wir die Dev-Version sind schalten wir die Performance
+            // printouts ein...
+            if( document.location.href.toLowerCase().search("webvisudev.html") != -1 )
+                perfWriteout = 1;
+
 			switchToVisu("plc_visu");
 			$('#canvas').click(onClick);
 			$('#canvas').mousedown(onMouseDown);
 			$('#canvas').mouseup(onMouseUp);
 
-			// update nach Timeout aufrufen - am Ende des Updates wird das erneut gesetzt...
-			setTimeout(update, updateTimeout);
+			// update wieder im Intervall aufrufen (definiert in drawings.js)
+			setInterval(update, updateInterval);
 		</script>
 	</body>
 </html>
