@@ -286,18 +286,18 @@ function load_visu_success(content) {
 		canvas.width = visuSizeX+1;
 		canvas.height = visuSizeY+1;
 		//$('#canvas').WIDTH = visuSizeX+1;
-	    //$('#canvas').HEIGHT = visuSizeY+1;
+		//$('#canvas').HEIGHT = visuSizeY+1;
 
 
-        // optional kann der Hintergrund auch aus einem Bitmap-File bestehen
+		// optional kann der Hintergrund auch aus einem Bitmap-File bestehen
 		var bitmap = $myMedia.find('bitmap').text();
 		if (bitmap.length) {
-		    registerBitmap(
+			registerBitmap(
 				0, 0, visuSizeX, visuSizeY,
 				bitmap,
-                'false', '0,0,0', '0,0,0',
-                'false', '0,0,0', '0,0,0',
-                0
+				'false', '0,0,0', '0,0,0',
+				'false', '0,0,0', '0,0,0',
+				0
 				);
 		}
 	});
@@ -314,85 +314,85 @@ function load_visu_success(content) {
 
 		//console.debug("parse " + type);
 		if (type == 'simple') {
-		    var shape = $myMedia.find('simple-shape').text();
-		    //console.log("parse " + shape);
+			var shape = $myMedia.find('simple-shape').text();
+			//console.log("parse " + shape);
 
-            // parse type1 objects
-		    if ((shape == 'rectangle') || (shape == 'round-rect') || (shape == 'circle')) {
-                // parse bounding rect
-		        var rect = $myMedia.find('rect').text();
-		        var rectFields = rect.split(',');
+			// parse type1 objects
+			if ((shape == 'rectangle') || (shape == 'round-rect') || (shape == 'circle') || (shape == 'line')) {
+				// parse bounding rect
+				var rect = $myMedia.find('rect').text();
+				var rectFields = rect.split(',');
 
-		        // parse fill attributes
-		        var fill_color = '255,255,255';
-		        var fill_color_alarm = '255,255,255';
-		        var has_inside_color = $myMedia.find('has-inside-color').text();
-		        if (has_inside_color == 'true') {
-		            fill_color = $myMedia.find('fill-color').text();
-		            fill_color_alarm = $myMedia.find('fill-color-alarm').text();
-		        }
+				// parse fill attributes
+				var fill_color = '255,255,255';
+				var fill_color_alarm = '255,255,255';
+				var has_inside_color = $myMedia.find('has-inside-color').text();
+				if (has_inside_color == 'true') {
+					fill_color = $myMedia.find('fill-color').text();
+					fill_color_alarm = $myMedia.find('fill-color-alarm').text();
+				}
 
-		        // parse frame-attributes
-		        var frame_color = '0,0,0';
-		        var frame_color_alarm = '0,0,0';
-		        var has_frame_color = $myMedia.find('has-frame-color').text();
-		        if (has_frame_color == 'true') {
-		            frame_color = $myMedia.find('frame-color').text();
-		            frame_color_alarm = $myMedia.find('frame-color-alarm').text();
-		        }
-		        var line_width = $myMedia.find('line-width').text();
+				// parse frame-attributes
+				var frame_color = '0,0,0';
+				var frame_color_alarm = '0,0,0';
+				var has_frame_color = $myMedia.find('has-frame-color').text();
+				if (has_frame_color == 'true') {
+					frame_color = $myMedia.find('frame-color').text();
+					frame_color_alarm = $myMedia.find('frame-color-alarm').text();
+				}
+				var line_width = $myMedia.find('line-width').text();
 
-		        var center = $myMedia.find('center').text();
-		        var centerFields = center.split(',');
+				var center = $myMedia.find('center').text();
+				var centerFields = center.split(',');
 
-		        // parse expression
-		        var exprToggleColor = [];
-		        var expr_toggle_color = $myMedia.find('expr-toggle-color');
-		        if (expr_toggle_color.length) {
-		            exprToggleColor = parseExpression(expr_toggle_color);
-		        }
+				// parse expression
+				var exprToggleColor = [];
+				var expr_toggle_color = $myMedia.find('expr-toggle-color');
+				if (expr_toggle_color.length) {
+					exprToggleColor = parseExpression(expr_toggle_color);
+				}
 
-		        var exprLeft = [];
-		        var expr_left = $myMedia.find('expr-left');
-		        if (expr_left.length) {
-		            exprLeft = parseExpression(expr_left);
-		        }
+				var exprLeft = [];
+				var expr_left = $myMedia.find('expr-left');
+				if (expr_left.length) {
+					exprLeft = parseExpression(expr_left);
+				}
 
-		        var exprTop = [];
-		        var expr_top = $myMedia.find('expr-top');
-		        if (expr_top.length) {
-		            exprTop = parseExpression(expr_top);
-		        }
+				var exprTop = [];
+				var expr_top = $myMedia.find('expr-top');
+				if (expr_top.length) {
+					exprTop = parseExpression(expr_top);
+				}
 
-		        var exprRight = [];
-		        var expr_right = $myMedia.find('expr-right');
-		        if (expr_right.length) {
-		            exprRight = parseExpression(expr_right);
-		        }
+				var exprRight = [];
+				var expr_right = $myMedia.find('expr-right');
+				if (expr_right.length) {
+					exprRight = parseExpression(expr_right);
+				}
 
-		        var exprBottom = [];
-		        var expr_bottom = $myMedia.find('expr-bottom');
-		        if (expr_bottom.length) {
-		            exprBottom = parseExpression(expr_bottom);
-		        }
+				var exprBottom = [];
+				var expr_bottom = $myMedia.find('expr-bottom');
+				if (expr_bottom.length) {
+					exprBottom = parseExpression(expr_bottom);
+				}
 
-		        registerSimpleShape(
-                        shape,
+				registerSimpleShape(
+						shape,
 						rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-                        has_frame_color,
+						has_frame_color,
 						"rgb(" + frame_color + ")",
 						"rgb(" + frame_color_alarm + ")",
 						line_width,
-                        has_inside_color,
+						has_inside_color,
 						"rgb(" + fill_color + ")",
 						"rgb(" + fill_color_alarm + ")",
 						exprToggleColor,
 						exprLeft, exprTop, exprRight, exprBottom
 					);
 
-		        parseTextInfo($myMedia, centerFields, rectFields);
+				parseTextInfo($myMedia, centerFields, rectFields);
 
-		        parseClickInfo($myMedia, rectFields);
+				parseClickInfo($myMedia, rectFields);
 			} else {
 				console.log("unknown simple-shape: " + shape);
 			}
@@ -406,36 +406,86 @@ function load_visu_success(content) {
 			var center = $myMedia.find('center').text();
 			var centerFields = center.split(',');
 
-		    // parse fill attributes
+			// parse fill attributes
 			var fill_color = '255,255,255';
 			var fill_color_alarm = '255,255,255';
 			var has_inside_color = $myMedia.find('has-inside-color').text();
 			if (has_inside_color === 'true') {
-			    fill_color = $myMedia.find('fill-color').text();
-			    fill_color_alarm = $myMedia.find('fill-color-alarm').text();
+				fill_color = $myMedia.find('fill-color').text();
+				fill_color_alarm = $myMedia.find('fill-color-alarm').text();
 			}
 
-		    // parse frame-attributes
+			// parse frame-attributes
 			var frame_color = '0,0,0';
 			var frame_color_alarm = '0,0,0';
 			var has_frame_color = $myMedia.find('has-frame-color').text();
 			if (has_frame_color == 'true') {
-			    frame_color = $myMedia.find('frame-color').text();
-			    frame_color_alarm = $myMedia.find('frame-color-alarm').text();
+				frame_color = $myMedia.find('frame-color').text();
+				frame_color_alarm = $myMedia.find('frame-color-alarm').text();
 			}
 			var line_width = $myMedia.find('line-width').text();
 			registerBitmap(
 				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
 				filename,
-                has_inside_color, fill_color, fill_color_alarm,
-                has_frame_color, frame_color, frame_color_alarm, line_width
+				has_inside_color, fill_color, fill_color_alarm,
+				has_frame_color, frame_color, frame_color_alarm, line_width
 				);
 
 			parseTextInfo($myMedia, centerFields, rectFields);
 
 			parseClickInfo($myMedia, rectFields);
-		} else {
-			console.log("unknown type: " + type);
+		} else if (type == 'button') {
+		    var rect = $myMedia.find('rect').text();
+		    var rectFields = rect.split(',');
+
+		    // parse fill attributes
+		    var fill_color = '255,255,255';
+		    var fill_color_alarm = '255,255,255';
+		    var has_inside_color = $myMedia.find('has-inside-color').text();
+		    if (has_inside_color == 'true') {
+		        fill_color = $myMedia.find('fill-color').text();
+		        fill_color_alarm = $myMedia.find('fill-color-alarm').text();
+		    }
+
+		    // parse frame-attributes
+		    var frame_color = '0,0,0';
+		    var frame_color_alarm = '0,0,0';
+		    var has_frame_color = $myMedia.find('has-frame-color').text();
+		    if (has_frame_color == 'true') {
+		        frame_color = $myMedia.find('frame-color').text();
+		        frame_color_alarm = $myMedia.find('frame-color-alarm').text();
+		    }
+		    var line_width = $myMedia.find('line-width').text();
+
+		    var center = $myMedia.find('center').text();
+		    var centerFields = center.split(',');
+
+		    // parse expression
+            // !!! TOGGLE VAR wird hier als TOGGLE COLOR verwendet !!!
+		    var exprToggleColor = [];
+		    var expr_toggle_color = $myMedia.find('expr-toggle-var');
+		    if (expr_toggle_color.length) {
+		        exprToggleColor = parseExpression(expr_toggle_color);
+		    }
+
+		    registerButton(
+                    rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+                    has_frame_color,
+                    "rgb(" + frame_color + ")",
+                    "rgb(" + frame_color_alarm + ")",
+                    line_width,
+                    has_inside_color,
+                    "rgb(" + fill_color + ")",
+                    "rgb(" + fill_color_alarm + ")",
+                    exprToggleColor
+                );
+
+		    parseTextInfo($myMedia, centerFields, rectFields);
+
+		    parseClickInfo($myMedia, rectFields);
+		}
+		else {
+		    console.log("unknown type: " + type);
 		}
 	});
 }

@@ -23,11 +23,13 @@
     <Content Include="..\..\src\jquery-ajax-blob-arraybuffer.js" />
     <Content Include="web.config" />
     <Content Include="..\..\src\WebVisuDev.html" />
+    <Content Include="..\..\src\zip.js" />
+    <Content Include="..\..\src\inflate.js" />
+    <Content Include="..\..\src\sprintf.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\src\release.pl" />
     <Content Include="..\..\src\release.sh" />
-    <None Include="Wago Büro EG.pubxml" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
