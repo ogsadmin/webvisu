@@ -70,6 +70,64 @@ function registerVariable(name, addr, value) {
 }
 
 // ****************************************************************************
+// SimpleShape (rectangle, round rect, ellipse)
+
+// constructor
+function newSimpleShape(
+    shape,
+    x,y,w,h,
+    hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
+    hasInsideColor, fillStyle, fillStyleAlarm,
+    alarmExpr,
+    leftExpr, topExpr, rightExpr, bottomExpr
+    )
+{
+    this.isA = 'SimpleShape';
+    this.shape = shape;
+
+    this.x = parseInt(x);
+    this.y = parseInt(y);
+    this.w = parseInt(w);
+    this.h = parseInt(h);
+
+    this.hasInsideColor = hasInsideColor;
+    this.fillStyle = fillStyle;
+    this.fillStyleAlarm = fillStyleAlarm;
+
+    this.hasFrameColor = hasFrameColor;
+    this.strokeStyle = strokeStyle;
+    this.strokeStyleAlarm = strokeStyleAlarm;
+    this.lineWidth = lineWidth;
+
+    this.alarmExpr = alarmExpr;
+
+    this.leftExpr = leftExpr;
+    this.topExpr = topExpr;
+    this.rightExpr = rightExpr;
+    this.bottomExpr = bottomExpr;
+}
+
+function registerSimpleShape(
+    shape,
+    x, y, w, h,
+    hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
+    hasInsideColor, fillStyle, fillStyleAlarm,
+    alarmExpr,
+    leftExpr, topExpr, rightExpr, bottomExpr
+    )
+{
+    drawObjects.push(new newSimpleShape(
+            shape,
+            x, y, w, h,
+            hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
+            hasInsideColor, fillStyle, fillStyleAlarm,
+            alarmExpr,
+            leftExpr, topExpr, rightExpr, bottomExpr
+        ));
+}
+
+
+// ****************************************************************************
 // Rectangles
 
 // constructor
@@ -380,75 +438,64 @@ function draw() {
 
 	for (var i in drawObjects) {
 		obj = drawObjects[i];
-		if (obj.isA == "Rectangle") {
-			ctx.beginPath();
+		if (obj.isA == "SimpleShape") {
+		    ctx.beginPath();
 
-			var left = 0;
-			if (obj.leftExpr.length > 0) { left = evalExpression(obj.leftExpr); }
-			var top = 0;
-			if (obj.topExpr.length > 0) { top = evalExpression(obj.topExpr); }
-			var right = 0;
-			if (obj.rightExpr.length > 0) { right = evalExpression(obj.rightExpr); }
-			var bottom = 0;
-			if (obj.bottomExpr.length > 0) { bottom = evalExpression(obj.bottomExpr); }
+		    var left = 0;
+		    if (obj.leftExpr.length > 0) { left = evalExpression(obj.leftExpr); }
+		    var top = 0;
+		    if (obj.topExpr.length > 0) { top = evalExpression(obj.topExpr); }
+		    var right = 0;
+		    if (obj.rightExpr.length > 0) { right = evalExpression(obj.rightExpr); }
+		    var bottom = 0;
+		    if (obj.bottomExpr.length > 0) { bottom = evalExpression(obj.bottomExpr); }
 
-			ctx.rect(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom);
-			// ctx.fillStyle = "rgba("+fill_color+",1)";
-			if (obj.alarmExpr.length > 0) {
-				if (evalExpression(obj.alarmExpr) > 0) {
-					ctx.fillStyle = obj.fillStyleAlarm;
-				} else {
-					ctx.fillStyle = obj.fillStyle;
-				}
-			} else {
-				ctx.fillStyle = obj.fillStyle;
-			}
-			ctx.fill();
-			if (obj.has_frame_color == 'true') {
-			    ctx.lineWidth = obj.lineWidth;
-			    ctx.strokeStyle = obj.strokeStyle;
-			    ctx.stroke();
-			}
-			ctx.closePath();
-		} else if (obj.isA == "RoundRect") {
-			radius = obj.w / 20;
+		    switch (obj.shape) {
+		        case 'rectangle':
+		            ctx.rect(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom);
+		            break;
+		        case 'round-rect':
+		            radius = (obj.w + right) / 20;
+		            ctx.roundRect(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom, radius);
+		            break;
+		        case 'circle':
+		            ctx.ellipse(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom);
+		            break;
+		        default:
+		            break;
+		    }
 
-			ctx.beginPath();
-			ctx.roundRect(obj.x, obj.y, obj.w, obj.h, radius);
-			// ctx.rect(obj.x, obj.y, obj.w, obj.h);
-			// ctx.fillStyle = "rgba("+fill_color+",1)";
-			if (obj.alarmExpr.length > 0) {
-				if (evalExpression(obj.alarmExpr) > 0) {
-					ctx.fillStyle = obj.fillStyleAlarm;
-				} else {
-					ctx.fillStyle = obj.fillStyle;
-				}
-			} else {
-				ctx.fillStyle = obj.fillStyle;
-			}
-			ctx.fill();
-			ctx.lineWidth = obj.lineWidth;
-			ctx.strokeStyle = obj.strokeStyle;
-			ctx.stroke();
-			ctx.closePath();
-		} else if (obj.isA == "Circle") {
-			ctx.beginPath();
+		    fillStyle = '';
+		    strokeStyle = '';
 
-			ctx.ellipse(obj.x, obj.y, obj.w, obj.h);
-			if (obj.alarmExpr.length > 0) {
-				if (evalExpression(obj.alarmExpr) > 0) {
-					ctx.fillStyle = obj.fillStyleAlarm;
-				} else {
-					ctx.fillStyle = obj.fillStyle;
-				}
-			} else {
-				ctx.fillStyle = obj.fillStyle;
-			}
-			ctx.fill();
-			ctx.lineWidth = obj.lineWidth;
-			ctx.strokeStyle = obj.strokeStyle;
-			ctx.stroke();
-			ctx.closePath();
+            // determine alarm
+		    if (obj.alarmExpr.length > 0) {
+		        if (evalExpression(obj.alarmExpr) > 0) {
+		            fillStyle = obj.fillStyleAlarm;
+		            strokeStyle = obj.strokeStyleAlarm;
+                } else {
+		            fillStyle = obj.fillStyle;
+		            strokeStyle = obj.strokeStyle;
+                }
+		    } else {
+		        fillStyle = obj.fillStyle;
+		        strokeStyle = obj.strokeStyle;
+		    }
+
+            // draw fill
+		    if (obj.hasInsideColor == 'true') {
+		        ctx.fillStyle = fillStyle;
+		        ctx.fill();
+		    }
+
+            // draw border
+		    if (obj.hasFrameColor == 'true') {
+		        ctx.lineWidth = obj.lineWidth;
+		        ctx.strokeStyle = strokeStyle;
+		        ctx.stroke();
+		    }
+
+		    ctx.closePath();
 		} else if (obj.isA == "Bitmap") {
 		    ctx.beginPath();
 		    try {
@@ -496,7 +543,7 @@ function draw() {
 
 		ctx.beginPath();
 		ctx.rect(0, 0, 140, 70);
-	    ctx.fillStyle = "rgba(0,0,0,0.5)";
+	    ctx.fillStyle = "rgba(0,0,0,0.4)";
 		ctx.fill();
 		ctx.closePath();
 
