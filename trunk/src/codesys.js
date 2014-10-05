@@ -286,7 +286,20 @@ function load_visu_success(content) {
 		canvas.width = visuSizeX+1;
 		canvas.height = visuSizeY+1;
 		//$('#canvas').WIDTH = visuSizeX+1;
-		//$('#canvas').HEIGHT = visuSizeY+1;
+	    //$('#canvas').HEIGHT = visuSizeY+1;
+
+
+        // optional kann der Hintergrund auch aus einem Bitmap-File bestehen
+		var bitmap = $myMedia.find('bitmap').text();
+		if (bitmap.length) {
+		    registerBitmap(
+				0, 0, visuSizeX, visuSizeY,
+				bitmap,
+                'false', '0,0,0', '0,0,0',
+                'false', '0,0,0', '0,0,0',
+                0
+				);
+		}
 	});
 
 
@@ -306,10 +319,26 @@ function load_visu_success(content) {
 			if (shape == 'rectangle') {
 				var rect = $myMedia.find('rect').text();
 				var rectFields = rect.split(',');
-				var fill_color = $myMedia.find('fill-color').text();
-				var fill_color_alarm = $myMedia.find('fill-color-alarm').text();
+
+			    // parse fill attributes
+				var fill_color = '255,255,255';
+				var fill_color_alarm = '255,255,255';
+				var has_inside_color = $myMedia.find('has-inside-color').text();
+				if (has_inside_color == 'true') {
+				    fill_color = $myMedia.find('fill-color').text();
+				    fill_color_alarm = $myMedia.find('fill-color-alarm').text();
+				}
+
+			    // parse frame-attributes
+				var frame_color = '0,0,0';
+				var frame_color_alarm = '0,0,0';
+				var has_frame_color = $myMedia.find('has-frame-color').text();
+				if (has_frame_color == 'true') {
+				    frame_color = $myMedia.find('frame-color').text();
+				    frame_color_alarm = $myMedia.find('frame-color-alarm').text();
+				}
 				var line_width = $myMedia.find('line-width').text();
-				var frame_color = $myMedia.find('frame-color').text();
+
 				var center = $myMedia.find('center').text();
 				var centerFields = center.split(',');
 
@@ -345,12 +374,15 @@ function load_visu_success(content) {
 				}
 
 				registerRectangle(
-						rectFields[0], rectFields[1], rectFields[2]-rectFields[0], rectFields[3]-rectFields[1],
-						"rgb("+fill_color+")",
+						rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+                        has_inside_color,
+						"rgb(" + fill_color + ")",
+						"rgb(" + fill_color_alarm + ")",
+                        has_frame_color,
+						"rgb(" + frame_color + ")",
+						"rgb(" + frame_color_alarm + ")",
 						line_width,
-						"rgb("+frame_color+")",
 						exprToggleColor,
-						"rgb("+fill_color_alarm+")",
 						exprLeft, exprTop, exprRight, exprBottom
 					);
 
@@ -427,9 +459,29 @@ function load_visu_success(content) {
 			var center = $myMedia.find('center').text();
 			var centerFields = center.split(',');
 
+		    // parse fill attributes
+			var fill_color = '255,255,255';
+			var fill_color_alarm = '255,255,255';
+			var has_inside_color = $myMedia.find('has-inside-color').text();
+			if (has_inside_color === 'true') {
+			    fill_color = $myMedia.find('fill-color').text();
+			    fill_color_alarm = $myMedia.find('fill-color-alarm').text();
+			}
+
+		    // parse frame-attributes
+			var frame_color = '0,0,0';
+			var frame_color_alarm = '0,0,0';
+			var has_frame_color = $myMedia.find('has-frame-color').text();
+			if (has_frame_color == 'true') {
+			    frame_color = $myMedia.find('frame-color').text();
+			    frame_color_alarm = $myMedia.find('frame-color-alarm').text();
+			}
+			var line_width = $myMedia.find('line-width').text();
 			registerBitmap(
 				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-				filename
+				filename,
+                has_inside_color, fill_color, fill_color_alarm,
+                has_frame_color, frame_color, frame_color_alarm, line_width
 				);
 
 			parseTextInfo($myMedia, centerFields, rectFields);

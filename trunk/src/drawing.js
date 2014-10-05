@@ -73,25 +73,29 @@ function registerVariable(name, addr, value) {
 // Rectangles
 
 // constructor
-function newRectangle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm, leftExpr, topExpr, rightExpr, bottomExpr) {
+function newRectangle(x, y, w, h, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, lineWidth, alarmExpr, leftExpr, topExpr, rightExpr, bottomExpr) {
 	this.isA = "Rectangle";
 	this.x = parseInt(x);
 	this.y = parseInt(y);
 	this.w = parseInt(w);
 	this.h = parseInt(h);
+	this.has_inside_color = has_inside_color;
 	this.fillStyle = fillStyle;
-	this.lineWidth = lineWidth;
-	this.strokeStyle = strokeStyle;
-	this.alarmExpr = alarmExpr;
 	this.fillStyleAlarm = fillStyleAlarm;
+	this.has_frame_color = has_frame_color;
+	this.strokeStyle = strokeStyle;
+	this.strokeStyleAlarm = strokeStyleAlarm;
+	this.lineWidth = lineWidth;
+	this.alarmExpr = alarmExpr;
 	this.leftExpr = leftExpr;
 	this.topExpr = topExpr;
 	this.rightExpr = rightExpr;
 	this.bottomExpr = bottomExpr;
 }
 
-function registerRectangle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm, leftExpr, topExpr, rightExpr, bottomExpr) {
-	drawObjects.push(new newRectangle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm, leftExpr, topExpr, rightExpr, bottomExpr));
+
+function registerRectangle(x, y, w, h, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, lineWidth, alarmExpr, leftExpr, topExpr, rightExpr, bottomExpr) {
+    drawObjects.push(new newRectangle(x, y, w, h, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, lineWidth, alarmExpr, leftExpr, topExpr, rightExpr, bottomExpr));
 }
 
 // ****************************************************************************
@@ -162,7 +166,7 @@ function registerText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, t
 // Bitmap
 
 // constructor
-function newBitmap(x, y, w, h, fileName) {
+function newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, lineWidth) {
 	this.isA = "Bitmap";
 	this.x = parseInt(x);
 	this.y = parseInt(y);
@@ -171,10 +175,18 @@ function newBitmap(x, y, w, h, fileName) {
 	this.fileName = fileName;
 	this.img = new Image();
 	this.img.src = '../PLC/' + fileName;
+
+	this.has_inside_color = has_inside_color;
+	this.fillStyle = fillStyle;
+	this.fillStyleAlarm = fillStyleAlarm;
+	this.has_frame_color = has_frame_color;
+	this.strokeStyle = strokeStyle;
+	this.strokeStyleAlarm = strokeStyleAlarm;
+	this.lineWidth = lineWidth;
 }
 
-function registerBitmap(x, y, w, h, fileName) {
-	drawObjects.push(new newBitmap(x, y, w, h, fileName));
+function registerBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width) {
+    drawObjects.push(new newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width));
 }
 
 // ****************************************************************************
@@ -392,9 +404,11 @@ function draw() {
 				ctx.fillStyle = obj.fillStyle;
 			}
 			ctx.fill();
-			ctx.lineWidth = obj.lineWidth;
-			ctx.strokeStyle = obj.strokeStyle;
-			ctx.stroke();
+			if (obj.has_frame_color == 'true') {
+			    ctx.lineWidth = obj.lineWidth;
+			    ctx.strokeStyle = obj.strokeStyle;
+			    ctx.stroke();
+			}
 			ctx.closePath();
 		} else if (obj.isA == "RoundRect") {
 			radius = obj.w / 20;
@@ -436,9 +450,19 @@ function draw() {
 			ctx.stroke();
 			ctx.closePath();
 		} else if (obj.isA == "Bitmap") {
-			ctx.beginPath();
-			ctx.drawImage(obj.img, 0, 0, obj.img.width, obj.img.height, obj.x, obj.y, obj.w, obj.h);
-			ctx.closePath();
+		    ctx.beginPath();
+		    try {
+		        ctx.drawImage(obj.img, 0, 0, obj.img.width, obj.img.height, obj.x, obj.y, obj.w, obj.h);
+		    } catch (e) {
+		        console.log("drawImage " + obj.img.src + " error " + e.name);
+		    }
+		    ctx.rect(obj.x, obj.y, obj.w, obj.h);
+		    if (obj.has_frame_color === 'true') {
+		        ctx.lineWidth = obj.lineWidth;
+		        ctx.strokeStyle = obj.strokeStyle;
+		        ctx.stroke();
+		    }
+		    ctx.closePath();
 		} else {
 			// unknown
 		}
@@ -471,9 +495,17 @@ function draw() {
 		perfCount++;
 
 		ctx.beginPath();
-		// ctx.font = '8pt Lucida Sans Typewriter';
+		ctx.rect(0, 0, 140, 70);
+	    ctx.fillStyle = "rgba(0,0,0,0.5)";
+		ctx.fill();
+		ctx.closePath();
+
+		ctx.beginPath();
+	    // ctx.font = '8pt Lucida Sans Typewriter';
 		ctx.font = '10pt ';
 		ctx.fillStyle = 'rgb(255,255,255)';
+		//ctx.fillStyle = 'rgb(128,128,128)';
+		//ctx.fillStyle = 'rgb(0,0,0)';
 		ctx.textAlign = 'start';
 		ctx.textBaseline = 'top';
 
