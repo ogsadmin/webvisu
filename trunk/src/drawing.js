@@ -126,76 +126,47 @@ function registerSimpleShape(
         ));
 }
 
-
 // ****************************************************************************
-// Rectangles
+// Button
 
 // constructor
-function newRectangle(x, y, w, h, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, lineWidth, alarmExpr, leftExpr, topExpr, rightExpr, bottomExpr) {
-	this.isA = "Rectangle";
-	this.x = parseInt(x);
-	this.y = parseInt(y);
-	this.w = parseInt(w);
-	this.h = parseInt(h);
-	this.has_inside_color = has_inside_color;
-	this.fillStyle = fillStyle;
-	this.fillStyleAlarm = fillStyleAlarm;
-	this.has_frame_color = has_frame_color;
-	this.strokeStyle = strokeStyle;
-	this.strokeStyleAlarm = strokeStyleAlarm;
-	this.lineWidth = lineWidth;
-	this.alarmExpr = alarmExpr;
-	this.leftExpr = leftExpr;
-	this.topExpr = topExpr;
-	this.rightExpr = rightExpr;
-	this.bottomExpr = bottomExpr;
+function newButton(
+    x, y, w, h,
+    hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
+    hasInsideColor, fillStyle, fillStyleAlarm,
+    alarmExpr
+) {
+    this.isA = 'Button';
+
+    this.x = parseInt(x);
+    this.y = parseInt(y);
+    this.w = parseInt(w);
+    this.h = parseInt(h);
+
+    this.hasInsideColor = hasInsideColor;
+    this.fillStyle = fillStyle;
+    this.fillStyleAlarm = fillStyleAlarm;
+
+    this.hasFrameColor = hasFrameColor;
+    this.strokeStyle = strokeStyle;
+    this.strokeStyleAlarm = strokeStyleAlarm;
+    this.lineWidth = lineWidth;
+
+    this.alarmExpr = alarmExpr;
 }
 
-
-function registerRectangle(x, y, w, h, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, lineWidth, alarmExpr, leftExpr, topExpr, rightExpr, bottomExpr) {
-    drawObjects.push(new newRectangle(x, y, w, h, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, lineWidth, alarmExpr, leftExpr, topExpr, rightExpr, bottomExpr));
-}
-
-// ****************************************************************************
-// RoundRectangles
-
-// constructor
-function newRoundRect(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm) {
-	this.isA = "RoundRect";
-	this.x = parseInt(x);
-	this.y = parseInt(y);
-	this.w = parseInt(w);
-	this.h = parseInt(h);
-	this.fillStyle = fillStyle;
-	this.lineWidth = lineWidth;
-	this.strokeStyle = strokeStyle;
-	this.alarmExpr = alarmExpr;
-	this.fillStyleAlarm = fillStyleAlarm;
-}
-
-function registerRoundRect(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm) {
-	drawObjects.push(new newRoundRect(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm));
-}
-
-// ****************************************************************************
-// Circles
-
-// constructor
-function newCircle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm) {
-	this.isA = "Circle";
-	this.x = parseInt(x);
-	this.y = parseInt(y);
-	this.w = parseInt(w);
-	this.h = parseInt(h);
-	this.fillStyle = fillStyle;
-	this.lineWidth = lineWidth;
-	this.strokeStyle = strokeStyle;
-	this.alarmExpr = alarmExpr;
-	this.fillStyleAlarm = fillStyleAlarm;
-}
-
-function registerCircle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm) {
-	drawObjects.push(new newCircle(x, y, w, h, fillStyle, lineWidth, strokeStyle, alarmExpr, fillStyleAlarm));
+function registerButton(
+    x, y, w, h,
+    hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
+    hasInsideColor, fillStyle, fillStyleAlarm,
+    alarmExpr
+    ) {
+    drawObjects.push(new newButton(
+            x, y, w, h,
+            hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
+            hasInsideColor, fillStyle, fillStyleAlarm,
+            alarmExpr
+        ));
 }
 
 // ****************************************************************************
@@ -297,51 +268,14 @@ function registerClickZoom(x, y, w, h, visu) {
 	clickZoom.push(new regClickZoom(x, y, w, h, visu));
 }
 
-/*
-d,i  Dezimale Zahl
-o    Oktale Zahl ohne Vorzeichen (ohne führende Null)
-x    Hexadezimale Zahl ohne Vorzeichen (ohne führendes 0x)
-u    Dezimale Zahl ohne Vorzeichen
-c    Einzelnes Zeichen
-s    Zeichenkette
-f    REAL-Werte; Syntax: %|<Ausrichtung><Minimal angezeigte Anzahl von Zeichen>.<Genauigkeit>|f Ausrichtung wird durch Minuszeichen (linksbündig) bzw. Pluszeichen (rechtsbündig, Default) definiert; Genauigkeit definiert die Anzahl der Stellen hinter dem Komma (Default: 6).Beispiel siehe unten.
-
-falls %t:
-%a   Name des Wochentags, abgekürzt, z.B. "Wed"
-%A   Name des Wochentags, volle Länge, z.B. "Wednesday"
-%b   Monatsname, abgekürzt, z.B. "Feb"
-%B   Monatsname, volle Länge, z.B. "February"
-%c   Datum und Uhrzeit im Format <Monat>/<Tag>/<Jahr> <Stunden>:<Minuten>:<Sekunden>,z.B. "08/28/02 16:58:45"
-%d   Monatstag als Zahl (01-31), z.B. "24"
-%H   Stundenangabe, 24-Stundenformat (01-24), z.B. "16"
-%I   Stundenangabe, 12-Stundenformat (01-12), z.B. "05" für 17 Uhr
-%j   Tag des Jahres (001 – 366), z.B. "241
-%m   Monat (01 – 12), z.B. "3" für März
-%M   Minuten (00 – 59), z.B. "13"
-%p   Aktueller Anzeiger AM (Stunden <12) bzw. PM (>12) für die Angabe im 12-Stundenformat, z.B. "AM", wenn es gerade 9 Uhr vormittags ist.
-%S   Sekunden (00 – 59)
-%U   Wochenangabe als Zahl, wobei Sonntag als erster Tag der Woche gerechnet wird) (00 – 53 für 53 mögliche Wochen eines Jahres)
-%w   Wochentag als Zahl (0 – 6; Sonntag = 0)
-%W   Wochenangabe als Zahl, wobei Montag als erster Tag der Woche gerechnet wird) (00 – 53 für 53 mögliche Wochen eines Jahres)
-%x   Datum im Format <Monat>/<Tag>/<Jahr>, z.B. "08/28/02"
-%X   Uhrzeit im Format <Stunden>:<Minuten>:<Sekunden>, z.B. "16:58:45"
-%y   Jahresangabe ohne Jahrhunderte (00 – 99), z.B. "02"
-%Y   Jahresangabe mit Jahrhunderten, z.B. "2002"
-%z,%Z Angabe der Zeitzone (keine Angabe, falls die Zeitzone nicht bekannt ist), z.B. "Westeuropäische Sommerzeit"
-%%   Prozentzeichen
+/* entfernt die Pipe-Zeichen, welche ein Leerzeichen einschließen
+    ruft sprintf für den String auf
 */
 function strformat(format, val) {
-	format = format.replace("%d", val);
-	format = format.replace("%i", val);
-	format = format.replace("%o", val);
-	format = format.replace("%x", val);
-	format = format.replace("%u", val);
-	format = format.replace("%c", val);
-	format = format.replace("%s", val);
-	format = format.replace("%f", val);
-
-	format = format.replace(/\| \|/g, ' ');
-
+    format = format.replace(/\| \|/g, ' ');
+    if (format.indexOf('%') > -1) {
+        format = sprintf(format, val);
+    }
 	return format;
 }
 
@@ -461,6 +395,10 @@ function draw() {
 		        case 'circle':
 		            ctx.ellipse(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom);
 		            break;
+		        case 'line':
+		            ctx.moveTo(obj.x + left, obj.y + top + obj.h + bottom);
+		            ctx.lineTo(obj.x + left + obj.w + right, obj.y + top);
+		            break;
 		        default:
 		            break;
 		    }
@@ -509,6 +447,42 @@ function draw() {
 		        ctx.strokeStyle = obj.strokeStyle;
 		        ctx.stroke();
 		    }
+		    ctx.closePath();
+		} else if (obj.isA == "Button") {
+		    ctx.beginPath();
+
+		    ctx.rect(obj.x, obj.y, obj.w, obj.h);
+
+		    fillStyle = '';
+		    strokeStyle = '';
+
+		    // determine alarm
+		    if (obj.alarmExpr.length > 0) {
+		        if (evalExpression(obj.alarmExpr) > 0) {
+		            fillStyle = obj.fillStyleAlarm;
+		            strokeStyle = obj.strokeStyleAlarm;
+		        } else {
+		            fillStyle = obj.fillStyle;
+		            strokeStyle = obj.strokeStyle;
+		        }
+		    } else {
+		        fillStyle = obj.fillStyle;
+		        strokeStyle = obj.strokeStyle;
+		    }
+
+		    // draw fill
+		    if (obj.hasInsideColor == 'true') {
+		        ctx.fillStyle = fillStyle;
+		        ctx.fill();
+		    }
+
+		    // draw border
+		    if (obj.hasFrameColor == 'true') {
+		        ctx.lineWidth = obj.lineWidth;
+		        ctx.strokeStyle = strokeStyle;
+		        ctx.stroke();
+		    }
+
 		    ctx.closePath();
 		} else {
 			// unknown
