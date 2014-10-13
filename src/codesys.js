@@ -1,5 +1,33 @@
 // codesys.js
 
+// Definitionen von Variablen-Typen, wie sie wahrscheinlich in den ARTI-Adressen verwendet werden
+const VAR_TYPE_BOOL = 0;
+const VAR_TYPE_INT = 1;
+const VAR_TYPE_BYTE = 2;
+const VAR_TYPE_WORD = 3;
+const VAR_TYPE_DINT = 4;
+const VAR_TYPE_DWORD = 5;
+const VAR_TYPE_REAL = 6;
+const VAR_TYPE_TIME = 7;
+const VAR_TYPE_STRING = 8;
+const VAR_TYPE_ARRAY = 9;
+const VAR_TYPE_ENUM = 10;
+const VAR_TYPE_USERDEF = 11;
+const VAR_TYPE_BITORBYTE = 12;
+const VAR_TYPE_POINTER = 13;
+const VAR_TYPE_SINT = 14;
+const VAR_TYPE_USINT = 15;
+const VAR_TYPE_UINT = 16;
+const VAR_TYPE_UDINT = 17;
+const VAR_TYPE_DATE = 18;
+const VAR_TYPE_TOD = 19;
+const VAR_TYPE_DT = 20;
+const VAR_TYPE_VOID = 21;
+const VAR_TYPE_LREAL = 22;
+const VAR_TYPE_REF = 23;
+const VAR_TYPE_NONE = 24;
+
+
 var PendingMouseUpObjects = [];
 
 // constructor
@@ -554,15 +582,48 @@ function update_vars() {
 			var fields = data.split('|');
 			var count = 1; // split zählt bereits vor dem ersten trenner
 			$.each(visuVariables, function (key, obj) {
-				if( obj.numBytes == 1 ) {
-					obj.value = fields[count] & 0xFF;
-				} else if( obj.numBytes == 2 ) {
-					obj.value = fields[count] & 0xFFFF;
-				} else if( obj.numBytes == 4 ) {
-					obj.value = fields[count] & 0xFFFFFFFF;
-				} else {
-					obj.value = fields[count];
-				}
+			    //console.log("TYPE = " + obj.varType + "; ANS = " + fields[count]);
+			    switch (obj.varType) {
+			        case VAR_TYPE_REAL:
+                    case VAR_TYPE_LREAL:
+                        obj.value = parseFloat(fields[count]);
+                        break;
+
+			        //case VAR_TYPE_BOOL:
+			        //case VAR_TYPE_INT:
+			        //case VAR_TYPE_BYTE:
+			        //case VAR_TYPE_WORD:
+			        //case VAR_TYPE_DINT:
+			        //case VAR_TYPE_DWORD:
+			        //case VAR_TYPE_TIME:
+			        //case VAR_TYPE_STRING:
+			        //case VAR_TYPE_ARRAY:
+			        //case VAR_TYPE_ENUM:
+			        //case VAR_TYPE_USERDEF:
+			        //case VAR_TYPE_BITORBYTE:
+			        //case VAR_TYPE_POINTER:
+			        //case VAR_TYPE_SINT:
+			        //case VAR_TYPE_USINT:
+			        //case VAR_TYPE_UINT:
+			        //case VAR_TYPE_UDINT:
+			        //case VAR_TYPE_DATE:
+			        //case VAR_TYPE_TOD:
+			        //case VAR_TYPE_DT:
+			        //case VAR_TYPE_VOID:
+			        //case VAR_TYPE_REF:
+			        //case VAR_TYPE_NONE:
+			        default:
+			            if (obj.numBytes == 1) {
+			                obj.value = fields[count] & 0xFF;
+			            } else if (obj.numBytes == 2) {
+			                obj.value = fields[count] & 0xFFFF;
+			            } else if (obj.numBytes == 4) {
+			                obj.value = fields[count] & 0xFFFFFFFF;
+			            } else {
+			                obj.value = fields[count];
+			            }
+			            break;
+			    }
 				count++;
 			});
 			perfUpdateEnd = new Date().getTime();
