@@ -63,6 +63,7 @@ function newVariable(name, addr, value) {
 	this.value = value;
 	var addrFields = addr.split(",");
 	this.numBytes = addrFields[2];
+	this.varType = parseInt(addrFields[3]);
 }
 
 function registerVariable(name, addr, value) {
@@ -97,7 +98,7 @@ function newSimpleShape(
     this.hasFrameColor = hasFrameColor;
     this.strokeStyle = strokeStyle;
     this.strokeStyleAlarm = strokeStyleAlarm;
-    this.lineWidth = lineWidth;
+    this.lineWidth = lineWidth==0 ? 1 : lineWidth;
 
     this.alarmExpr = alarmExpr;
 
@@ -150,7 +151,7 @@ function newButton(
     this.hasFrameColor = hasFrameColor;
     this.strokeStyle = strokeStyle;
     this.strokeStyleAlarm = strokeStyleAlarm;
-    this.lineWidth = lineWidth;
+    this.lineWidth = lineWidth==0 ? 1 : lineWidth;
 
     this.alarmExpr = alarmExpr;
 }
@@ -211,7 +212,7 @@ function newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleA
 	this.has_frame_color = has_frame_color;
 	this.strokeStyle = strokeStyle;
 	this.strokeStyleAlarm = strokeStyleAlarm;
-	this.lineWidth = lineWidth;
+    this.lineWidth = lineWidth==0 ? 1 : lineWidth;
 }
 
 function registerBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width) {
@@ -403,21 +404,15 @@ function draw() {
 		            break;
 		    }
 
-		    fillStyle = '';
-		    strokeStyle = '';
+			fillStyle = obj.fillStyle;
+			strokeStyle = obj.strokeStyle;
 
             // determine alarm
 		    if (obj.alarmExpr.length > 0) {
 		        if (evalExpression(obj.alarmExpr) > 0) {
 		            fillStyle = obj.fillStyleAlarm;
 		            strokeStyle = obj.strokeStyleAlarm;
-                } else {
-		            fillStyle = obj.fillStyle;
-		            strokeStyle = obj.strokeStyle;
                 }
-		    } else {
-		        fillStyle = obj.fillStyle;
-		        strokeStyle = obj.strokeStyle;
 		    }
 
             // draw fill
@@ -457,8 +452,10 @@ function draw() {
 		    strokeStyle = '';
 
 		    // determine alarm
+		    isAlarm = false;
 		    if (obj.alarmExpr.length > 0) {
 		        if (evalExpression(obj.alarmExpr) > 0) {
+					isAlarm = true;
 		            fillStyle = obj.fillStyleAlarm;
 		            strokeStyle = obj.strokeStyleAlarm;
 		        } else {
@@ -483,6 +480,34 @@ function draw() {
 		        ctx.stroke();
 		    }
 
+		    ctx.closePath();
+
+			// draw button frame :-)
+			abstand=2;
+			strokeStyle1='rgba(0,0,0,0.5)';
+			strokeStyle2='rgba(255,255,255,0.5)';
+			if(isAlarm==true) {
+				strokeStyle2='rgba(0,0,0,0.5)';
+				strokeStyle1='rgba(255,255,255,0.5)';
+			}
+
+		    ctx.beginPath();
+			ctx.lineWidth = 2;
+			// Rand rechts unten
+			ctx.strokeStyle = strokeStyle1;
+			ctx.moveTo(obj.x + abstand, obj.y + obj.h - abstand);
+			ctx.lineTo(obj.x + obj.w - abstand, obj.y + obj.h - abstand);
+			ctx.lineTo(obj.x + obj.w - abstand, obj.y + abstand);
+	        ctx.stroke();
+		    ctx.closePath();
+			// Rand links oben
+		    ctx.beginPath();
+			ctx.lineWidth = 2;
+			ctx.strokeStyle = strokeStyle2;
+			ctx.moveTo(obj.x + obj.w - abstand, obj.y + abstand);
+			ctx.lineTo(obj.x + abstand, obj.y + abstand);
+			ctx.lineTo(obj.x + abstand, obj.y + obj.h - abstand);
+	        ctx.stroke();
 		    ctx.closePath();
 		} else {
 			// unknown
