@@ -12,7 +12,10 @@ var visuSizeX = 0;
 var visuSizeY = 0;
 var visuCompressed = 0;
 
+// globale variablen
 var updateInterval = 500;
+var plcDir = "../PLC";
+
 
 // performance-Zähler
 var perfWriteout = 0;
@@ -41,9 +44,9 @@ function switchToVisu(visu) {
 	visuSizeY = 0;
 
 	// INIs neu laden
-	load_ini("../PLC/visu_ini.xml");
+	load_ini(plcDir + "/visu_ini.xml");
 	// neue Visu laden
-	var filename = "../PLC/" + visu;
+	var filename = plcDir + "/" + visu;
 	if (visuCompressed == 1) {
 		filename += "_xml.zip";
 	} else {
@@ -204,7 +207,7 @@ function newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleA
 	this.h = parseInt(h);
 	this.fileName = fileName;
 	this.img = new Image();
-	this.img.src = '../PLC/' + fileName;
+	this.img.src = plcDir + '/' + fileName;
 
 	this.has_inside_color = has_inside_color;
 	this.fillStyle = fillStyle;
@@ -218,6 +221,58 @@ function newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleA
 function registerBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width) {
     drawObjects.push(new newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width));
 }
+
+
+// ****************************************************************************
+// Polygon (polygon, polyline)
+
+// constructor
+function newPolygon(
+    polyShape,
+    points,
+    hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
+    hasInsideColor, fillStyle, fillStyleAlarm,
+    alarmExpr,
+    leftExpr, topExpr
+    ) {
+    this.isA = 'Polygon';
+    this.polyShape = polyShape;
+
+    this.points = points;
+
+    this.hasInsideColor = hasInsideColor;
+    this.fillStyle = fillStyle;
+    this.fillStyleAlarm = fillStyleAlarm;
+
+    this.hasFrameColor = hasFrameColor;
+    this.strokeStyle = strokeStyle;
+    this.strokeStyleAlarm = strokeStyleAlarm;
+    this.lineWidth = lineWidth == 0 ? 1 : lineWidth;
+
+    this.alarmExpr = alarmExpr;
+
+    this.leftExpr = leftExpr;
+    this.topExpr = topExpr;
+}
+
+function registerPolygon(
+    polyShape,
+    points,
+    hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
+    hasInsideColor, fillStyle, fillStyleAlarm,
+    alarmExpr,
+    leftExpr, topExpr
+    ) {
+    drawObjects.push(new newPolygon(
+            polyShape,
+            points,
+            hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
+            hasInsideColor, fillStyle, fillStyleAlarm,
+            alarmExpr,
+            leftExpr, topExpr
+        ));
+}
+
 
 // ****************************************************************************
 // ClickToggle
@@ -508,6 +563,66 @@ function draw() {
 			ctx.lineTo(obj.x + abstand, obj.y + abstand);
 			ctx.lineTo(obj.x + abstand, obj.y + obj.h - abstand);
 	        ctx.stroke();
+		    ctx.closePath();
+		} else if (obj.isA == "Polygon") {
+		    ctx.beginPath();
+
+		    var left = 0;
+		    if (obj.leftExpr.length > 0) { left = evalExpression(obj.leftExpr); }
+		    var top = 0;
+		    if (obj.topExpr.length > 0) { top = evalExpression(obj.topExpr); }
+
+		    var first = true;
+		    var firstPointFields = [];
+		    for (var i in obj.points) {
+		        point = obj.points[i];
+		        var pointFields = point.split(',');
+		        x = parseInt(pointFields[0]);
+		        y = parseInt(pointFields[1]);
+
+		        if (first) {
+		            firstPointFields = pointFields;
+		            ctx.moveTo(x + left, y + top);
+		            first = false;
+		        } else {
+		            ctx.lineTo(x + left, y + top);
+		        }
+            }
+
+		    // ein polygon ist geschlossen, eine polyline nicht...
+		    if (obj.polyShape == 'polygon') {
+		        x = parseInt(firstPointFields[0]);
+		        y = parseInt(firstPointFields[1]);
+		        ctx.lineTo(x + left, y + top);
+            }
+
+		    fillStyle = obj.fillStyle;
+		    strokeStyle = obj.strokeStyle;
+
+		    // determine alarm
+		    if (obj.alarmExpr.length > 0) {
+		        if (evalExpression(obj.alarmExpr) > 0) {
+		            fillStyle = obj.fillStyleAlarm;
+		            strokeStyle = obj.strokeStyleAlarm;
+		        }
+		    }
+
+            // Füllung beachten wir nur bei geschlossenen Polygonen
+		    if (obj.polyShape == 'polygon') {
+		        // draw fill
+		        if (obj.hasInsideColor == 'true') {
+		            ctx.fillStyle = fillStyle;
+		            ctx.fill();
+		        }
+		    }
+
+		    // draw border
+		    if (obj.hasFrameColor == 'true') {
+		        ctx.lineWidth = obj.lineWidth;
+		        ctx.strokeStyle = strokeStyle;
+		        ctx.stroke();
+		    }
+
 		    ctx.closePath();
 		} else {
 			// unknown
