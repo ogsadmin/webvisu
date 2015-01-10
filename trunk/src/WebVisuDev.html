@@ -10,6 +10,7 @@
         <script src="sprintf.js"></script>
 	</head>
 	<body>
+        <script src="utils.js"></script>
 		<!-- Die eigentliche Groesse des Canvas setzen wir abhaengig von der Visu -->
 		<canvas id="canvas" width="50" height="50"></canvas>
 		<script src="drawing.js"></script>
@@ -19,6 +20,10 @@
             // printouts ein...
             if (document.location.href.toLowerCase().search("webvisudev.html") != -1)
                 perfWriteout = 1;
+
+            // prüfen, ob wir URL-Parameter bekommen haben...
+            if (getUrlParameter('plcDir') != undefined)
+                plcDir = getUrlParameter('plcDir');
 
 			switchToVisu("plc_visu");
 			$('#canvas').click(onClick);
