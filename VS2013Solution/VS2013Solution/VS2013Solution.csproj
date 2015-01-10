@@ -26,6 +26,7 @@
     <Content Include="..\..\src\zip.js" />
     <Content Include="..\..\src\inflate.js" />
     <Content Include="..\..\src\sprintf.js" />
+    <Content Include="..\..\src\utils.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\src\release.pl" />
