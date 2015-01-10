@@ -95,8 +95,10 @@ function parseTextInfo(myMedia, centerFields, rectFields) {
 	var font_height = myMedia.find('font-height').text();
 	var text_align_horz = myMedia.find('text-align-horz').text();
 	var text_align_vert = myMedia.find('text-align-vert').text();
-	var textX = centerFields[0];
-	var textY = centerFields[1];
+	//var textX = centerFields[0];
+    //var textY = centerFields[1];
+	var textX = rectFields[0] + (rectFields[2] - rectFields[0]) / 2;
+	var textY = rectFields[1] + (rectFields[3] - rectFields[1]) / 2;
 	var textAlignHorz = 'center';
 	var textAlignVert = 'middle';
 	if (text_align_horz == 'center') {
@@ -306,9 +308,9 @@ function load_visu_success(content) {
 		visuName = $myMedia.find('name').text();
 
 		var size = $myMedia.find('size').text();
-		var sizeFields = size.split(',');
-		visuSizeX = parseInt(sizeFields[0]);
-		visuSizeY = parseInt(sizeFields[1]);
+		var sizeFields = size.split(',').map(Number);
+		visuSizeX = sizeFields[0];
+		visuSizeY = sizeFields[1];
 
 		var canvas = document.getElementsByTagName('canvas')[0];
 		canvas.width = visuSizeX+1;
@@ -331,7 +333,7 @@ function load_visu_success(content) {
 	});
 
 
-	$(content).find("element").each( function() {
+	$(content).find("visualisation>element").each(function () {
 		// gefundenen abschnitt in variable zwischenspeichern (cachen)
 		var $myMedia = $(this);
 
@@ -349,7 +351,7 @@ function load_visu_success(content) {
 			if ((shape == 'rectangle') || (shape == 'round-rect') || (shape == 'circle') || (shape == 'line')) {
 				// parse bounding rect
 				var rect = $myMedia.find('rect').text();
-				var rectFields = rect.split(',');
+				var rectFields = rect.split(',').map(Number);;
 
 				// parse fill attributes
 				var fill_color = '255,255,255';
@@ -371,7 +373,7 @@ function load_visu_success(content) {
 				var line_width = $myMedia.find('line-width').text();
 
 				var center = $myMedia.find('center').text();
-				var centerFields = center.split(',');
+				var centerFields = center.split(',').map(Number);;
 
 				// parse expression
 				var exprToggleColor = [];
@@ -430,9 +432,9 @@ function load_visu_success(content) {
 			var fileFields = filename.split('\\');
 			filename = fileFields[fileFields.length - 1];
 			var rect = $myMedia.find('rect').text();
-			var rectFields = rect.split(',');
+			var rectFields = rect.split(',').map(Number);;
 			var center = $myMedia.find('center').text();
-			var centerFields = center.split(',');
+			var centerFields = center.split(',').map(Number);;
 
 			// parse fill attributes
 			var fill_color = '255,255,255';
@@ -464,7 +466,7 @@ function load_visu_success(content) {
 			parseClickInfo($myMedia, rectFields);
 		} else if (type == 'button') {
 		    var rect = $myMedia.find('rect').text();
-		    var rectFields = rect.split(',');
+		    var rectFields = rect.split(',').map(Number);;
 
 		    // parse fill attributes
 		    var fill_color = '255,255,255';
@@ -486,7 +488,7 @@ function load_visu_success(content) {
 		    var line_width = $myMedia.find('line-width').text();
 
 		    var center = $myMedia.find('center').text();
-		    var centerFields = center.split(',');
+		    var centerFields = center.split(',').map(Number);;
 
 		    // parse expression
             // !!! TOGGLE VAR wird hier als TOGGLE COLOR verwendet !!!
@@ -523,7 +525,7 @@ function load_visu_success(content) {
 		    })
 
 		    var center = $myMedia.find('center').text();
-		    var centerFields = center.split(',');
+		    var centerFields = center.split(',').map(Number);;
 
 		    // parse fill attributes
 		    var fill_color = '255,255,255';
