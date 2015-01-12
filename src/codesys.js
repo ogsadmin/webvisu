@@ -30,6 +30,8 @@ const VAR_TYPE_NONE = 24;
 
 var PendingMouseUpObjects = [];
 
+var parsedGroups = [];
+
 // constructor
 function expression(operation, value) {
 	this.operation = operation;
@@ -154,6 +156,11 @@ function parseTextInfo(myMedia, centerFields, rectFields) {
 }
 
 function parseClickInfo(myMedia, rectFields) {
+
+    rectFields[0] += parsedGroups[parsedGroups.length - 1].x;
+    rectFields[1] += parsedGroups[parsedGroups.length - 1].y;
+    rectFields[2] += parsedGroups[parsedGroups.length - 1].x;
+    rectFields[3] += parsedGroups[parsedGroups.length - 1].y;
 
 	/*
 		<expr-toggle-var>
@@ -289,51 +296,57 @@ function load_visu_compressed_success(content) {
 
 
 function load_visu_success(content) {
-	perfLoadEnd = new Date().getTime();
-	perfLoad = perfLoadEnd - perfLoadStart;
+    perfLoadEnd = new Date().getTime();
+    perfLoad = perfLoadEnd - perfLoadStart;
 
-	//console.log("load_visu_success in " + perfLoad + "ms");
+    //console.log("load_visu_success in " + perfLoad + "ms");
 
-	//var xmlstr = content.xml ? content.xml : (new XMLSerializer()).serializeToString(content);
-	//console.debug("content: " + xmlstr);
+    //var xmlstr = content.xml ? content.xml : (new XMLSerializer()).serializeToString(content);
+    //console.debug("content: " + xmlstr);
 
-	//console.debug("content: " + content);
+    //console.debug("content: " + content);
 
-	extract_var_addr( content );
+    extract_var_addr(content);
 
-	$(content).find("visualisation").each( function() {
-		// gefundenen abschnitt in variable zwischenspeichern (cachen)
-		var $myMedia = $(this);
+    $(content).find(">visualisation").each(function () {
+        // gefundenen abschnitt in variable zwischenspeichern (cachen)
+        var $myMedia = $(this);
 
-		visuName = $myMedia.find('name').text();
+        visuName = $myMedia.find('name').text();
 
-		var size = $myMedia.find('size').text();
-		var sizeFields = size.split(',').map(Number);
-		visuSizeX = sizeFields[0];
-		visuSizeY = sizeFields[1];
+        var size = $myMedia.find('size').text();
+        var sizeFields = size.split(',').map(Number);
+        visuSizeX = sizeFields[0];
+        visuSizeY = sizeFields[1];
 
-		var canvas = document.getElementsByTagName('canvas')[0];
-		canvas.width = visuSizeX+1;
-		canvas.height = visuSizeY+1;
-		//$('#canvas').WIDTH = visuSizeX+1;
-		//$('#canvas').HEIGHT = visuSizeY+1;
+        var canvas = document.getElementsByTagName('canvas')[0];
+        canvas.width = visuSizeX + 1;
+        canvas.height = visuSizeY + 1;
+        //$('#canvas').WIDTH = visuSizeX+1;
+        //$('#canvas').HEIGHT = visuSizeY+1;
 
 
-		// optional kann der Hintergrund auch aus einem Bitmap-File bestehen
-		var bitmap = $myMedia.find('bitmap').text();
-		if (bitmap.length) {
-			registerBitmap(
+        // optional kann der Hintergrund auch aus einem Bitmap-File bestehen
+        var bitmap = $myMedia.find('bitmap').text();
+        if (bitmap.length) {
+            registerBitmap(
 				0, 0, visuSizeX, visuSizeY,
 				bitmap,
 				'false', '0,0,0', '0,0,0',
 				'false', '0,0,0', '0,0,0',
 				0
 				);
-		}
-	});
+        }
 
+        parsedGroups = [];
+        parsedGroups.push(new newGroup(0, 0, visuSizeX, visuSizeY));
+        parse_visu_elements($myMedia);
+    });
+}
 
-	$(content).find("visualisation>element").each(function () {
+function parse_visu_elements(content) {
+
+	$(content).find(">element").each(function () {
 		// gefundenen abschnitt in variable zwischenspeichern (cachen)
 		var $myMedia = $(this);
 
@@ -582,7 +595,22 @@ function load_visu_success(content) {
 		    } else {
 		        console.log("unknown poly-shape: " + polyShape);
 		    }
-        }
+		} else if (type == 'group') {
+		    //console.debug("register group");
+		    var rect = $myMedia.find('rect').text();
+		    var rectFields = rect.split(',').map(Number);
+
+		    var center = $myMedia.find('center').text();
+		    var centerFields = center.split(',').map(Number);
+
+		    registerGroup(rectFields[0], rectFields[1], rectFields[2], rectFields[3]);
+		    parsedGroups.push(new newGroup(rectFields[0], rectFields[1], rectFields[2], rectFields[3]));
+            
+		    parse_visu_elements($myMedia);
+
+		    registerEndGroup();
+		    parsedGroups.pop();
+		}
 		else {
 		    console.log("unknown type: " + type);
 		}
