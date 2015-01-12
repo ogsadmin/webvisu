@@ -2,7 +2,6 @@
 
 var visuVariables = {};
 var drawObjects = [];
-var drawTexts = [];
 var clickToggles = [];
 var clickTap = [];
 var clickZoom = [];
@@ -34,7 +33,6 @@ function switchToVisu(visu) {
 	// alle Arrays und Variablenzuordnungen löschen
 	visuVariables = {};
 	drawObjects = [];
-	drawTexts = [];
 	clickToggles = [];
 	clickTap = [];
 	clickZoom = [];
@@ -192,7 +190,7 @@ function newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAl
 }
 
 function registerText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight) {
-	drawTexts.push(new newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight));
+	drawObjects.push(new newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight));
 }
 
 // ****************************************************************************
@@ -273,6 +271,43 @@ function registerPolygon(
         ));
 }
 
+// ****************************************************************************
+// Group
+
+// constructor
+function newGroup(
+    x, y, w, h
+    ) {
+    this.isA = 'Group';
+
+    this.x = parseInt(x);
+    this.y = parseInt(y);
+    this.w = parseInt(w);
+    this.h = parseInt(h);
+}
+
+function registerGroup(
+    x, y, w, h
+    ) {
+    drawObjects.push(new newGroup(
+            x, y, w, h
+        ));
+}
+
+// ****************************************************************************
+// EndGroup
+
+// constructor
+function newEndGroup(
+    ) {
+    this.isA = 'EndGroup';
+}
+
+function registerEndGroup(
+    ) {
+    drawObjects.push(new newEndGroup(
+        ));
+}
 
 // ****************************************************************************
 // ClickToggle
@@ -415,6 +450,233 @@ function evalExpression(expr) {
 	return result[0];
 }
 
+function drawAllObjects(ctx, objects) {
+    for (var i in objects) {
+        obj = objects[i];
+        if (obj.isA == "SimpleShape") {
+            ctx.beginPath();
+
+            var left = 0;
+            if (obj.leftExpr.length > 0) { left = evalExpression(obj.leftExpr); }
+            var top = 0;
+            if (obj.topExpr.length > 0) { top = evalExpression(obj.topExpr); }
+            var right = 0;
+            if (obj.rightExpr.length > 0) { right = evalExpression(obj.rightExpr); }
+            var bottom = 0;
+            if (obj.bottomExpr.length > 0) { bottom = evalExpression(obj.bottomExpr); }
+
+            switch (obj.shape) {
+                case 'rectangle':
+                    ctx.rect(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom);
+                    break;
+                case 'round-rect':
+                    radius = (obj.w + right) / 20;
+                    ctx.roundRect(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom, radius);
+                    break;
+                case 'circle':
+                    ctx.ellipse(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom);
+                    break;
+                case 'line':
+                    ctx.moveTo(obj.x + left, obj.y + top + obj.h + bottom);
+                    ctx.lineTo(obj.x + left + obj.w + right, obj.y + top);
+                    break;
+                default:
+                    break;
+            }
+
+            fillStyle = obj.fillStyle;
+            strokeStyle = obj.strokeStyle;
+
+            // determine alarm
+            if (obj.alarmExpr.length > 0) {
+                if (evalExpression(obj.alarmExpr) > 0) {
+                    fillStyle = obj.fillStyleAlarm;
+                    strokeStyle = obj.strokeStyleAlarm;
+                }
+            }
+
+            // draw fill
+            if (obj.hasInsideColor == 'true') {
+                ctx.fillStyle = fillStyle;
+                ctx.fill();
+            }
+
+            // draw border
+            if (obj.hasFrameColor == 'true') {
+                ctx.lineWidth = obj.lineWidth;
+                ctx.strokeStyle = strokeStyle;
+                ctx.stroke();
+            }
+
+            ctx.closePath();
+        } else if (obj.isA == "Bitmap") {
+            ctx.beginPath();
+            try {
+                ctx.drawImage(obj.img, 0, 0, obj.img.width, obj.img.height, obj.x, obj.y, obj.w, obj.h);
+            } catch (e) {
+                console.log("drawImage " + obj.img.src + " error " + e.name);
+            }
+            ctx.rect(obj.x, obj.y, obj.w, obj.h);
+            if (obj.has_frame_color === 'true') {
+                ctx.lineWidth = obj.lineWidth;
+                ctx.strokeStyle = obj.strokeStyle;
+                ctx.stroke();
+            }
+            ctx.closePath();
+        } else if (obj.isA == "Button") {
+            ctx.beginPath();
+
+            ctx.rect(obj.x, obj.y, obj.w, obj.h);
+
+            fillStyle = '';
+            strokeStyle = '';
+
+            // determine alarm
+            isAlarm = false;
+            if (obj.alarmExpr.length > 0) {
+                if (evalExpression(obj.alarmExpr) > 0) {
+                    isAlarm = true;
+                    fillStyle = obj.fillStyleAlarm;
+                    strokeStyle = obj.strokeStyleAlarm;
+                } else {
+                    fillStyle = obj.fillStyle;
+                    strokeStyle = obj.strokeStyle;
+                }
+            } else {
+                fillStyle = obj.fillStyle;
+                strokeStyle = obj.strokeStyle;
+            }
+
+            // draw fill
+            if (obj.hasInsideColor == 'true') {
+                ctx.fillStyle = fillStyle;
+                ctx.fill();
+            }
+
+            // draw border
+            if (obj.hasFrameColor == 'true') {
+                ctx.lineWidth = obj.lineWidth;
+                ctx.strokeStyle = strokeStyle;
+                ctx.stroke();
+            }
+
+            ctx.closePath();
+
+            // draw button frame :-)
+            abstand = 2;
+            strokeStyle1 = 'rgba(0,0,0,0.5)';
+            strokeStyle2 = 'rgba(255,255,255,0.5)';
+            if (isAlarm == true) {
+                strokeStyle2 = 'rgba(0,0,0,0.5)';
+                strokeStyle1 = 'rgba(255,255,255,0.5)';
+            }
+
+            ctx.beginPath();
+            ctx.lineWidth = 2;
+            // Rand rechts unten
+            ctx.strokeStyle = strokeStyle1;
+            ctx.moveTo(obj.x + abstand, obj.y + obj.h - abstand);
+            ctx.lineTo(obj.x + obj.w - abstand, obj.y + obj.h - abstand);
+            ctx.lineTo(obj.x + obj.w - abstand, obj.y + abstand);
+            ctx.stroke();
+            ctx.closePath();
+            // Rand links oben
+            ctx.beginPath();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = strokeStyle2;
+            ctx.moveTo(obj.x + obj.w - abstand, obj.y + abstand);
+            ctx.lineTo(obj.x + abstand, obj.y + abstand);
+            ctx.lineTo(obj.x + abstand, obj.y + obj.h - abstand);
+            ctx.stroke();
+            ctx.closePath();
+        } else if (obj.isA == "Polygon") {
+            ctx.beginPath();
+
+            var left = 0;
+            if (obj.leftExpr.length > 0) { left = evalExpression(obj.leftExpr); }
+            var top = 0;
+            if (obj.topExpr.length > 0) { top = evalExpression(obj.topExpr); }
+
+            var first = true;
+            var firstPointFields = [];
+            for (var i in obj.points) {
+                point = obj.points[i];
+                var pointFields = point.split(',');
+                x = parseInt(pointFields[0]);
+                y = parseInt(pointFields[1]);
+
+                if (first) {
+                    firstPointFields = pointFields;
+                    ctx.moveTo(x + left, y + top);
+                    first = false;
+                } else {
+                    ctx.lineTo(x + left, y + top);
+                }
+            }
+
+            // ein polygon ist geschlossen, eine polyline nicht...
+            if (obj.polyShape == 'polygon') {
+                x = parseInt(firstPointFields[0]);
+                y = parseInt(firstPointFields[1]);
+                ctx.lineTo(x + left, y + top);
+            }
+
+            fillStyle = obj.fillStyle;
+            strokeStyle = obj.strokeStyle;
+
+            // determine alarm
+            if (obj.alarmExpr.length > 0) {
+                if (evalExpression(obj.alarmExpr) > 0) {
+                    fillStyle = obj.fillStyleAlarm;
+                    strokeStyle = obj.strokeStyleAlarm;
+                }
+            }
+
+            // Füllung beachten wir nur bei geschlossenen Polygonen
+            if (obj.polyShape == 'polygon') {
+                // draw fill
+                if (obj.hasInsideColor == 'true') {
+                    ctx.fillStyle = fillStyle;
+                    ctx.fill();
+                }
+            }
+
+            // draw border
+            if (obj.hasFrameColor == 'true') {
+                ctx.lineWidth = obj.lineWidth;
+                ctx.strokeStyle = strokeStyle;
+                ctx.stroke();
+            }
+
+            ctx.closePath();
+        } else if (obj.isA == "Text") {
+            ctx.beginPath();
+            // ctx.font = '8pt Lucida Sans Typewriter';
+            ctx.font = obj.fontHeight + 'pt ' + obj.fontName;
+
+            var textColor = obj.fillStyle;
+            if (obj.exprTextColor.length > 0) { textColor = '#' + evalExpression(obj.exprTextColor).toString(16); }
+
+            ctx.fillStyle = textColor;
+            ctx.textAlign = obj.textAlignHorz;
+            ctx.textBaseline = obj.textAlignVert;
+
+            var textDisplay = 0;
+            if (obj.exprTextDisplay.length > 0) { textDisplay = evalExpression(obj.exprTextDisplay); }
+            txt = strformat(obj.format, textDisplay);
+            ctx.fillText(txt, obj.x, obj.y);
+            ctx.closePath();
+        } else if (obj.isA == "Group") {
+            ctx.save();
+            ctx.translate(obj.x, obj.y);
+        } else if (obj.isA == "EndGroup") {
+            ctx.restore();
+        } else {
+            // unknown
+        }
+    }
+}
+
 function draw() {
 	perfDisplayStart = new Date().getTime();
 
@@ -426,230 +688,7 @@ function draw() {
 	ctx.clearRect(0, 0, visuSizeX, visuSizeY);
 	ctx.closePath();
 
-	for (var i in drawObjects) {
-		obj = drawObjects[i];
-		if (obj.isA == "SimpleShape") {
-		    ctx.beginPath();
-
-		    var left = 0;
-		    if (obj.leftExpr.length > 0) { left = evalExpression(obj.leftExpr); }
-		    var top = 0;
-		    if (obj.topExpr.length > 0) { top = evalExpression(obj.topExpr); }
-		    var right = 0;
-		    if (obj.rightExpr.length > 0) { right = evalExpression(obj.rightExpr); }
-		    var bottom = 0;
-		    if (obj.bottomExpr.length > 0) { bottom = evalExpression(obj.bottomExpr); }
-
-		    switch (obj.shape) {
-		        case 'rectangle':
-		            ctx.rect(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom);
-		            break;
-		        case 'round-rect':
-		            radius = (obj.w + right) / 20;
-		            ctx.roundRect(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom, radius);
-		            break;
-		        case 'circle':
-		            ctx.ellipse(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom);
-		            break;
-		        case 'line':
-		            ctx.moveTo(obj.x + left, obj.y + top + obj.h + bottom);
-		            ctx.lineTo(obj.x + left + obj.w + right, obj.y + top);
-		            break;
-		        default:
-		            break;
-		    }
-
-			fillStyle = obj.fillStyle;
-			strokeStyle = obj.strokeStyle;
-
-            // determine alarm
-		    if (obj.alarmExpr.length > 0) {
-		        if (evalExpression(obj.alarmExpr) > 0) {
-		            fillStyle = obj.fillStyleAlarm;
-		            strokeStyle = obj.strokeStyleAlarm;
-                }
-		    }
-
-            // draw fill
-		    if (obj.hasInsideColor == 'true') {
-		        ctx.fillStyle = fillStyle;
-		        ctx.fill();
-		    }
-
-            // draw border
-		    if (obj.hasFrameColor == 'true') {
-		        ctx.lineWidth = obj.lineWidth;
-		        ctx.strokeStyle = strokeStyle;
-		        ctx.stroke();
-		    }
-
-		    ctx.closePath();
-		} else if (obj.isA == "Bitmap") {
-		    ctx.beginPath();
-		    try {
-		        ctx.drawImage(obj.img, 0, 0, obj.img.width, obj.img.height, obj.x, obj.y, obj.w, obj.h);
-		    } catch (e) {
-		        console.log("drawImage " + obj.img.src + " error " + e.name);
-		    }
-		    ctx.rect(obj.x, obj.y, obj.w, obj.h);
-		    if (obj.has_frame_color === 'true') {
-		        ctx.lineWidth = obj.lineWidth;
-		        ctx.strokeStyle = obj.strokeStyle;
-		        ctx.stroke();
-		    }
-		    ctx.closePath();
-		} else if (obj.isA == "Button") {
-		    ctx.beginPath();
-
-		    ctx.rect(obj.x, obj.y, obj.w, obj.h);
-
-		    fillStyle = '';
-		    strokeStyle = '';
-
-		    // determine alarm
-		    isAlarm = false;
-		    if (obj.alarmExpr.length > 0) {
-		        if (evalExpression(obj.alarmExpr) > 0) {
-					isAlarm = true;
-		            fillStyle = obj.fillStyleAlarm;
-		            strokeStyle = obj.strokeStyleAlarm;
-		        } else {
-		            fillStyle = obj.fillStyle;
-		            strokeStyle = obj.strokeStyle;
-		        }
-		    } else {
-		        fillStyle = obj.fillStyle;
-		        strokeStyle = obj.strokeStyle;
-		    }
-
-		    // draw fill
-		    if (obj.hasInsideColor == 'true') {
-		        ctx.fillStyle = fillStyle;
-		        ctx.fill();
-		    }
-
-		    // draw border
-		    if (obj.hasFrameColor == 'true') {
-		        ctx.lineWidth = obj.lineWidth;
-		        ctx.strokeStyle = strokeStyle;
-		        ctx.stroke();
-		    }
-
-		    ctx.closePath();
-
-			// draw button frame :-)
-			abstand=2;
-			strokeStyle1='rgba(0,0,0,0.5)';
-			strokeStyle2='rgba(255,255,255,0.5)';
-			if(isAlarm==true) {
-				strokeStyle2='rgba(0,0,0,0.5)';
-				strokeStyle1='rgba(255,255,255,0.5)';
-			}
-
-		    ctx.beginPath();
-			ctx.lineWidth = 2;
-			// Rand rechts unten
-			ctx.strokeStyle = strokeStyle1;
-			ctx.moveTo(obj.x + abstand, obj.y + obj.h - abstand);
-			ctx.lineTo(obj.x + obj.w - abstand, obj.y + obj.h - abstand);
-			ctx.lineTo(obj.x + obj.w - abstand, obj.y + abstand);
-	        ctx.stroke();
-		    ctx.closePath();
-			// Rand links oben
-		    ctx.beginPath();
-			ctx.lineWidth = 2;
-			ctx.strokeStyle = strokeStyle2;
-			ctx.moveTo(obj.x + obj.w - abstand, obj.y + abstand);
-			ctx.lineTo(obj.x + abstand, obj.y + abstand);
-			ctx.lineTo(obj.x + abstand, obj.y + obj.h - abstand);
-	        ctx.stroke();
-		    ctx.closePath();
-		} else if (obj.isA == "Polygon") {
-		    ctx.beginPath();
-
-		    var left = 0;
-		    if (obj.leftExpr.length > 0) { left = evalExpression(obj.leftExpr); }
-		    var top = 0;
-		    if (obj.topExpr.length > 0) { top = evalExpression(obj.topExpr); }
-
-		    var first = true;
-		    var firstPointFields = [];
-		    for (var i in obj.points) {
-		        point = obj.points[i];
-		        var pointFields = point.split(',');
-		        x = parseInt(pointFields[0]);
-		        y = parseInt(pointFields[1]);
-
-		        if (first) {
-		            firstPointFields = pointFields;
-		            ctx.moveTo(x + left, y + top);
-		            first = false;
-		        } else {
-		            ctx.lineTo(x + left, y + top);
-		        }
-            }
-
-		    // ein polygon ist geschlossen, eine polyline nicht...
-		    if (obj.polyShape == 'polygon') {
-		        x = parseInt(firstPointFields[0]);
-		        y = parseInt(firstPointFields[1]);
-		        ctx.lineTo(x + left, y + top);
-            }
-
-		    fillStyle = obj.fillStyle;
-		    strokeStyle = obj.strokeStyle;
-
-		    // determine alarm
-		    if (obj.alarmExpr.length > 0) {
-		        if (evalExpression(obj.alarmExpr) > 0) {
-		            fillStyle = obj.fillStyleAlarm;
-		            strokeStyle = obj.strokeStyleAlarm;
-		        }
-		    }
-
-            // Füllung beachten wir nur bei geschlossenen Polygonen
-		    if (obj.polyShape == 'polygon') {
-		        // draw fill
-		        if (obj.hasInsideColor == 'true') {
-		            ctx.fillStyle = fillStyle;
-		            ctx.fill();
-		        }
-		    }
-
-		    // draw border
-		    if (obj.hasFrameColor == 'true') {
-		        ctx.lineWidth = obj.lineWidth;
-		        ctx.strokeStyle = strokeStyle;
-		        ctx.stroke();
-		    }
-
-		    ctx.closePath();
-		} else {
-			// unknown
-		}
-	}
-
-	// sollten wir die Texte auch in die Objects nehmen um die Reichenfolge einzuhalten?
-	for (var i in drawTexts) {
-		obj = drawTexts[i];
-
-		ctx.beginPath();
-		// ctx.font = '8pt Lucida Sans Typewriter';
-		ctx.font = obj.fontHeight + 'pt ' + obj.fontName;
-
-		var textColor = obj.fillStyle;
-		if (obj.exprTextColor.length > 0) { textColor = '#' + evalExpression(obj.exprTextColor).toString(16); }
-
-		ctx.fillStyle = textColor;
-		ctx.textAlign = obj.textAlignHorz;
-		ctx.textBaseline = obj.textAlignVert;
-
-		var textDisplay = 0;
-		if (obj.exprTextDisplay.length > 0) { textDisplay = evalExpression(obj.exprTextDisplay); }
-		txt = strformat(obj.format, textDisplay);
-		ctx.fillText(txt, obj.x, obj.y);
-		ctx.closePath();
-	}
+	drawAllObjects(ctx, drawObjects);
 
 	// performance-Messungen ausgeben
 	if (perfWriteout > 0) {
