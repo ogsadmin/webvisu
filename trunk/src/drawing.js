@@ -14,7 +14,7 @@ var visuCompressed = 0;
 // globale variablen
 var updateInterval = 500;
 var plcDir = "../PLC";
-
+var startVisu = "plc_visu";
 
 // performance-Zähler
 var perfWriteout = 0;
@@ -175,7 +175,7 @@ function registerButton(
 // Text
 
 // constructor
-function newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight) {
+function newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic) {
 	this.isA = "Text";
 	this.x = parseInt(x);
 	this.y = parseInt(y);
@@ -187,10 +187,12 @@ function newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAl
 	this.textAlignVert = textAlignVert;
 	this.fontName = fontName;
 	this.fontHeight = fontHeight;
+	this.fontWeight = fontWeight;
+	this.fontItalic = fontItalic;
 }
 
-function registerText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight) {
-	drawObjects.push(new newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight));
+function registerText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic) {
+    drawObjects.push(new newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic));
 }
 
 // ****************************************************************************
@@ -651,8 +653,46 @@ function drawAllObjects(ctx, objects) {
             ctx.closePath();
         } else if (obj.isA == "Text") {
             ctx.beginPath();
+
             // ctx.font = '8pt Lucida Sans Typewriter';
-            ctx.font = obj.fontHeight + 'pt ' + obj.fontName;
+
+            var font = '';
+            if (obj.fontItalic == 'true') {
+                font += 'italic ';
+            } else {
+                font += 'normal ';
+            }
+
+            if (parseInt(obj.fontWeight) != 0) {
+                //font += parseInt(parseFloat(obj.fontWeight) / 1.75) + ' ';
+                fontWeight = parseInt(obj.fontWeight);
+                if (fontWeight == 700) {
+                    font += 'bold ';
+                } else {
+                    font += 'normal ';
+                }
+            } else {
+                font += 'normal ';
+            }
+
+            if (parseInt(obj.fontHeight) != 0) {
+                var fontHeight = parseFloat(obj.fontHeight);
+                if (fontHeight < 0)
+                    fontHeight = 0 - fontHeight;
+                //fontHeight = fontHeight / 1.75;
+                font += parseInt(fontHeight) + 'px ';
+            } else {
+                font += '9px ';
+            }
+
+            if (obj.fontName != '') {
+                font += obj.fontName + ' ';
+            } else {
+                font += 'Lucida Sans Typewriter ';
+            }
+
+            //console.log('set font to <' + font + '>');
+            ctx.font = font;
 
             var textColor = obj.fillStyle;
             if (obj.exprTextColor.length > 0) { textColor = '#' + evalExpression(obj.exprTextColor).toString(16); }

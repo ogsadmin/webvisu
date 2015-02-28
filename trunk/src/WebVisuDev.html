@@ -16,16 +16,38 @@
 		<script src="drawing.js"></script>
 		<script src="codesys.js"></script>
 		<script>
-            // wenn wir die Dev-Version sind schalten wir die Performance
-            // printouts ein...
-            if (document.location.href.toLowerCase().search("webvisudev.html") != -1)
-                perfWriteout = 1;
+            // finden wir mal heraus wo unsere Visu liegt
+            determineVisuLocation();
 
             // prüfen, ob wir URL-Parameter bekommen haben...
-            if (getUrlParameter('plcDir') != undefined)
-                plcDir = getUrlParameter('plcDir');
+            // Performance printouts einschalten
+            if (getUrlParameter('perfWriteout') != undefined) {
+                perfWriteout = 1;
+            }
 
-			switchToVisu("plc_visu");
+            // wo liegen die Visu-Dateien
+            if (getUrlParameter('plcDir') != undefined) {
+                plcDir = getUrlParameter('plcDir');
+                console.log("plcDir " + plcDir);
+                if (plcDir.endsWith('/')) {
+                    plcDir = plcDir.substring(0, plcDir.length - 1);
+                }
+                console.log("set plcDir to <" + plcDir + ">");
+            }
+
+            // welche URL sollen wir für die Variablen-Posts nehmen
+            if (getUrlParameter('postUrl') != undefined) {
+                postUrl = getUrlParameter('postUrl');
+                console.log("set postUrl to <" + postUrl + ">");
+            }
+
+            // mit welcher Visu sollen wir starten
+            if (getUrlParameter('startVisu') != undefined) {
+                startVisu = getUrlParameter('startVisu');
+                console.log("set startVisu to <" + startVisu + ">");
+            }
+
+			switchToVisu(startVisu);
 			$('#canvas').click(onClick);
 			$('#canvas').mousedown(onMouseDown);
 			$('#canvas').mouseup(onMouseUp);
