@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8" />
-		<title>WebVisu (r36)</title>
+		<title>WebVisu (r39)</title>
 
 <script>
 /*! jQuery v2.0.3 | (c) 2005, 2013 jQuery Foundation, Inc. | jquery.org/license
@@ -30,7 +30,7 @@ function sprintf(k){if(typeof k!="string"){throw"sprintf: The first arguments ne
 	<body>
 
 <script>
-function getUrlParameter(b){var d=window.location.search.substring(1);var c=d.split("&");for(var a=0;a<c.length;a++){var e=c[a].split("=");if(e[0]==b){if(e[1].length>0){return e[1]}}}return undefined}Array.prototype.map=Array.prototype.map||function(a){for(var c=[],b=0;b<this.length;b++){c[b]=a(this[b])}return c};String.prototype.startsWith=String.prototype.startsWith||function(a){return this.indexOf(a)===0};String.prototype.endsWith=String.prototype.endsWith||function(a){return this.indexOf(a,this.length-a.length)!==-1};function fileExists(a){exists=false;$.ajax({type:"GET",async:false,url:a,success:function(){exists=true}});return exists}function determineVisuLocation(){console.log("determine visu location - searching visu_ini.xml");if(fileExists("/PLC/visu_ini.xml")){console.log("found in /PLC");plcDir="/PLC";postUrl="/plc/webvisu.htm"}else{if(fileExists("/visu_ini.xml")){console.log("found in /");plcDir="/";postUrl="/webvisu.htm"}}};
+function getUrlParameter(b){var d=window.location.search.substring(1);var c=d.split("&");for(var a=0;a<c.length;a++){var e=c[a].split("=");if(e[0]==b){if(e[1].length>0){return e[1]}}}return undefined}Array.prototype.map=Array.prototype.map||function(a){for(var c=[],b=0;b<this.length;b++){c[b]=a(this[b])}return c};String.prototype.startsWith=String.prototype.startsWith||function(a){return this.indexOf(a)===0};String.prototype.endsWith=String.prototype.endsWith||function(a){return this.indexOf(a,this.length-a.length)!==-1};function fileExists(a){exists=false;$.ajax({type:"GET",async:false,url:a,success:function(){exists=true}});return exists}function determineVisuLocation(){console.log("determine visu location - searching visu_ini.xml");if(fileExists("/PLC/visu_ini.xml")){console.log("found in /PLC");plcDir="/PLC";postUrl="/plc/webvisu.htm"}else{if(fileExists("/visu_ini.xml")){console.log("found in /");plcDir="";postUrl="/webvisu.htm"}}};
 </script>
 		<!-- Die eigentliche Groesse des Canvas setzen wir abhaengig von der Visu -->
 		<canvas id="canvas" width="50" height="50"></canvas>
