@@ -64,7 +64,7 @@ function determineVisuLocation() {
     } else if (fileExists('/visu_ini.xml')) {
         // könnte eine Beck sein
         console.log('found in /');
-        plcDir = "/";
+        plcDir = "";
         postUrl = '/webvisu.htm';
     }
 }
