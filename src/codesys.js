@@ -28,6 +28,9 @@ const VAR_TYPE_REF = 23;
 const VAR_TYPE_NONE = 24;
 
 
+// globale variablen
+var postUrl = '/plc/webvisu.htm';
+
 var PendingMouseUpObjects = [];
 
 var parsedGroups = [];
@@ -95,6 +98,8 @@ function parseTextInfo(myMedia, centerFields, rectFields) {
 	var font_color = myMedia.find('font-color').text();
 	var font_name = myMedia.find('font-name').text();
 	var font_height = myMedia.find('font-height').text();
+	var font_weight = myMedia.find('font-weight').text();
+	var font_italic = myMedia.find('font-italic').text();
 	var text_align_horz = myMedia.find('text-align-horz').text();
 	var text_align_vert = myMedia.find('text-align-vert').text();
 	//var textX = centerFields[0];
@@ -151,7 +156,9 @@ function parseTextInfo(myMedia, centerFields, rectFields) {
 			textAlignHorz,
 			textAlignVert,
 			font_name,
-			font_height
+			font_height,
+            font_weight,
+            font_italic
 		);
 }
 
@@ -674,7 +681,7 @@ function update_vars() {
 		type: 'POST',
 		//async: false,
 		async: true,
-		url: "/plc/webvisu.htm",
+		url: postUrl,
 		data: req,
 		success: function (data) {
 			//console.log("ANS = " + data);
@@ -753,7 +760,7 @@ function onClick( e ) {
 				$.ajax({
 					type: 'POST',
 					async: false,
-					url: '/plc/webvisu.htm',
+					url: postUrl,
 					data: req,
 					//success: function( data ) {
 					//	console.log("success: " + data);
@@ -801,7 +808,7 @@ function onMouseDown(e) {
 				$.ajax({
 					type: 'POST',
 					async: false,
-					url: '/plc/webvisu.htm',
+					url: postUrl,
 					data: req,
 				});
 
@@ -825,7 +832,7 @@ function HandlePendingMouseUps() {
 			$.ajax({
 				type: 'POST',
 				async: false,
-				url: '/plc/webvisu.htm',
+				url: postUrl,
 				data: req,
 			});
 

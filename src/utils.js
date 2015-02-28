@@ -5,7 +5,7 @@
  */
 
 // gibt das Value eines "key=value" Paares aus der URL zurück
-// under "undefined"
+// oder "undefined"
 function getUrlParameter(key) {
     var query = window.location.search.substring(1); 
     var pairs = query.split('&');
@@ -30,3 +30,41 @@ Array.prototype.map = Array.prototype.map || function (_x) {
     }
     return o;
 };
+
+// String startsWith and endsWith
+String.prototype.startsWith = String.prototype.startsWith || function (prefix) {
+    return this.indexOf(prefix) === 0;
+};
+
+String.prototype.endsWith = String.prototype.endsWith || function (suffix) {
+    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+//  return this.match(suffix + "$") == suffix;
+};
+
+
+function fileExists(url) {
+    exists = false;
+    $.ajax({
+        type: 'GET',
+        async: false,
+        url: url,
+        success: function () { exists = true; }
+    });
+    return exists;
+}
+
+function determineVisuLocation() {
+    // finden wir mal heraus wo unsere Visu liegt
+    console.log('determine visu location - searching visu_ini.xml');
+    if (fileExists('/PLC/visu_ini.xml')) {
+        // scheint eine Wago zu sein
+        console.log('found in /PLC');
+        plcDir = "/PLC";
+        postUrl = '/plc/webvisu.htm';
+    } else if (fileExists('/visu_ini.xml')) {
+        // könnte eine Beck sein
+        console.log('found in /');
+        plcDir = "/";
+        postUrl = '/webvisu.htm';
+    }
+}
