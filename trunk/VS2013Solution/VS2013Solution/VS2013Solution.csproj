@@ -17,16 +17,18 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="..\..\src\codesys.js" />
-    <Content Include="..\..\src\drawing.js" />
+    <Content Include="..\..\src\codesys.pp.js" />
+    <Content Include="..\..\src\drawing.pp.js" />
+    <Content Include="..\..\src\utils.pp.js" />
+    <Content Include="..\..\src\WebVisuDev.pp.html" />
     <Content Include="..\..\src\jquery-2.0.3.js" />
     <Content Include="..\..\src\jquery-ajax-blob-arraybuffer.js" />
+    <Content Include="..\..\src\canvas_mltext.js" />
     <Content Include="web.config" />
-    <Content Include="..\..\src\WebVisuDev.html" />
     <Content Include="..\..\src\zip.js" />
     <Content Include="..\..\src\inflate.js" />
     <Content Include="..\..\src\sprintf.js" />
-    <Content Include="..\..\src\utils.js" />
+    <Content Include="..\..\src\steelseries.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\src\release.pl" />
