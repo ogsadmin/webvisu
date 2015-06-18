@@ -2,9 +2,9 @@
 
 var visuVariables = {};
 var drawObjects = [];
-var clickToggles = [];
-var clickTap = [];
-var clickZoom = [];
+
+// TODO: alle Klick-Elemente in ein Array zusammenfassen (wegen "verdeckende Elemente")
+var clickRegions = [];
 
 var visuName = "";
 var visuSizeX = 0;
@@ -15,6 +15,16 @@ var visuCompressed = 0;
 var updateInterval = 500;
 var plcDir = "../PLC";
 var startVisu = "plc_visu";
+
+/*
+#ifdef USE_STEELSERIES
+*/
+// steelseries
+var steelseriesSupport = false;
+var canvObjects = [];
+/*
+#endif
+*/
 
 // performance-Zähler
 var perfWriteout = 0;
@@ -33,9 +43,22 @@ function switchToVisu(visu) {
 	// alle Arrays und Variablenzuordnungen löschen
 	visuVariables = {};
 	drawObjects = [];
-	clickToggles = [];
-	clickTap = [];
-	clickZoom = [];
+	clickRegions = [];
+
+/*
+#ifdef USE_STEELSERIES
+*/
+	for (var i in canvObjects) {
+	    co = canvObjects[i];
+	    co.ssobj = null;
+	    $('#contain')[0].removeChild(co.canvas);
+	    co.canvas = null;
+	}
+	canvObjects = [];
+/*
+#endif
+*/
+
 
 	visuName = "";
 	visuSizeX = 0;
@@ -311,11 +334,71 @@ function registerEndGroup(
         ));
 }
 
+/*
+#ifdef USE_STEELSERIES
+*/
+
+// ****************************************************************************
+// SteelSeries
+
+// constructor
+function newSteelSeries(
+    x, y, w, h,
+    object,
+    properties,
+    exprTextDisplay
+    ) {
+    this.isA = 'SteelSeries';
+
+    this.x = parseInt(x);
+    this.y = parseInt(y);
+    this.w = parseInt(w);
+    this.h = parseInt(h);
+
+    this.object = object;
+    this.properties = properties;
+
+    this.exprTextDisplay = exprTextDisplay;
+
+    this.constructed = false;
+}
+
+function registerSteelSeries(
+    x, y, w, h,
+    object,
+    properties,
+    exprTextDisplay
+    ) {
+    drawObjects.push(new newSteelSeries(
+            x, y, w, h,
+            object,
+            properties,
+            exprTextDisplay
+        ));
+}
+
+// constructor
+function newCanvObj(canvas, ssobj, exprTextDisplay) {
+    this.canvas = canvas;
+    this.ssobj = ssobj;
+    this.exprTextDisplay = exprTextDisplay;
+}
+
+function registerCanvObj(canvas, ssobj, exprTextDisplay) {
+    canvObjects.push(new newCanvObj(canvas, ssobj, exprTextDisplay));
+}
+
+
+/*
+#endif
+*/
+
 // ****************************************************************************
 // ClickToggle
 
 // constructor
 function newClickToggle(x, y, w, h, variable) {
+    this.isA = 'Toggle';
 	this.x = parseInt(x);
 	this.y = parseInt(y);
 	this.w = parseInt(w);
@@ -324,7 +407,7 @@ function newClickToggle(x, y, w, h, variable) {
 }
 
 function registerClickToggle(x, y, w, h, variable) {
-	clickToggles.push(new newClickToggle(x, y, w, h, variable));
+    clickRegions.push(new newClickToggle(x, y, w, h, variable));
 }
 
 
@@ -333,7 +416,8 @@ function registerClickToggle(x, y, w, h, variable) {
 
 // constructor
 function regClickTap(x, y, w, h, variable, newval) {
-	this.x = parseInt(x);
+    this.isA = 'Tap';
+    this.x = parseInt(x);
 	this.y = parseInt(y);
 	this.w = parseInt(w);
 	this.h = parseInt(h);
@@ -342,7 +426,7 @@ function regClickTap(x, y, w, h, variable, newval) {
 }
 
 function registerClickTap(x, y, w, h, variable, newval) {
-	clickTap.push(new regClickTap(x, y, w, h, variable, newval));
+    clickRegions.push(new regClickTap(x, y, w, h, variable, newval));
 }
 
 // ****************************************************************************
@@ -350,7 +434,8 @@ function registerClickTap(x, y, w, h, variable, newval) {
 
 // constructor
 function regClickZoom(x, y, w, h, visu) {
-	this.x = parseInt(x);
+    this.isA = 'Zoom';
+    this.x = parseInt(x);
 	this.y = parseInt(y);
 	this.w = parseInt(w);
 	this.h = parseInt(h);
@@ -358,14 +443,19 @@ function regClickZoom(x, y, w, h, visu) {
 }
 
 function registerClickZoom(x, y, w, h, visu) {
-	clickZoom.push(new regClickZoom(x, y, w, h, visu));
+    clickRegions.push(new regClickZoom(x, y, w, h, visu));
 }
 
-/* entfernt die Pipe-Zeichen, welche ein Leerzeichen einschließen
-    ruft sprintf für den String auf
+// ****************************************************************************
+
+/* entfernt die Pipe-Zeichen, welche ein Leerzeichen oder Sonderzeichen einschließen
+    ruft sprintf für den String auf, sofern ein %-Zeichen enthalten ist
 */
 function strformat(format, val) {
-    format = format.replace(/\| \|/g, ' ');
+    // wegen des PreProcessors können wir leider keine /-Syntax für die RegEx nehmen
+    format = format.replace(new RegExp('\\| \\|', 'g'), ' ');
+    format = format.replace(new RegExp('\\|>\\|', 'g'), '>');
+    format = format.replace(new RegExp('\\|<\\|', 'g'), '<');
     if (format.indexOf('%') > -1) {
         format = sprintf(format, val);
     }
@@ -675,6 +765,7 @@ function drawAllObjects(ctx, objects) {
                 font += 'normal ';
             }
 
+            var fontHeight = 0;
             if (parseInt(obj.fontHeight) != 0) {
                 var fontHeight = parseFloat(obj.fontHeight);
                 if (fontHeight < 0)
@@ -704,13 +795,74 @@ function drawAllObjects(ctx, objects) {
             var textDisplay = 0;
             if (obj.exprTextDisplay.length > 0) { textDisplay = evalExpression(obj.exprTextDisplay); }
             txt = strformat(obj.format, textDisplay);
-            ctx.fillText(txt, obj.x, obj.y);
+            //console.log('write text <' + txt + '>');
+
+            // multiline? Dann mehrere Texte schreiben
+            if (txt.indexOf('\n') > -1) {
+                txt = txt.replace(new RegExp('\\r', 'g'), '');
+                txt = txt.trim();
+                var lines = txt.split('\n');
+                var myY = obj.y;
+
+                if (obj.textAlignVert == 'bottom') {
+                    myY = myY - (lines.length * fontHeight);
+                } else if (obj.textAlignVert == 'middle') {
+                    myY = myY - ((lines.length - 1) * fontHeight / 2);
+                } else { /* top */
+                    /* do nothing */
+                }
+
+                for (var i in lines) {
+                    var line = lines[i];
+
+                    ctx.fillText(line, obj.x, myY);
+
+                    myY = myY + fontHeight;
+                }
+            } else {
+                ctx.fillText(txt, obj.x, obj.y);
+            }
+
             ctx.closePath();
         } else if (obj.isA == "Group") {
             ctx.save();
             ctx.translate(obj.x, obj.y);
         } else if (obj.isA == "EndGroup") {
             ctx.restore();
+/*
+#ifdef USE_STEELSERIES
+*/
+        } else if (obj.isA == "SteelSeries") {
+            if (obj.constructed == false) {
+                obj.constructed = true;
+                var canvas = document.createElement("canvas");
+                canvas.id = "sscanvas";
+                canvas.style.zIndex = 8;
+                canvas.style.top = obj.y + "px";
+                canvas.style.left = obj.x + "px";
+                canvas.style.position = "absolute";
+                //canvas.style.border = "1px solid";
+
+                //document.body.appendChild(obj.canvas);
+                $('#contain')[0].appendChild(canvas);
+
+                var evalString = '\
+                    var ssobj = new steelseries.'
+                    + obj.object
+                    + '(canvas, {\
+                        size: obj.w,'
+                    + obj.properties
+                    + '});'
+
+                //console.log("evalString: <" + evalString + ">");
+
+                eval(evalString);
+
+                registerCanvObj(canvas, ssobj, obj.exprTextDisplay);
+            }
+/*
+#endif
+*/
         } else {
             // unknown
         }

@@ -13,15 +13,11 @@ while( <INPUT> ) {
 	$line =~ s/\(development\)/\(r$ver\)/;
 	if( $line =~ /<script\ssrc="([^\"]+)"><\/script>/) { 
 		my $file = $1;
-		#open( EMBED, $file ); 
+		# replace "preprocessed" filenames
+		$file =~ s/\.pp\.js/\.oo\.js/g;
 		print "\n<script>\n"; 
 		print `java -jar ../tools/yuicompressor-2.4.8.jar $file`;
-		#while( <EMBED> ) {
-		#	my $embLine = $_;
-		#	print $embLine;
-		#}
 		print "\n</script>\n"; 
-		#close(EMBED);
 	} else {
 		print $line;
 	};
