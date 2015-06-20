@@ -850,7 +850,9 @@ function drawAllObjects(ctx, objects) {
                     var ssobj = new steelseries.'
                     + obj.object
                     + '(canvas, {\
-                        size: obj.w,'
+                        size: obj.w,\
+                        width: parseInt(obj.w),\
+                        height: parseInt(obj.h),'
                     + obj.properties
                     + '});'
 
