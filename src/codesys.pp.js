@@ -90,7 +90,7 @@ function parseExpression(parentTag) {
 	return expr;
 }
 
-function parseTextInfo(myMedia, centerFields, rectFields) {
+function parseTextInfo(myMedia, centerFields, rectFields, exprInvisible) {
 	var text_format = myMedia.find('text-format').text();
 	if (text_format.length < 1) {
 		return;
@@ -157,7 +157,8 @@ function parseTextInfo(myMedia, centerFields, rectFields) {
             font_name,
             font_height,
             font_weight,
-            font_italic
+            font_italic,
+            exprInvisible
         );
 }
 
@@ -456,6 +457,12 @@ function parse_visu_elements(content) {
 				        exprBottom = parseExpression(expr_bottom);
 				    }
 
+				    var exprInvisible = [];
+				    var expr_invisible = $myMedia.find('expr-invisible');
+				    if (expr_invisible.length) {
+				        exprInvisible = parseExpression(expr_invisible);
+				    }
+
 				    registerSimpleShape(
                             shape,
                             rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
@@ -467,10 +474,11 @@ function parse_visu_elements(content) {
                             "rgb(" + fill_color + ")",
                             "rgb(" + fill_color_alarm + ")",
                             exprToggleColor,
-                            exprLeft, exprTop, exprRight, exprBottom
+                            exprLeft, exprTop, exprRight, exprBottom,
+                            exprInvisible
                         );
 
-				    parseTextInfo($myMedia, centerFields, rectFields);
+				    parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
 
 				    parseClickInfo($myMedia, rectFields);
 				}
@@ -505,14 +513,22 @@ function parse_visu_elements(content) {
 				frame_color_alarm = $myMedia.find('frame-color-alarm').text();
 			}
 			var line_width = $myMedia.find('line-width').text();
+
+			var exprInvisible = [];
+			var expr_invisible = $myMedia.find('expr-invisible');
+			if (expr_invisible.length) {
+			    exprInvisible = parseExpression(expr_invisible);
+			}
+
 			registerBitmap(
 				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
 				filename,
 				has_inside_color, fill_color, fill_color_alarm,
-				has_frame_color, frame_color, frame_color_alarm, line_width
+				has_frame_color, frame_color, frame_color_alarm, line_width,
+                exprInvisible
 				);
 
-			parseTextInfo($myMedia, centerFields, rectFields);
+			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
 
 			parseClickInfo($myMedia, rectFields);
 		} else if (type == 'button') {
@@ -549,6 +565,12 @@ function parse_visu_elements(content) {
 		        exprToggleColor = parseExpression(expr_toggle_color);
 		    }
 
+		    var exprInvisible = [];
+		    var expr_invisible = $myMedia.find('expr-invisible');
+		    if (expr_invisible.length) {
+		        exprInvisible = parseExpression(expr_invisible);
+		    }
+
 		    registerButton(
                     rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
                     has_frame_color,
@@ -558,10 +580,11 @@ function parse_visu_elements(content) {
                     has_inside_color,
                     "rgb(" + fill_color + ")",
                     "rgb(" + fill_color_alarm + ")",
-                    exprToggleColor
+                    exprToggleColor,
+                    exprInvisible
                 );
 
-		    parseTextInfo($myMedia, centerFields, rectFields);
+		    parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
 
 		    parseClickInfo($myMedia, rectFields);
 		} else if (type == 'polygon') {
@@ -616,6 +639,12 @@ function parse_visu_elements(content) {
 		        exprTop = parseExpression(expr_top);
 		    }
 
+		    var exprInvisible = [];
+		    var expr_invisible = $myMedia.find('expr-invisible');
+		    if (expr_invisible.length) {
+		        exprInvisible = parseExpression(expr_invisible);
+		    }
+
 		    if ((polyShape == 'polygon') || (polyShape == 'polyline')) {
 		        registerPolygon(
                         polyShape,
@@ -628,7 +657,8 @@ function parse_visu_elements(content) {
                         "rgb(" + fill_color + ")",
                         "rgb(" + fill_color_alarm + ")",
                         exprToggleColor,
-                        exprLeft, exprTop
+                        exprLeft, exprTop,
+                        exprInvisible
                     );
 		    } else {
 		        console.log("unknown poly-shape: " + polyShape);
