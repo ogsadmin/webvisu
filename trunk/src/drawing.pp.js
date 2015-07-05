@@ -104,7 +104,8 @@ function newSimpleShape(
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
     alarmExpr,
-    leftExpr, topExpr, rightExpr, bottomExpr
+    leftExpr, topExpr, rightExpr, bottomExpr,
+    invisibleExpr
     )
 {
     this.isA = 'SimpleShape';
@@ -130,6 +131,7 @@ function newSimpleShape(
     this.topExpr = topExpr;
     this.rightExpr = rightExpr;
     this.bottomExpr = bottomExpr;
+    this.invisibleExpr = invisibleExpr;
 }
 
 function registerSimpleShape(
@@ -138,7 +140,8 @@ function registerSimpleShape(
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
     alarmExpr,
-    leftExpr, topExpr, rightExpr, bottomExpr
+    leftExpr, topExpr, rightExpr, bottomExpr,
+    invisibleExpr
     )
 {
     drawObjects.push(new newSimpleShape(
@@ -147,7 +150,8 @@ function registerSimpleShape(
             hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
             hasInsideColor, fillStyle, fillStyleAlarm,
             alarmExpr,
-            leftExpr, topExpr, rightExpr, bottomExpr
+            leftExpr, topExpr, rightExpr, bottomExpr,
+            invisibleExpr
         ));
 }
 
@@ -159,7 +163,8 @@ function newButton(
     x, y, w, h,
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
-    alarmExpr
+    alarmExpr,
+    invisibleExpr
 ) {
     this.isA = 'Button';
 
@@ -178,19 +183,22 @@ function newButton(
     this.lineWidth = lineWidth==0 ? 1 : lineWidth;
 
     this.alarmExpr = alarmExpr;
+    this.invisibleExpr = invisibleExpr;
 }
 
 function registerButton(
     x, y, w, h,
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
-    alarmExpr
+    alarmExpr,
+    invisibleExpr
     ) {
     drawObjects.push(new newButton(
             x, y, w, h,
             hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
             hasInsideColor, fillStyle, fillStyleAlarm,
-            alarmExpr
+            alarmExpr,
+            invisibleExpr
         ));
 }
 
@@ -198,7 +206,7 @@ function registerButton(
 // Text
 
 // constructor
-function newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic) {
+function newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic, invisibleExpr) {
 	this.isA = "Text";
 	this.x = parseInt(x);
 	this.y = parseInt(y);
@@ -212,17 +220,18 @@ function newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAl
 	this.fontHeight = fontHeight;
 	this.fontWeight = fontWeight;
 	this.fontItalic = fontItalic;
+	this.invisibleExpr = invisibleExpr;
 }
 
-function registerText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic) {
-    drawObjects.push(new newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic));
+function registerText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic, invisibleExpr) {
+    drawObjects.push(new newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic, invisibleExpr));
 }
 
 // ****************************************************************************
 // Bitmap
 
 // constructor
-function newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, lineWidth) {
+function newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, lineWidth, invisibleExpr) {
 	this.isA = "Bitmap";
 	this.x = parseInt(x);
 	this.y = parseInt(y);
@@ -239,10 +248,11 @@ function newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleA
 	this.strokeStyle = strokeStyle;
 	this.strokeStyleAlarm = strokeStyleAlarm;
     this.lineWidth = lineWidth==0 ? 1 : lineWidth;
+    this.invisibleExpr = invisibleExpr;
 }
 
-function registerBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width) {
-    drawObjects.push(new newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width));
+function registerBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width,invisibleExpr) {
+    drawObjects.push(new newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width, invisibleExpr));
 }
 
 
@@ -256,7 +266,8 @@ function newPolygon(
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
     alarmExpr,
-    leftExpr, topExpr
+    leftExpr, topExpr,
+    invisibleExpr
     ) {
     this.isA = 'Polygon';
     this.polyShape = polyShape;
@@ -276,6 +287,7 @@ function newPolygon(
 
     this.leftExpr = leftExpr;
     this.topExpr = topExpr;
+    this.invisibleExpr = invisibleExpr;
 }
 
 function registerPolygon(
@@ -284,7 +296,8 @@ function registerPolygon(
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
     alarmExpr,
-    leftExpr, topExpr
+    leftExpr, topExpr, 
+    invisibleExpr
     ) {
     drawObjects.push(new newPolygon(
             polyShape,
@@ -292,7 +305,8 @@ function registerPolygon(
             hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
             hasInsideColor, fillStyle, fillStyleAlarm,
             alarmExpr,
-            leftExpr, topExpr
+            leftExpr, topExpr,
+            invisibleExpr
         ));
 }
 
@@ -546,6 +560,13 @@ function drawAllObjects(ctx, objects) {
     for (var i in objects) {
         obj = objects[i];
         if (obj.isA == "SimpleShape") {
+            // is invisible?
+            if (obj.invisibleExpr.length > 0) {
+                if (evalExpression(obj.invisibleExpr) > 0) {
+                    continue;
+                }
+            }
+
             ctx.beginPath();
 
             var left = 0;
@@ -602,6 +623,13 @@ function drawAllObjects(ctx, objects) {
 
             ctx.closePath();
         } else if (obj.isA == "Bitmap") {
+            // is invisible?
+            if (obj.invisibleExpr.length > 0) {
+                if (evalExpression(obj.invisibleExpr) > 0) {
+                    continue;
+                }
+            }
+
             ctx.beginPath();
             try {
                 ctx.drawImage(obj.img, 0, 0, obj.img.width, obj.img.height, obj.x, obj.y, obj.w, obj.h);
@@ -616,6 +644,13 @@ function drawAllObjects(ctx, objects) {
             }
             ctx.closePath();
         } else if (obj.isA == "Button") {
+            // is invisible?
+            if (obj.invisibleExpr.length > 0) {
+                if (evalExpression(obj.invisibleExpr) > 0) {
+                    continue;
+                }
+            }
+
             ctx.beginPath();
 
             ctx.rect(obj.x, obj.y, obj.w, obj.h);
@@ -682,6 +717,13 @@ function drawAllObjects(ctx, objects) {
             ctx.stroke();
             ctx.closePath();
         } else if (obj.isA == "Polygon") {
+            // is invisible?
+            if (obj.invisibleExpr.length > 0) {
+                if (evalExpression(obj.invisibleExpr) > 0) {
+                    continue;
+                }
+            }
+
             ctx.beginPath();
 
             var left = 0;
@@ -742,6 +784,13 @@ function drawAllObjects(ctx, objects) {
 
             ctx.closePath();
         } else if (obj.isA == "Text") {
+            // is invisible?
+            if (obj.invisibleExpr.length > 0) {
+                if (evalExpression(obj.invisibleExpr) > 0) {
+                    continue;
+                }
+            }
+
             ctx.beginPath();
 
             // ctx.font = '8pt Lucida Sans Typewriter';
