@@ -45,20 +45,9 @@
 			// prüfen, ob wir URL-Parameter bekommen haben...
 			// Performance printouts einschalten?
 			if (getUrlParameter('perfWriteout') != undefined) {
-			    console.log("perfWriteout enabled");
 				perfWriteout = 1;
 			}
 
-			if (getUrlParameter('logOverlayWriteout') != undefined) {
-			    console.log("logOverlayWriteout enabled");
-			    logOverlayWriteout = 1;
-			}
-
-			if (getUrlParameter('useTouchEvents') != undefined) {
-			    console.log("useTouchEvents enabled");
-			    useTouchEvents = 1;
-			}
-			
 			// wo liegen die Visu-Dateien?
 			if (getUrlParameter('plcDir') != undefined) {
 				plcDir = getUrlParameter('plcDir');
@@ -83,14 +72,8 @@
 
 			switchToVisu(startVisu);
 			$('#canvas').click(onClick);
-
-			if (useTouchEvents > 0) {
-			    $('#canvas').bind("touchstart", onMouseDown);
-			    $('#canvas').bind("touchend", onMouseUp);
-			} else {
-			    $('#canvas').mousedown(onMouseDown);
-			    $('#canvas').mouseup(onMouseUp);
-			} 
+			$('#canvas').mousedown(onMouseDown);
+			$('#canvas').mouseup(onMouseUp);
 
 			// update wieder im Intervall aufrufen (definiert in drawings.js)
 			setInterval(update, updateInterval);

@@ -29,7 +29,6 @@
     <Content Include="..\..\src\inflate.js" />
     <Content Include="..\..\src\sprintf.js" />
     <Content Include="..\..\src\steelseries.js" />
-    <Content Include="..\..\src\WebVisuPlusConfig.html" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\src\release.pl" />

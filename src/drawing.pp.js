@@ -39,14 +39,6 @@ var perfUpdateStart = 0;
 var perfUpdateEnd = 0;
 var perfUpdate = 0;
 
-// log overlay
-var logOverlayWriteout = 0;
-var logOverlayText = "LogOverlay:\n";
-
-// use touch instead of mouse-down and -up
-var useTouchEvents = 0;
-
-
 function switchToVisu(visu) {
 	// alle Arrays und Variablenzuordnungen löschen
 	visuVariables = {};
@@ -112,8 +104,7 @@ function newSimpleShape(
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
     alarmExpr,
-    leftExpr, topExpr, rightExpr, bottomExpr,
-    invisibleExpr
+    leftExpr, topExpr, rightExpr, bottomExpr
     )
 {
     this.isA = 'SimpleShape';
@@ -139,7 +130,6 @@ function newSimpleShape(
     this.topExpr = topExpr;
     this.rightExpr = rightExpr;
     this.bottomExpr = bottomExpr;
-    this.invisibleExpr = invisibleExpr;
 }
 
 function registerSimpleShape(
@@ -148,8 +138,7 @@ function registerSimpleShape(
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
     alarmExpr,
-    leftExpr, topExpr, rightExpr, bottomExpr,
-    invisibleExpr
+    leftExpr, topExpr, rightExpr, bottomExpr
     )
 {
     drawObjects.push(new newSimpleShape(
@@ -158,8 +147,7 @@ function registerSimpleShape(
             hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
             hasInsideColor, fillStyle, fillStyleAlarm,
             alarmExpr,
-            leftExpr, topExpr, rightExpr, bottomExpr,
-            invisibleExpr
+            leftExpr, topExpr, rightExpr, bottomExpr
         ));
 }
 
@@ -171,8 +159,7 @@ function newButton(
     x, y, w, h,
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
-    alarmExpr,
-    invisibleExpr
+    alarmExpr
 ) {
     this.isA = 'Button';
 
@@ -191,22 +178,19 @@ function newButton(
     this.lineWidth = lineWidth==0 ? 1 : lineWidth;
 
     this.alarmExpr = alarmExpr;
-    this.invisibleExpr = invisibleExpr;
 }
 
 function registerButton(
     x, y, w, h,
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
-    alarmExpr,
-    invisibleExpr
+    alarmExpr
     ) {
     drawObjects.push(new newButton(
             x, y, w, h,
             hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
             hasInsideColor, fillStyle, fillStyleAlarm,
-            alarmExpr,
-            invisibleExpr
+            alarmExpr
         ));
 }
 
@@ -214,7 +198,7 @@ function registerButton(
 // Text
 
 // constructor
-function newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic, invisibleExpr) {
+function newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic) {
 	this.isA = "Text";
 	this.x = parseInt(x);
 	this.y = parseInt(y);
@@ -228,18 +212,17 @@ function newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAl
 	this.fontHeight = fontHeight;
 	this.fontWeight = fontWeight;
 	this.fontItalic = fontItalic;
-	this.invisibleExpr = invisibleExpr;
 }
 
-function registerText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic, invisibleExpr) {
-    drawObjects.push(new newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic, invisibleExpr));
+function registerText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic) {
+    drawObjects.push(new newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic));
 }
 
 // ****************************************************************************
 // Bitmap
 
 // constructor
-function newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, lineWidth, invisibleExpr) {
+function newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, lineWidth) {
 	this.isA = "Bitmap";
 	this.x = parseInt(x);
 	this.y = parseInt(y);
@@ -256,11 +239,10 @@ function newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleA
 	this.strokeStyle = strokeStyle;
 	this.strokeStyleAlarm = strokeStyleAlarm;
     this.lineWidth = lineWidth==0 ? 1 : lineWidth;
-    this.invisibleExpr = invisibleExpr;
 }
 
-function registerBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width,invisibleExpr) {
-    drawObjects.push(new newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width, invisibleExpr));
+function registerBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width) {
+    drawObjects.push(new newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width));
 }
 
 
@@ -274,8 +256,7 @@ function newPolygon(
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
     alarmExpr,
-    leftExpr, topExpr,
-    invisibleExpr
+    leftExpr, topExpr
     ) {
     this.isA = 'Polygon';
     this.polyShape = polyShape;
@@ -295,7 +276,6 @@ function newPolygon(
 
     this.leftExpr = leftExpr;
     this.topExpr = topExpr;
-    this.invisibleExpr = invisibleExpr;
 }
 
 function registerPolygon(
@@ -304,8 +284,7 @@ function registerPolygon(
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
     alarmExpr,
-    leftExpr, topExpr, 
-    invisibleExpr
+    leftExpr, topExpr
     ) {
     drawObjects.push(new newPolygon(
             polyShape,
@@ -313,8 +292,7 @@ function registerPolygon(
             hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
             hasInsideColor, fillStyle, fillStyleAlarm,
             alarmExpr,
-            leftExpr, topExpr,
-            invisibleExpr
+            leftExpr, topExpr
         ));
 }
 
@@ -568,13 +546,6 @@ function drawAllObjects(ctx, objects) {
     for (var i in objects) {
         obj = objects[i];
         if (obj.isA == "SimpleShape") {
-            // is invisible?
-            if (obj.invisibleExpr.length > 0) {
-                if (evalExpression(obj.invisibleExpr) > 0) {
-                    continue;
-                }
-            }
-
             ctx.beginPath();
 
             var left = 0;
@@ -631,13 +602,6 @@ function drawAllObjects(ctx, objects) {
 
             ctx.closePath();
         } else if (obj.isA == "Bitmap") {
-            // is invisible?
-            if (obj.invisibleExpr.length > 0) {
-                if (evalExpression(obj.invisibleExpr) > 0) {
-                    continue;
-                }
-            }
-
             ctx.beginPath();
             try {
                 ctx.drawImage(obj.img, 0, 0, obj.img.width, obj.img.height, obj.x, obj.y, obj.w, obj.h);
@@ -652,13 +616,6 @@ function drawAllObjects(ctx, objects) {
             }
             ctx.closePath();
         } else if (obj.isA == "Button") {
-            // is invisible?
-            if (obj.invisibleExpr.length > 0) {
-                if (evalExpression(obj.invisibleExpr) > 0) {
-                    continue;
-                }
-            }
-
             ctx.beginPath();
 
             ctx.rect(obj.x, obj.y, obj.w, obj.h);
@@ -725,13 +682,6 @@ function drawAllObjects(ctx, objects) {
             ctx.stroke();
             ctx.closePath();
         } else if (obj.isA == "Polygon") {
-            // is invisible?
-            if (obj.invisibleExpr.length > 0) {
-                if (evalExpression(obj.invisibleExpr) > 0) {
-                    continue;
-                }
-            }
-
             ctx.beginPath();
 
             var left = 0;
@@ -792,13 +742,6 @@ function drawAllObjects(ctx, objects) {
 
             ctx.closePath();
         } else if (obj.isA == "Text") {
-            // is invisible?
-            if (obj.invisibleExpr.length > 0) {
-                if (evalExpression(obj.invisibleExpr) > 0) {
-                    continue;
-                }
-            }
-
             ctx.beginPath();
 
             // ctx.font = '8pt Lucida Sans Typewriter';
@@ -907,9 +850,7 @@ function drawAllObjects(ctx, objects) {
                     var ssobj = new steelseries.'
                     + obj.object
                     + '(canvas, {\
-                        size: obj.w,\
-                        width: parseInt(obj.w),\
-                        height: parseInt(obj.h),'
+                        size: obj.w,'
                     + obj.properties
                     + '});'
 
@@ -952,8 +893,11 @@ function draw() {
 		ctx.closePath();
 
 		ctx.beginPath();
+	    // ctx.font = '8pt Lucida Sans Typewriter';
 		ctx.font = '10pt ';
 		ctx.fillStyle = 'rgb(255,255,255)';
+		//ctx.fillStyle = 'rgb(128,128,128)';
+		//ctx.fillStyle = 'rgb(0,0,0)';
 		ctx.textAlign = 'start';
 		ctx.textBaseline = 'top';
 
@@ -962,49 +906,6 @@ function draw() {
 		ctx.fillText('Perf paint ' + perfDisplay + 'ms', 5, 35);
 		ctx.fillText('Perf count ' + perfCount, 5, 50);
 		ctx.closePath();
-	}
-
-	if (logOverlayWriteout > 0) {
-	    ctx.beginPath();
-	    ctx.rect(visuSizeX-200, 0, visuSizeX, 140);
-	    ctx.fillStyle = "rgba(0,0,0,0.4)";
-	    ctx.fill();
-	    ctx.closePath();
-
-	    ctx.beginPath();
-	    ctx.font = '10pt ';
-	    ctx.fillStyle = 'rgb(255,255,255)';
-	    ctx.textAlign = 'start';
-	    ctx.textBaseline = 'top';
-
-	    var myText = logOverlayText;
-	    var myFontHeight = 13;
-	    var myX = visuSizeX - 200 + 5;
-	    // multiline? Dann mehrere Texte schreiben
-	    if (myText.indexOf('\n') > -1) {
-	        // myText = myText.replace(new RegExp('\\r', 'g'), '');
-	        // myText = myText.trim();
-	        var lines = myText.split('\n');
-	        var myY = 5;
-	        var newText = '';
-	        var iStart = 0;
-	        var iEnd = lines.length - 1;
-	        if (iEnd > 10) {
-	            iStart = iEnd - 10;
-	        }
-	        for (var i = iStart; i < iEnd; i++) {
-	        //for (var i in lines) {
-	            var line = lines[i];
-	            ctx.fillText(line, myX, myY);
-	            myY = myY + myFontHeight;
-	            newText += line + "\n";
-	        }
-	        logOverlayText = newText;
-	    } else {
-	        ctx.fillText(myText, myX, 5);
-	    }
-
-	    ctx.closePath();
 	}
 
 	perfDisplayEnd = new Date().getTime();

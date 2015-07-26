@@ -13,7 +13,6 @@ SSSRC = steelseries-min.js
 
 TARGET1 = ../release/WebVisu.html
 TARGET2 = ../release/WebVisuPlus.html
-TARGET3 = ../release/WebVisuPlusConfig.html
 
 PPFLAGS =
 
@@ -28,10 +27,6 @@ $(TARGET1): $(SRC) $(PPOBJ) release.pl
 $(TARGET2): PPFLAGS = -DUSE_STEELSERIES=1
 $(TARGET2): $(SRC) $(PPOBJ) $(SSSRC) release.pl
 	perl release.pl WebVisuDev.oo.html > $(TARGET2)
-
-$(TARGET3): PPFLAGS =
-$(TARGET3): $(SRC) $(PPOBJ) release.pl
-	perl release.pl WebVisuPlusConfig.html > $(TARGET3)
 	
 clean:
 	rm -rf $(PPOBJ)

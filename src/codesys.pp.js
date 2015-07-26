@@ -35,13 +35,6 @@ var PendingMouseUpObjects = [];
 
 var parsedGroups = [];
 
-function Log(text) {
-    if (logOverlayWriteout > 0) {
-        logOverlayText += text + "\n";
-    }
-    console.log(text);
-}
-
 // constructor
 function expression(operation, value) {
 	this.operation = operation;
@@ -97,7 +90,7 @@ function parseExpression(parentTag) {
 	return expr;
 }
 
-function parseTextInfo(myMedia, centerFields, rectFields, exprInvisible) {
+function parseTextInfo(myMedia, centerFields, rectFields) {
 	var text_format = myMedia.find('text-format').text();
 	if (text_format.length < 1) {
 		return;
@@ -164,8 +157,7 @@ function parseTextInfo(myMedia, centerFields, rectFields, exprInvisible) {
             font_name,
             font_height,
             font_weight,
-            font_italic,
-            exprInvisible
+            font_italic
         );
 }
 
@@ -464,12 +456,6 @@ function parse_visu_elements(content) {
 				        exprBottom = parseExpression(expr_bottom);
 				    }
 
-				    var exprInvisible = [];
-				    var expr_invisible = $myMedia.find('expr-invisible');
-				    if (expr_invisible.length) {
-				        exprInvisible = parseExpression(expr_invisible);
-				    }
-
 				    registerSimpleShape(
                             shape,
                             rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
@@ -481,11 +467,10 @@ function parse_visu_elements(content) {
                             "rgb(" + fill_color + ")",
                             "rgb(" + fill_color_alarm + ")",
                             exprToggleColor,
-                            exprLeft, exprTop, exprRight, exprBottom,
-                            exprInvisible
+                            exprLeft, exprTop, exprRight, exprBottom
                         );
 
-				    parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
+				    parseTextInfo($myMedia, centerFields, rectFields);
 
 				    parseClickInfo($myMedia, rectFields);
 				}
@@ -520,22 +505,14 @@ function parse_visu_elements(content) {
 				frame_color_alarm = $myMedia.find('frame-color-alarm').text();
 			}
 			var line_width = $myMedia.find('line-width').text();
-
-			var exprInvisible = [];
-			var expr_invisible = $myMedia.find('expr-invisible');
-			if (expr_invisible.length) {
-			    exprInvisible = parseExpression(expr_invisible);
-			}
-
 			registerBitmap(
 				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
 				filename,
 				has_inside_color, fill_color, fill_color_alarm,
-				has_frame_color, frame_color, frame_color_alarm, line_width,
-                exprInvisible
+				has_frame_color, frame_color, frame_color_alarm, line_width
 				);
 
-			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
+			parseTextInfo($myMedia, centerFields, rectFields);
 
 			parseClickInfo($myMedia, rectFields);
 		} else if (type == 'button') {
@@ -572,12 +549,6 @@ function parse_visu_elements(content) {
 		        exprToggleColor = parseExpression(expr_toggle_color);
 		    }
 
-		    var exprInvisible = [];
-		    var expr_invisible = $myMedia.find('expr-invisible');
-		    if (expr_invisible.length) {
-		        exprInvisible = parseExpression(expr_invisible);
-		    }
-
 		    registerButton(
                     rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
                     has_frame_color,
@@ -587,11 +558,10 @@ function parse_visu_elements(content) {
                     has_inside_color,
                     "rgb(" + fill_color + ")",
                     "rgb(" + fill_color_alarm + ")",
-                    exprToggleColor,
-                    exprInvisible
+                    exprToggleColor
                 );
 
-		    parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
+		    parseTextInfo($myMedia, centerFields, rectFields);
 
 		    parseClickInfo($myMedia, rectFields);
 		} else if (type == 'polygon') {
@@ -646,12 +616,6 @@ function parse_visu_elements(content) {
 		        exprTop = parseExpression(expr_top);
 		    }
 
-		    var exprInvisible = [];
-		    var expr_invisible = $myMedia.find('expr-invisible');
-		    if (expr_invisible.length) {
-		        exprInvisible = parseExpression(expr_invisible);
-		    }
-
 		    if ((polyShape == 'polygon') || (polyShape == 'polyline')) {
 		        registerPolygon(
                         polyShape,
@@ -664,8 +628,7 @@ function parse_visu_elements(content) {
                         "rgb(" + fill_color + ")",
                         "rgb(" + fill_color_alarm + ")",
                         exprToggleColor,
-                        exprLeft, exprTop,
-                        exprInvisible
+                        exprLeft, exprTop
                     );
 		    } else {
 		        console.log("unknown poly-shape: " + polyShape);
@@ -824,27 +787,11 @@ function update_vars() {
 	});
 }
 
-
-function pointerEventToXY(e) {
-    var out = { x: 0, y: 0 };
-    if (e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel') {
-        var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
-        out.x = touch.pageX;
-        out.y = touch.pageY;
-    } else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover' || e.type == 'mouseout' || e.type == 'mouseenter' || e.type == 'mouseleave') {
-        out.x = e.pageX;
-        out.y = e.pageY;
-    }
-    return out;
-};
-
-
 // der Click-Handler
 function onClick( e ) {
 	var x = e.pageX-$("#canvas").offset().left;
 	var y = e.pageY - $("#canvas").offset().top;
-	console.log("onClick");
-	logOverlayText += "onClick\n";
+	//console.log("onClick");
 	//console.log("X " + e.pageX + " Y " + e.pageY);
 	//console.log("X " + x + " Y " + y);
 
@@ -886,14 +833,11 @@ function onClick( e ) {
 
 // der MouseDown-Handler
 function onMouseDown(e) {
-    //var x = e.pageX - $("#canvas").offset().left;
-    //var y = e.pageY - $("#canvas").offset().top;
-    var pos = pointerEventToXY(e);
-    var x = pos.x;
-    var y = pos.y;
-
-	Log("onMouseDown");
-	Log("X " + x + " Y " + y);
+	var x = e.pageX - $("#canvas").offset().left;
+	var y = e.pageY - $("#canvas").offset().top;
+	//console.log("onMouseDown");
+	//console.log("X " + e.pageX + " Y " + e.pageY);
+	//console.log("X " + x + " Y " + y);
 
 	// ein neuer MouseDown hatte sicherlich einen MouseUp voran - nur, falls der verloren ging
 	// passiert komischerweise ab und zu bei Firefox
@@ -956,8 +900,7 @@ function HandlePendingMouseUps() {
 // Deshalb wurde der normale MouseUp (der genauso funktionierte wie der MouseDown) ersetzt durch
 // den Mechanismus "PendingMouseUp".
 function onMouseUp(e) {
-    Log("onMouseUp");
-    HandlePendingMouseUps();
+	HandlePendingMouseUps();
 }
 
 
