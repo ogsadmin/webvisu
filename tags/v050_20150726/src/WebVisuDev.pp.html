@@ -1,0 +1,100 @@
+﻿<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>WebVisu (development)</title>
+		<script src="jquery-2.0.3.min.js"></script>
+        <script src="jquery-ajax-blob-arraybuffer.js"></script>
+		<script src="zip.js"></script>
+		<script src="inflate.js"></script>
+		<script src="sprintf.js"></script>
+<!--
+#ifdef USE_STEELSERIES
+-->
+        <script src="steelseries-min.js"></script>
+<!--
+#endif
+-->
+	</head>
+	<body>
+		<script src="utils.pp.js"></script>
+		<!-- Die eigentliche Groesse des Canvas setzen wir abhaengig von der Visu -->
+		<div id="contain" style="position:relative">
+			<canvas id="canvas" style="position:absolute" width="50" height="50"></canvas>
+		</div>
+		<script src="drawing.pp.js"></script>
+		<script src="codesys.pp.js"></script>
+		<script>
+/*
+#ifdef USE_STEELSERIES
+*/
+			// ist steelseries installiert?
+			if (typeof steelseries == 'undefined') {
+				steelseriesSupport = false;
+				console.log("steelseriesSupport disabled");
+			} else {
+				steelseriesSupport = true;
+				console.log("steelseriesSupport enabled");
+			}
+/*
+#endif
+*/
+			// finden wir mal heraus wo unsere Visu liegt
+			determineVisuLocation();
+
+			// prüfen, ob wir URL-Parameter bekommen haben...
+			// Performance printouts einschalten?
+			if (getUrlParameter('perfWriteout') != undefined) {
+			    console.log("perfWriteout enabled");
+				perfWriteout = 1;
+			}
+
+			if (getUrlParameter('logOverlayWriteout') != undefined) {
+			    console.log("logOverlayWriteout enabled");
+			    logOverlayWriteout = 1;
+			}
+
+			if (getUrlParameter('useTouchEvents') != undefined) {
+			    console.log("useTouchEvents enabled");
+			    useTouchEvents = 1;
+			}
+			
+			// wo liegen die Visu-Dateien?
+			if (getUrlParameter('plcDir') != undefined) {
+				plcDir = getUrlParameter('plcDir');
+				console.log("plcDir " + plcDir);
+				if (plcDir.endsWith('/')) {
+					plcDir = plcDir.substring(0, plcDir.length - 1);
+				}
+				console.log("set plcDir to <" + plcDir + ">");
+			}
+
+			// welche URL sollen wir für die Variablen-Posts nehmen?
+			if (getUrlParameter('postUrl') != undefined) {
+				postUrl = getUrlParameter('postUrl');
+				console.log("set postUrl to <" + postUrl + ">");
+			}
+
+			// mit welcher Visu sollen wir starten?
+			if (getUrlParameter('startVisu') != undefined) {
+				startVisu = getUrlParameter('startVisu');
+				console.log("set startVisu to <" + startVisu + ">");
+			}
+
+			switchToVisu(startVisu);
+			$('#canvas').click(onClick);
+
+			if (useTouchEvents > 0) {
+			    $('#canvas').bind("touchstart", onMouseDown);
+			    $('#canvas').bind("touchend", onMouseUp);
+			} else {
+			    $('#canvas').mousedown(onMouseDown);
+			    $('#canvas').mouseup(onMouseUp);
+			} 
+
+			// update wieder im Intervall aufrufen (definiert in drawings.js)
+			setInterval(update, updateInterval);
+		</script>
+</body>
+</html>
+
