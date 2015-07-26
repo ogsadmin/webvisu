@@ -35,6 +35,13 @@ var PendingMouseUpObjects = [];
 
 var parsedGroups = [];
 
+function Log(text) {
+    if (logOverlayWriteout > 0) {
+        logOverlayText += text + "\n";
+    }
+    console.log(text);
+}
+
 // constructor
 function expression(operation, value) {
 	this.operation = operation;
@@ -817,11 +824,27 @@ function update_vars() {
 	});
 }
 
+
+function pointerEventToXY(e) {
+    var out = { x: 0, y: 0 };
+    if (e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel') {
+        var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
+        out.x = touch.pageX;
+        out.y = touch.pageY;
+    } else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover' || e.type == 'mouseout' || e.type == 'mouseenter' || e.type == 'mouseleave') {
+        out.x = e.pageX;
+        out.y = e.pageY;
+    }
+    return out;
+};
+
+
 // der Click-Handler
 function onClick( e ) {
 	var x = e.pageX-$("#canvas").offset().left;
 	var y = e.pageY - $("#canvas").offset().top;
-	//console.log("onClick");
+	console.log("onClick");
+	logOverlayText += "onClick\n";
 	//console.log("X " + e.pageX + " Y " + e.pageY);
 	//console.log("X " + x + " Y " + y);
 
@@ -863,11 +886,14 @@ function onClick( e ) {
 
 // der MouseDown-Handler
 function onMouseDown(e) {
-	var x = e.pageX - $("#canvas").offset().left;
-	var y = e.pageY - $("#canvas").offset().top;
-	//console.log("onMouseDown");
-	//console.log("X " + e.pageX + " Y " + e.pageY);
-	//console.log("X " + x + " Y " + y);
+    //var x = e.pageX - $("#canvas").offset().left;
+    //var y = e.pageY - $("#canvas").offset().top;
+    var pos = pointerEventToXY(e);
+    var x = pos.x;
+    var y = pos.y;
+
+	Log("onMouseDown");
+	Log("X " + x + " Y " + y);
 
 	// ein neuer MouseDown hatte sicherlich einen MouseUp voran - nur, falls der verloren ging
 	// passiert komischerweise ab und zu bei Firefox
@@ -930,7 +956,8 @@ function HandlePendingMouseUps() {
 // Deshalb wurde der normale MouseUp (der genauso funktionierte wie der MouseDown) ersetzt durch
 // den Mechanismus "PendingMouseUp".
 function onMouseUp(e) {
-	HandlePendingMouseUps();
+    Log("onMouseUp");
+    HandlePendingMouseUps();
 }
 
 
