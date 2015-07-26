@@ -39,6 +39,14 @@ var perfUpdateStart = 0;
 var perfUpdateEnd = 0;
 var perfUpdate = 0;
 
+// log overlay
+var logOverlayWriteout = 0;
+var logOverlayText = "LogOverlay:\n";
+
+// use touch instead of mouse-down and -up
+var useTouchEvents = 0;
+
+
 function switchToVisu(visu) {
 	// alle Arrays und Variablenzuordnungen löschen
 	visuVariables = {};
@@ -944,11 +952,8 @@ function draw() {
 		ctx.closePath();
 
 		ctx.beginPath();
-	    // ctx.font = '8pt Lucida Sans Typewriter';
 		ctx.font = '10pt ';
 		ctx.fillStyle = 'rgb(255,255,255)';
-		//ctx.fillStyle = 'rgb(128,128,128)';
-		//ctx.fillStyle = 'rgb(0,0,0)';
 		ctx.textAlign = 'start';
 		ctx.textBaseline = 'top';
 
@@ -957,6 +962,49 @@ function draw() {
 		ctx.fillText('Perf paint ' + perfDisplay + 'ms', 5, 35);
 		ctx.fillText('Perf count ' + perfCount, 5, 50);
 		ctx.closePath();
+	}
+
+	if (logOverlayWriteout > 0) {
+	    ctx.beginPath();
+	    ctx.rect(visuSizeX-200, 0, visuSizeX, 140);
+	    ctx.fillStyle = "rgba(0,0,0,0.4)";
+	    ctx.fill();
+	    ctx.closePath();
+
+	    ctx.beginPath();
+	    ctx.font = '10pt ';
+	    ctx.fillStyle = 'rgb(255,255,255)';
+	    ctx.textAlign = 'start';
+	    ctx.textBaseline = 'top';
+
+	    var myText = logOverlayText;
+	    var myFontHeight = 13;
+	    var myX = visuSizeX - 200 + 5;
+	    // multiline? Dann mehrere Texte schreiben
+	    if (myText.indexOf('\n') > -1) {
+	        // myText = myText.replace(new RegExp('\\r', 'g'), '');
+	        // myText = myText.trim();
+	        var lines = myText.split('\n');
+	        var myY = 5;
+	        var newText = '';
+	        var iStart = 0;
+	        var iEnd = lines.length - 1;
+	        if (iEnd > 10) {
+	            iStart = iEnd - 10;
+	        }
+	        for (var i = iStart; i < iEnd; i++) {
+	        //for (var i in lines) {
+	            var line = lines[i];
+	            ctx.fillText(line, myX, myY);
+	            myY = myY + myFontHeight;
+	            newText += line + "\n";
+	        }
+	        logOverlayText = newText;
+	    } else {
+	        ctx.fillText(myText, myX, 5);
+	    }
+
+	    ctx.closePath();
 	}
 
 	perfDisplayEnd = new Date().getTime();
