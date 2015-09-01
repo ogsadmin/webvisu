@@ -44,44 +44,44 @@ var logOverlayWriteout = 0;
 var logOverlayText = "LogOverlay:\n";
 
 // use touch instead of mouse-down and -up
-var useTouchEvents = 0;
+var useTouchEvents = ('ontouchstart' in window);
 
 
 function switchToVisu(visu) {
-	// alle Arrays und Variablenzuordnungen löschen
-	visuVariables = {};
-	drawObjects = [];
-	clickRegions = [];
+    // alle Arrays und Variablenzuordnungen löschen
+    visuVariables = {};
+    drawObjects = [];
+    clickRegions = [];
 
 /*
 #ifdef USE_STEELSERIES
 */
-	for (var i in canvObjects) {
-	    co = canvObjects[i];
-	    co.ssobj = null;
-	    $('#contain')[0].removeChild(co.canvas);
-	    co.canvas = null;
-	}
-	canvObjects = [];
+    for (var i in canvObjects) {
+        co = canvObjects[i];
+        co.ssobj = null;
+        $('#contain')[0].removeChild(co.canvas);
+        co.canvas = null;
+    }
+    canvObjects = [];
 /*
 #endif
 */
 
 
-	visuName = "";
-	visuSizeX = 0;
-	visuSizeY = 0;
+    visuName = "";
+    visuSizeX = 0;
+    visuSizeY = 0;
 
-	// INIs neu laden
-	load_ini(plcDir + "/visu_ini.xml");
-	// neue Visu laden
-	var filename = plcDir + "/" + visu;
-	if (visuCompressed == 1) {
-		filename += "_xml.zip";
-	} else {
-		filename += ".xml";
-	}
-	load_visu(filename);
+    // INIs neu laden
+    load_ini(plcDir + "/visu_ini.xml");
+    // neue Visu laden
+    var filename = plcDir + "/" + visu;
+    if (visuCompressed == 1) {
+        filename += "_xml.zip";
+    } else {
+        filename += ".xml";
+    }
+    load_visu(filename);
 }
 
 // ****************************************************************************
@@ -89,17 +89,17 @@ function switchToVisu(visu) {
 
 // constructor
 function newVariable(name, addr, value) {
-	this.name = name;
-	this.addr = addr;
-	this.addrP = addr.replace(/,/g, '|');
-	this.value = value;
-	var addrFields = addr.split(",");
-	this.numBytes = addrFields[2];
-	this.varType = parseInt(addrFields[3]);
+    this.name = name;
+    this.addr = addr;
+    this.addrP = addr.replace(/,/g, '|');
+    this.value = value;
+    var addrFields = addr.split(",");
+    this.numBytes = addrFields[2];
+    this.varType = parseInt(addrFields[3]);
 }
 
 function registerVariable(name, addr, value) {
-	visuVariables[name] = new newVariable(name, addr, '');
+    visuVariables[name] = new newVariable(name, addr, '');
 }
 
 // ****************************************************************************
@@ -215,20 +215,20 @@ function registerButton(
 
 // constructor
 function newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic, invisibleExpr) {
-	this.isA = "Text";
-	this.x = parseInt(x);
-	this.y = parseInt(y);
-	this.format = format;
-	this.exprTextDisplay = exprTextDisplay;
-	this.fillStyle = fillStyle;
-	this.exprTextColor = exprTextColor;
-	this.textAlignHorz = textAlignHorz;
-	this.textAlignVert = textAlignVert;
-	this.fontName = fontName;
-	this.fontHeight = fontHeight;
-	this.fontWeight = fontWeight;
-	this.fontItalic = fontItalic;
-	this.invisibleExpr = invisibleExpr;
+    this.isA = "Text";
+    this.x = parseInt(x);
+    this.y = parseInt(y);
+    this.format = format;
+    this.exprTextDisplay = exprTextDisplay;
+    this.fillStyle = fillStyle;
+    this.exprTextColor = exprTextColor;
+    this.textAlignHorz = textAlignHorz;
+    this.textAlignVert = textAlignVert;
+    this.fontName = fontName;
+    this.fontHeight = fontHeight;
+    this.fontWeight = fontWeight;
+    this.fontItalic = fontItalic;
+    this.invisibleExpr = invisibleExpr;
 }
 
 function registerText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic, invisibleExpr) {
@@ -240,21 +240,21 @@ function registerText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, t
 
 // constructor
 function newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, lineWidth, invisibleExpr) {
-	this.isA = "Bitmap";
-	this.x = parseInt(x);
-	this.y = parseInt(y);
-	this.w = parseInt(w);
-	this.h = parseInt(h);
-	this.fileName = fileName;
-	this.img = new Image();
-	this.img.src = plcDir + '/' + fileName;
+    this.isA = "Bitmap";
+    this.x = parseInt(x);
+    this.y = parseInt(y);
+    this.w = parseInt(w);
+    this.h = parseInt(h);
+    this.fileName = fileName;
+    this.img = new Image();
+    this.img.src = plcDir + '/' + fileName;
 
-	this.has_inside_color = has_inside_color;
-	this.fillStyle = fillStyle;
-	this.fillStyleAlarm = fillStyleAlarm;
-	this.has_frame_color = has_frame_color;
-	this.strokeStyle = strokeStyle;
-	this.strokeStyleAlarm = strokeStyleAlarm;
+    this.has_inside_color = has_inside_color;
+    this.fillStyle = fillStyle;
+    this.fillStyleAlarm = fillStyleAlarm;
+    this.has_frame_color = has_frame_color;
+    this.strokeStyle = strokeStyle;
+    this.strokeStyleAlarm = strokeStyleAlarm;
     this.lineWidth = lineWidth==0 ? 1 : lineWidth;
     this.invisibleExpr = invisibleExpr;
 }
@@ -421,11 +421,11 @@ function registerCanvObj(canvas, ssobj, exprTextDisplay) {
 // constructor
 function newClickToggle(x, y, w, h, variable) {
     this.isA = 'Toggle';
-	this.x = parseInt(x);
-	this.y = parseInt(y);
-	this.w = parseInt(w);
-	this.h = parseInt(h);
-	this.variable = variable;
+    this.x = parseInt(x);
+    this.y = parseInt(y);
+    this.w = parseInt(w);
+    this.h = parseInt(h);
+    this.variable = variable;
 }
 
 function registerClickToggle(x, y, w, h, variable) {
@@ -440,11 +440,11 @@ function registerClickToggle(x, y, w, h, variable) {
 function regClickTap(x, y, w, h, variable, newval) {
     this.isA = 'Tap';
     this.x = parseInt(x);
-	this.y = parseInt(y);
-	this.w = parseInt(w);
-	this.h = parseInt(h);
-	this.variable = variable;
-	this.newval = newval;
+    this.y = parseInt(y);
+    this.w = parseInt(w);
+    this.h = parseInt(h);
+    this.variable = variable;
+    this.newval = newval;
 }
 
 function registerClickTap(x, y, w, h, variable, newval) {
@@ -458,10 +458,10 @@ function registerClickTap(x, y, w, h, variable, newval) {
 function regClickZoom(x, y, w, h, visu) {
     this.isA = 'Zoom';
     this.x = parseInt(x);
-	this.y = parseInt(y);
-	this.w = parseInt(w);
-	this.h = parseInt(h);
-	this.visu = visu;
+    this.y = parseInt(y);
+    this.w = parseInt(w);
+    this.h = parseInt(h);
+    this.visu = visu;
 }
 
 function registerClickZoom(x, y, w, h, visu) {
@@ -481,87 +481,87 @@ function strformat(format, val) {
     if (format.indexOf('%') > -1) {
         format = sprintf(format, val);
     }
-	return format;
+    return format;
 }
 
 
 CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
-	if (w < 2 * r) r = w / 2;
-	if (h < 2 * r) r = h / 2;
-	this.beginPath();
-	this.moveTo(x+r, y);
-	this.arcTo(x+w, y,   x+w, y+h, r);
-	this.arcTo(x+w, y+h, x,   y+h, r);
-	this.arcTo(x,   y+h, x,   y,   r);
-	this.arcTo(x,   y,   x+w, y,   r);
-	this.closePath();
-	return this;
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    this.beginPath();
+    this.moveTo(x+r, y);
+    this.arcTo(x+w, y,   x+w, y+h, r);
+    this.arcTo(x+w, y+h, x,   y+h, r);
+    this.arcTo(x,   y+h, x,   y,   r);
+    this.arcTo(x,   y,   x+w, y,   r);
+    this.closePath();
+    return this;
 }
 
 CanvasRenderingContext2D.prototype.ellipse = function (x, y, w, h) {
-	var kappa = .5522848,
-		ox = (w / 2) * kappa, // control point offset horizontal
-		oy = (h / 2) * kappa, // control point offset vertical
-		xe = x + w,           // x-end
-		ye = y + h,           // y-end
-		xm = x + w / 2,       // x-middle
-		ym = y + h / 2;       // y-middle
+    var kappa = .5522848,
+        ox = (w / 2) * kappa, // control point offset horizontal
+        oy = (h / 2) * kappa, // control point offset vertical
+        xe = x + w,           // x-end
+        ye = y + h,           // y-end
+        xm = x + w / 2,       // x-middle
+        ym = y + h / 2;       // y-middle
 
-	this.beginPath();
-	this.moveTo(x, ym);
-	this.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
-	this.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
-	this.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
-	this.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
-	this.closePath();
-	this.stroke();
-	return this;
+    this.beginPath();
+    this.moveTo(x, ym);
+    this.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+    this.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+    this.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+    this.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+    this.closePath();
+    this.stroke();
+    return this;
 }
 
 CanvasRenderingContext2D.prototype.ellipseByCenter = function (cx, cy, w, h) {
-	this.ellipse(cx - w / 2.0, cy - h / 2.0, w, h);
-	return this;
+    this.ellipse(cx - w / 2.0, cy - h / 2.0, w, h);
+    return this;
 }
 
 
 function evalExpression(expr) {
-	var result = [];
-	//console.log("evalExpression");
-	for (var i = 0; i < expr.length; i = i + 1) {
-		if (expr[i].operation == 'var') {
-			//console.log("push var " + expr[i].value + " ( " + visuVariables[expr[i].value].value + " ) ");
-			result.push(visuVariables[expr[i].value].value);
-		} else if (expr[i].operation == 'const') {
-			result.push(parseFloat(expr[i].value));
-		} else if (expr[i].operation == 'op') {
-			if (expr[i].value == 'OR(2)') {
-				var v1 = result.pop();
-				var v2 = result.pop();
-				result.push(v1 || v2);
-			} else if (expr[i].value == 'AND(2)') {
-				var v1 = result.pop();
-				var v2 = result.pop();
-				result.push(v1 && v2);
-			} else if (expr[i].value == '/(2)') {
-				var v1 = result.pop();
-				var v2 = result.pop();
-				result.push(v2 / v1);
-			} else if (expr[i].value == '*(2)') {
-				var v1 = result.pop();
-				var v2 = result.pop();
-				result.push(v2 * v1);
-			} else if (expr[i].value == '+(2)') {
-				var v1 = result.pop();
-				var v2 = result.pop();
-				result.push(v2 + v1);
-			} else if (expr[i].value == '-(2)') {
-				var v1 = result.pop();
-				var v2 = result.pop();
-				result.push(v2 - v1);
-			}
-		}
-	}
-	return result[0];
+    var result = [];
+    //Log("evalExpression");
+    for (var i = 0; i < expr.length; i = i + 1) {
+        if (expr[i].operation == 'var') {
+            //Log("push var " + expr[i].value + " ( " + visuVariables[expr[i].value].value + " ) ");
+            result.push(visuVariables[expr[i].value].value);
+        } else if (expr[i].operation == 'const') {
+            result.push(parseFloat(expr[i].value));
+        } else if (expr[i].operation == 'op') {
+            if (expr[i].value == 'OR(2)') {
+                var v1 = result.pop();
+                var v2 = result.pop();
+                result.push(v1 || v2);
+            } else if (expr[i].value == 'AND(2)') {
+                var v1 = result.pop();
+                var v2 = result.pop();
+                result.push(v1 && v2);
+            } else if (expr[i].value == '/(2)') {
+                var v1 = result.pop();
+                var v2 = result.pop();
+                result.push(v2 / v1);
+            } else if (expr[i].value == '*(2)') {
+                var v1 = result.pop();
+                var v2 = result.pop();
+                result.push(v2 * v1);
+            } else if (expr[i].value == '+(2)') {
+                var v1 = result.pop();
+                var v2 = result.pop();
+                result.push(v2 + v1);
+            } else if (expr[i].value == '-(2)') {
+                var v1 = result.pop();
+                var v2 = result.pop();
+                result.push(v2 - v1);
+            }
+        }
+    }
+    return result[0];
 }
 
 function drawAllObjects(ctx, objects) {
@@ -588,18 +588,18 @@ function drawAllObjects(ctx, objects) {
 
             switch (obj.shape) {
                 case 'rectangle':
-                    ctx.rect(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom);
+                    ctx.rect(obj.x + left, obj.y + top, obj.w + right - left, obj.h + bottom - top);
                     break;
                 case 'round-rect':
-                    radius = (obj.w + right) / 20;
-                    ctx.roundRect(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom, radius);
+                    radius = (obj.w + right - left) / 20;
+                    ctx.roundRect(obj.x + left, obj.y + top, obj.w + right - left, obj.h + bottom - top, radius);
                     break;
                 case 'circle':
-                    ctx.ellipse(obj.x + left, obj.y + top, obj.w + right, obj.h + bottom);
+                    ctx.ellipse(obj.x + left, obj.y + top, obj.w + right - left, obj.h + bottom - top);
                     break;
                 case 'line':
-                    ctx.moveTo(obj.x + left, obj.y + top + obj.h + bottom);
-                    ctx.lineTo(obj.x + left + obj.w + right, obj.y + top);
+                    ctx.moveTo(obj.x + left, obj.y + top + obj.h + bottom - top);
+                    ctx.lineTo(obj.x + left + obj.w + right - left, obj.y + top);
                     break;
                 default:
                     break;
@@ -642,7 +642,7 @@ function drawAllObjects(ctx, objects) {
             try {
                 ctx.drawImage(obj.img, 0, 0, obj.img.width, obj.img.height, obj.x, obj.y, obj.w, obj.h);
             } catch (e) {
-                console.log("drawImage " + obj.img.src + " error " + e.name);
+                Log("drawImage " + obj.img.src + " error " + e.name);
             }
             ctx.rect(obj.x, obj.y, obj.w, obj.h);
             if (obj.has_frame_color === 'true') {
@@ -839,7 +839,7 @@ function drawAllObjects(ctx, objects) {
                 font += 'Lucida Sans Typewriter ';
             }
 
-            //console.log('set font to <' + font + '>');
+            //Log('set font to <' + font + '>');
             ctx.font = font;
 
             var textColor = obj.fillStyle;
@@ -852,7 +852,7 @@ function drawAllObjects(ctx, objects) {
             var textDisplay = 0;
             if (obj.exprTextDisplay.length > 0) { textDisplay = evalExpression(obj.exprTextDisplay); }
             txt = strformat(obj.format, textDisplay);
-            //console.log('write text <' + txt + '>');
+            //Log('write text <' + txt + '>');
 
             // multiline? Dann mehrere Texte schreiben
             if (txt.indexOf('\n') > -1) {
@@ -913,7 +913,7 @@ function drawAllObjects(ctx, objects) {
                     + obj.properties
                     + '});'
 
-                //console.log("evalString: <" + evalString + ">");
+                //Log("evalString: <" + evalString + ">");
 
                 eval(evalString);
 
@@ -929,91 +929,91 @@ function drawAllObjects(ctx, objects) {
 }
 
 function draw() {
-	perfDisplayStart = new Date().getTime();
+    perfDisplayStart = new Date().getTime();
 
-	//get a reference to the canvas
-	var ctx = $('#canvas')[0].getContext("2d");
+    //get a reference to the canvas
+    var ctx = $('#canvas')[0].getContext("2d");
 
-	//clear background
-	ctx.beginPath();
-	ctx.clearRect(0, 0, visuSizeX, visuSizeY);
-	ctx.closePath();
+    //clear background
+    ctx.beginPath();
+    ctx.clearRect(0, 0, visuSizeX, visuSizeY);
+    ctx.closePath();
 
-	drawAllObjects(ctx, drawObjects);
+    drawAllObjects(ctx, drawObjects);
 
-	// performance-Messungen ausgeben
-	if (perfWriteout > 0) {
-		perfCount++;
+    // performance-Messungen ausgeben
+    if (perfWriteout > 0) {
+        perfCount++;
 
-		ctx.beginPath();
-		ctx.rect(0, 0, 140, 70);
-	    ctx.fillStyle = "rgba(0,0,0,0.4)";
-		ctx.fill();
-		ctx.closePath();
+        ctx.beginPath();
+        ctx.rect(0, 0, 140, 70);
+        ctx.fillStyle = "rgba(0,0,0,0.4)";
+        ctx.fill();
+        ctx.closePath();
 
-		ctx.beginPath();
-		ctx.font = '10pt ';
-		ctx.fillStyle = 'rgb(255,255,255)';
-		ctx.textAlign = 'start';
-		ctx.textBaseline = 'top';
+        ctx.beginPath();
+        ctx.font = '10pt ';
+        ctx.fillStyle = 'rgb(255,255,255)';
+        ctx.textAlign = 'start';
+        ctx.textBaseline = 'top';
 
-		ctx.fillText('Perf load ' + perfLoad + 'ms', 5, 5);
-		ctx.fillText('Perf update ' + perfUpdate + 'ms (async)', 5, 20);
-		ctx.fillText('Perf paint ' + perfDisplay + 'ms', 5, 35);
-		ctx.fillText('Perf count ' + perfCount, 5, 50);
-		ctx.closePath();
-	}
+        ctx.fillText('Perf load ' + perfLoad + 'ms', 5, 5);
+        ctx.fillText('Perf update ' + perfUpdate + 'ms (async)', 5, 20);
+        ctx.fillText('Perf paint ' + perfDisplay + 'ms', 5, 35);
+        ctx.fillText('Perf count ' + perfCount, 5, 50);
+        ctx.closePath();
+    }
 
-	if (logOverlayWriteout > 0) {
-	    ctx.beginPath();
-	    ctx.rect(visuSizeX-200, 0, visuSizeX, 140);
-	    ctx.fillStyle = "rgba(0,0,0,0.4)";
-	    ctx.fill();
-	    ctx.closePath();
+    if (logOverlayWriteout > 0) {
+        ctx.beginPath();
+        ctx.rect(visuSizeX-200, 0, visuSizeX, 140);
+        ctx.fillStyle = "rgba(0,0,0,0.4)";
+        ctx.fill();
+        ctx.closePath();
 
-	    ctx.beginPath();
-	    ctx.font = '10pt ';
-	    ctx.fillStyle = 'rgb(255,255,255)';
-	    ctx.textAlign = 'start';
-	    ctx.textBaseline = 'top';
+        ctx.beginPath();
+        ctx.font = '10pt ';
+        ctx.fillStyle = 'rgb(255,255,255)';
+        ctx.textAlign = 'start';
+        ctx.textBaseline = 'top';
 
-	    var myText = logOverlayText;
-	    var myFontHeight = 13;
-	    var myX = visuSizeX - 200 + 5;
-	    // multiline? Dann mehrere Texte schreiben
-	    if (myText.indexOf('\n') > -1) {
-	        // myText = myText.replace(new RegExp('\\r', 'g'), '');
-	        // myText = myText.trim();
-	        var lines = myText.split('\n');
-	        var myY = 5;
-	        var newText = '';
-	        var iStart = 0;
-	        var iEnd = lines.length - 1;
-	        if (iEnd > 10) {
-	            iStart = iEnd - 10;
-	        }
-	        for (var i = iStart; i < iEnd; i++) {
-	        //for (var i in lines) {
-	            var line = lines[i];
-	            ctx.fillText(line, myX, myY);
-	            myY = myY + myFontHeight;
-	            newText += line + "\n";
-	        }
-	        logOverlayText = newText;
-	    } else {
-	        ctx.fillText(myText, myX, 5);
-	    }
+        var myText = logOverlayText;
+        var myFontHeight = 13;
+        var myX = visuSizeX - 200 + 5;
+        // multiline? Dann mehrere Texte schreiben
+        if (myText.indexOf('\n') > -1) {
+            // myText = myText.replace(new RegExp('\\r', 'g'), '');
+            // myText = myText.trim();
+            var lines = myText.split('\n');
+            var myY = 5;
+            var newText = '';
+            var iStart = 0;
+            var iEnd = lines.length - 1;
+            if (iEnd > 10) {
+                iStart = iEnd - 10;
+            }
+            for (var i = iStart; i < iEnd; i++) {
+            //for (var i in lines) {
+                var line = lines[i];
+                ctx.fillText(line, myX, myY);
+                myY = myY + myFontHeight;
+                newText += line + "\n";
+            }
+            logOverlayText = newText;
+        } else {
+            ctx.fillText(myText, myX, 5);
+        }
 
-	    ctx.closePath();
-	}
+        ctx.closePath();
+    }
 
-	perfDisplayEnd = new Date().getTime();
-	perfDisplay = perfDisplayEnd - perfDisplayStart;
-	//console.log("display finished in " + perfDisplay + "ms");
+    perfDisplayEnd = new Date().getTime();
+    perfDisplay = perfDisplayEnd - perfDisplayStart;
+    //Log("display finished in " + perfDisplay + "ms");
 }
 
 function update() {
-	update_vars();
-	draw();
+    update_vars();
+    draw();
 }
 

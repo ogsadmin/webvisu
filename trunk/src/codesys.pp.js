@@ -35,13 +35,6 @@ var PendingMouseUpObjects = [];
 
 var parsedGroups = [];
 
-function Log(text) {
-    if (logOverlayWriteout > 0) {
-        logOverlayText += text + "\n";
-    }
-    console.log(text);
-}
-
 // constructor
 function expression(operation, value) {
 	this.operation = operation;
@@ -277,17 +270,17 @@ function string_to_array_buffer_16(str) {
 function CheckStr8(str) {
 	for (var i = 0, strLen = str.length; i < strLen; i++) {
 		if (str.charCodeAt(i) > 127) {
-			console.log("WARNING: " + str.charCodeAt(i).toString() + ">127");
+		    Log("WARNING: " + str.charCodeAt(i).toString() + ">127");
 		}
 		if (str.charCodeAt(i) > 255) {
-			console.log("ERROR: " + str.charCodeAt(i).toString() + ">255");
+		    Log("ERROR: " + str.charCodeAt(i).toString() + ">255");
 		}
 	}
 }
 
 // mit zip.js und inflate.js
 function load_visu_compressed_success(content) {
-	console.log("visu is compressed - try to inflate");
+    Log("visu is compressed - try to inflate");
 
 	zip.useWebWorkers = false;
 	// use a zip.BlobReader object to read zipped data stored into blob variable
@@ -313,7 +306,7 @@ function load_visu_success(content) {
     perfLoadEnd = new Date().getTime();
     perfLoad = perfLoadEnd - perfLoadStart;
 
-    //console.log("load_visu_success in " + perfLoad + "ms");
+    //Log("load_visu_success in " + perfLoad + "ms");
 
     //var xmlstr = content.xml ? content.xml : (new XMLSerializer()).serializeToString(content);
     //console.debug("content: " + xmlstr);
@@ -375,7 +368,7 @@ function parse_visu_elements(content) {
 		//console.debug("parse " + type);
 		if (type == 'simple') {
 			var shape = $myMedia.find('simple-shape').text();
-			//console.log("parse " + shape);
+		    //Log("parse " + shape);
 
 			// parse type1 objects
 			if ((shape == 'rectangle') || (shape == 'round-rect') || (shape == 'circle') || (shape == 'line')) {
@@ -490,7 +483,7 @@ function parse_visu_elements(content) {
 				    parseClickInfo($myMedia, rectFields);
 				}
 			} else {
-				console.log("unknown simple-shape: " + shape);
+			    Log("unknown simple-shape: " + shape);
 			}
 		} else if (type == 'bitmap') {
 			//console.debug("register bitmap");
@@ -668,7 +661,7 @@ function parse_visu_elements(content) {
                         exprInvisible
                     );
 		    } else {
-		        console.log("unknown poly-shape: " + polyShape);
+		        Log("unknown poly-shape: " + polyShape);
 		    }
 		} else if (type == 'group') {
 		    //console.debug("register group");
@@ -687,7 +680,7 @@ function parse_visu_elements(content) {
 		    parsedGroups.pop();
 		}
 		else {
-		    console.log("unknown type: " + type);
+		    Log("unknown type: " + type);
 		}
 	});
 }
@@ -709,7 +702,7 @@ function load_visu(filename) {
 			//dataType: 'text/plain',
 			success: load_visu_compressed_success,
 			error: function (jqXHR, textStatus, errorThrown) {
-				console.log("load_visu " + textStatus + " " + errorThrown);
+			    Log("load_visu " + textStatus + " " + errorThrown);
 			}
 		});
 	} else {
@@ -720,7 +713,7 @@ function load_visu(filename) {
 			url: filename,
 			success: load_visu_success,
 			error: function (jqXHR, textStatus, errorThrown) {
-				console.log("load_visu " + textStatus + " " + errorThrown);
+			    Log("load_visu " + textStatus + " " + errorThrown);
 			}
 		});
 	}
@@ -742,8 +735,8 @@ function update_vars() {
 
 	req = "|0|"+count+""+req+"|";
 
-	//console.log("update_vars");
-	//console.log("REQ = " + req);
+    //Log("update_vars");
+    //Log("REQ = " + req);
 
 	$.ajax({
 		type: 'POST',
@@ -752,11 +745,11 @@ function update_vars() {
 		url: postUrl,
 		data: req,
 		success: function (data) {
-			//console.log("ANS = " + data);
+		    //Log("ANS = " + data);
 			var fields = data.split('|');
 			var count = 1; // split zählt bereits vor dem ersten trenner
 			$.each(visuVariables, function (key, obj) {
-			    //console.log("TYPE = " + obj.varType + "; ANS = " + fields[count]);
+			    //Log("TYPE = " + obj.varType + "; ANS = " + fields[count]);
 			    switch (obj.varType) {
 			        case VAR_TYPE_REAL:
                     case VAR_TYPE_LREAL:
@@ -819,7 +812,7 @@ function update_vars() {
 
 			perfUpdateEnd = new Date().getTime();
 			perfUpdate = perfUpdateEnd - perfUpdateStart;
-			//console.log("update_vars finished in " + perfUpdate + "ms");
+		    //Log("update_vars finished in " + perfUpdate + "ms");
 		}
 	});
 }
@@ -843,19 +836,19 @@ function pointerEventToXY(e) {
 function onClick( e ) {
 	var x = e.pageX-$("#canvas").offset().left;
 	var y = e.pageY - $("#canvas").offset().top;
-	console.log("onClick");
+	Log("onClick");
 	logOverlayText += "onClick\n";
-	//console.log("X " + e.pageX + " Y " + e.pageY);
-	//console.log("X " + x + " Y " + y);
+    //Log("X " + e.pageX + " Y " + e.pageY);
+    //Log("X " + x + " Y " + y);
 
 	for (var i in clickRegions) {
 	    obj = clickRegions[i];
 
-		//console.log("obj.x " + obj.x + " obj.y " + obj.y + " (obj.x+obj.w) " + (obj.x + obj.w) + " (obj.y+obj.h) " + (obj.y + obj.h));
+	    //Log("obj.x " + obj.x + " obj.y " + obj.y + " (obj.x+obj.w) " + (obj.x + obj.w) + " (obj.y+obj.h) " + (obj.y + obj.h));
 
 	    if (obj.isA == 'Toggle') {
 	        if ((obj.x <= x) && (obj.y <= y) && ((obj.x + obj.w) >= x) && ((obj.y + obj.h) >= y)) {
-	            //console.log("onClick: found toggle: " + obj.variable);
+	            //Log("onClick: found toggle: " + obj.variable);
 	            if (obj.variable != '') {
 	                var newval = 1 - visuVariables[obj.variable].value;
 	                var req = '|1|1|0|' + visuVariables[obj.variable].addrP + '|' + newval + '|';
@@ -866,7 +859,7 @@ function onClick( e ) {
 	                    url: postUrl,
 	                    data: req,
 	                    //success: function( data ) {
-	                    //	console.log("success: " + data);
+	                    //	Log("success: " + data);
 	                    //}
 	                });
 
@@ -902,7 +895,7 @@ function onMouseDown(e) {
 	for (var i in clickRegions) {
 	    obj = clickRegions[i];
 
-	    //console.log("obj.x " + obj.x + " obj.y " + obj.y + " (obj.x+obj.w) " + (obj.x + obj.w) + " (obj.y+obj.h) " + (obj.y + obj.h));
+	    //Log("obj.x " + obj.x + " obj.y " + obj.y + " (obj.x+obj.w) " + (obj.x + obj.w) + " (obj.y+obj.h) " + (obj.y + obj.h));
 
 	    if (obj.isA == 'Tap') {
 	        if ((obj.x <= x) && (obj.y <= y) && (obj.x + obj.w >= x) && (obj.y + obj.h >= y)) {
