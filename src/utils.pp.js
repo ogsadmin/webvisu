@@ -4,6 +4,15 @@
  * Sammlung von allgemeinen Hilfsfunktionen
  */
 
+// LOGGING
+function Log(text) {
+    if (logOverlayWriteout > 0) {
+        logOverlayText += text + "\n";
+    }
+    console.log(text);
+}
+
+
 // gibt das Value eines "key=value" Paares aus der URL zurück
 // oder "undefined"
 function getUrlParameter(key) {
@@ -55,15 +64,15 @@ function fileExists(url) {
 
 function determineVisuLocation() {
     // finden wir mal heraus wo unsere Visu liegt
-    console.log('determine visu location - searching visu_ini.xml');
+    Log('determine visu location - searching visu_ini.xml');
     if (fileExists('/PLC/visu_ini.xml')) {
         // scheint eine Wago zu sein
-        console.log('found in /PLC');
+        Log('found in /PLC');
         plcDir = "/PLC";
         postUrl = '/plc/webvisu.htm';
     } else if (fileExists('/visu_ini.xml')) {
         // könnte eine Beck sein
-        console.log('found in /');
+        Log('found in /');
         plcDir = "";
         postUrl = '/webvisu.htm';
     }
