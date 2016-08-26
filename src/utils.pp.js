@@ -70,10 +70,18 @@ function determineVisuLocation() {
         Log('found in /PLC');
         plcDir = "/PLC";
         postUrl = '/plc/webvisu.htm';
+        postFormat = POST_FORMAT_STANDARD;
     } else if (fileExists('/visu_ini.xml')) {
         // könnte eine Beck sein
         Log('found in /');
         plcDir = "";
         postUrl = '/webvisu.htm';
+        postFormat = POST_FORMAT_STANDARD;
+    } else if (fileExists('/TcWebVisu/visu_ini.xml')) {
+        // Müsste ein TwinCat (Beckhoff) sein
+        Log('found in /TcWebVisu');
+        plcDir = "/TcWebVisu";
+        postUrl = '/UPnPDevice/TcPlcDataServiceDa.dll';
+        postFormat = POST_FORMAT_SOAP;
     }
 }
