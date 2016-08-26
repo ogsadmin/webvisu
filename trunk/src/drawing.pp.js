@@ -89,13 +89,13 @@ function switchToVisu(visu) {
 
 // constructor
 function newVariable(name, addr, value) {
-    this.name = name;
-    this.addr = addr;
-    this.addrP = addr.replace(/,/g, '|');
-    this.value = value;
+    this.name = name;                         // z.B. ".Ist_Temp_Ki1"
+    this.addr = addr;                         // z.B. "4,34175,4,6"
+    this.value = value;                       // z.B. ""
+    this.addrP = addr.replace(/,/g, '|');     // z.B. "4|34175|4|6"
     var addrFields = addr.split(",");
-    this.numBytes = addrFields[2];
-    this.varType = parseInt(addrFields[3]);
+    this.numBytes = addrFields[2];            // z.B. "4"
+    this.varType = parseInt(addrFields[3]);   // z.B. 6
 }
 
 function registerVariable(name, addr, value) {

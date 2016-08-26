@@ -31,6 +31,13 @@ const VAR_TYPE_NONE = 24;
 // globale variablen
 var postUrl = '/plc/webvisu.htm';
 
+// In welchem Format findet der Variablen-Datenaustausch statt?
+// 0 = Standard
+// 1 = Beckhoff SOAP
+const POST_FORMAT_STANDARD = 0
+const POST_FORMAT_SOAP = 1
+var postFormat = POST_FORMAT_STANDARD;
+
 var PendingMouseUpObjects = [];
 
 var parsedGroups = [];
@@ -103,7 +110,7 @@ function parseTextInfo(myMedia, centerFields, rectFields, exprInvisible) {
 	var text_align_horz = myMedia.find('text-align-horz').text();
 	var text_align_vert = myMedia.find('text-align-vert').text();
 	//var textX = centerFields[0];
-    //var textY = centerFields[1];
+	//var textY = centerFields[1];
 	var textX = rectFields[0] + (rectFields[2] - rectFields[0]) / 2;
 	var textY = rectFields[1] + (rectFields[3] - rectFields[1]) / 2;
 	var textAlignHorz = 'center';
@@ -147,27 +154,27 @@ function parseTextInfo(myMedia, centerFields, rectFields, exprInvisible) {
 	}
 
 	registerText(
-            textX, textY,
-            text_format,
-            exprTextDisplay,
-            'rgb(' + font_color + ')',
-            exprTextColor,
-            textAlignHorz,
-            textAlignVert,
-            font_name,
-            font_height,
-            font_weight,
-            font_italic,
-            exprInvisible
-        );
+			textX, textY,
+			text_format,
+			exprTextDisplay,
+			'rgb(' + font_color + ')',
+			exprTextColor,
+			textAlignHorz,
+			textAlignVert,
+			font_name,
+			font_height,
+			font_weight,
+			font_italic,
+			exprInvisible
+		);
 }
 
 function parseClickInfo(myMedia, rectFields) {
 
-    rectFields[0] += parsedGroups[parsedGroups.length - 1].x;
-    rectFields[1] += parsedGroups[parsedGroups.length - 1].y;
-    rectFields[2] += parsedGroups[parsedGroups.length - 1].x;
-    rectFields[3] += parsedGroups[parsedGroups.length - 1].y;
+	rectFields[0] += parsedGroups[parsedGroups.length - 1].x;
+	rectFields[1] += parsedGroups[parsedGroups.length - 1].y;
+	rectFields[2] += parsedGroups[parsedGroups.length - 1].x;
+	rectFields[3] += parsedGroups[parsedGroups.length - 1].y;
 
 	/*
 		<expr-toggle-var>
@@ -270,17 +277,17 @@ function string_to_array_buffer_16(str) {
 function CheckStr8(str) {
 	for (var i = 0, strLen = str.length; i < strLen; i++) {
 		if (str.charCodeAt(i) > 127) {
-		    Log("WARNING: " + str.charCodeAt(i).toString() + ">127");
+			Log("WARNING: " + str.charCodeAt(i).toString() + ">127");
 		}
 		if (str.charCodeAt(i) > 255) {
-		    Log("ERROR: " + str.charCodeAt(i).toString() + ">255");
+			Log("ERROR: " + str.charCodeAt(i).toString() + ">255");
 		}
 	}
 }
 
 // mit zip.js und inflate.js
 function load_visu_compressed_success(content) {
-    Log("visu is compressed - try to inflate");
+	Log("visu is compressed - try to inflate");
 
 	zip.useWebWorkers = false;
 	// use a zip.BlobReader object to read zipped data stored into blob variable
@@ -303,55 +310,55 @@ function load_visu_compressed_success(content) {
 
 
 function load_visu_success(content) {
-    perfLoadEnd = new Date().getTime();
-    perfLoad = perfLoadEnd - perfLoadStart;
+	perfLoadEnd = new Date().getTime();
+	perfLoad = perfLoadEnd - perfLoadStart;
 
-    //Log("load_visu_success in " + perfLoad + "ms");
+	//Log("load_visu_success in " + perfLoad + "ms");
 
-    //var xmlstr = content.xml ? content.xml : (new XMLSerializer()).serializeToString(content);
-    //console.debug("content: " + xmlstr);
+	//var xmlstr = content.xml ? content.xml : (new XMLSerializer()).serializeToString(content);
+	//console.debug("content: " + xmlstr);
 
-    //console.debug("content: " + content);
+	//console.debug("content: " + content);
 
-    extract_var_addr(content);
+	extract_var_addr(content);
 
-    $(content).find(">visualisation").each(function () {
-        // gefundenen abschnitt in variable zwischenspeichern (cachen)
-        var $myMedia = $(this);
+	$(content).find(">visualisation").each(function () {
+		// gefundenen abschnitt in variable zwischenspeichern (cachen)
+		var $myMedia = $(this);
 
-        visuName = $myMedia.find('name').text();
+		visuName = $myMedia.find('name').text();
 
-        var size = $myMedia.find('size').text();
-        var sizeFields = size.split(',').map(Number);
-        visuSizeX = sizeFields[0];
-        visuSizeY = sizeFields[1];
+		var size = $myMedia.find('size').text();
+		var sizeFields = size.split(',').map(Number);
+		visuSizeX = sizeFields[0];
+		visuSizeY = sizeFields[1];
 
-        var canvas = document.getElementsByTagName('canvas')[0];
-        canvas.width = visuSizeX + 1;
-        canvas.height = visuSizeY + 1;
-        //$('#canvas').WIDTH = visuSizeX+1;
-        //$('#canvas').HEIGHT = visuSizeY+1;
+		var canvas = document.getElementsByTagName('canvas')[0];
+		canvas.width = visuSizeX + 1;
+		canvas.height = visuSizeY + 1;
+		//$('#canvas').WIDTH = visuSizeX+1;
+		//$('#canvas').HEIGHT = visuSizeY+1;
 
 
-        // optional kann der Hintergrund auch aus einem Bitmap-File bestehen
-        var bitmap = $myMedia.find('bitmap').text();
-        if (bitmap.length) {
-            registerBitmap(
+		// optional kann der Hintergrund auch aus einem Bitmap-File bestehen
+		var bitmap = $myMedia.find('bitmap').text();
+		if (bitmap.length) {
+			registerBitmap(
 				0, 0, visuSizeX, visuSizeY,
 				bitmap,
 				'false', '0,0,0', '0,0,0',
 				'false', '0,0,0', '0,0,0',
 				0
 				);
-        }
+		}
 
-        parsedGroups = [];
-        parsedGroups.push(new newGroup(0, 0, visuSizeX, visuSizeY));
-        parse_visu_elements($myMedia);
+		parsedGroups = [];
+		parsedGroups.push(new newGroup(0, 0, visuSizeX, visuSizeY));
+		parse_visu_elements($myMedia);
 
-        // jetzt noch (einmalig) die Reihenfolge der Klick-Elemente umdrehen um verdeckende Elemente zu erkennen
-        clickRegions.reverse();
-    });
+		// jetzt noch (einmalig) die Reihenfolge der Klick-Elemente umdrehen um verdeckende Elemente zu erkennen
+		clickRegions.reverse();
+	});
 }
 
 function parse_visu_elements(content) {
@@ -368,7 +375,7 @@ function parse_visu_elements(content) {
 		//console.debug("parse " + type);
 		if (type == 'simple') {
 			var shape = $myMedia.find('simple-shape').text();
-		    //Log("parse " + shape);
+			//Log("parse " + shape);
 
 			// parse type1 objects
 			if ((shape == 'rectangle') || (shape == 'round-rect') || (shape == 'circle') || (shape == 'line')) {
@@ -381,109 +388,109 @@ function parse_visu_elements(content) {
 #ifdef USE_STEELSERIES
 */
 				if (steelseriesSupport && tooltip.length && tooltip.substr(0, 11) == 'steelseries') {
-				    tooltip = tooltip.replace(new RegExp('\\r\\n', 'g'), '\n');
-				    var ttFields = tooltip.split('\n');
-				    ttFields.shift(); // sollte "steelseries" sein
-				    var ssObject = ttFields.shift(); // sollte der Objekttyp sein
-				    var ssProps = ttFields.join(',');
+					tooltip = tooltip.replace(new RegExp('\\r\\n', 'g'), '\n');
+					var ttFields = tooltip.split('\n');
+					ttFields.shift(); // sollte "steelseries" sein
+					var ssObject = ttFields.shift(); // sollte der Objekttyp sein
+					var ssProps = ttFields.join(',');
 
-				    var exprTextDisplay = [];
-				    var expr_text_display = $myMedia.find('text-display');
-				    if (expr_text_display.length) {
-				        exprTextDisplay = parseExpression(expr_text_display);
-				    }
+					var exprTextDisplay = [];
+					var expr_text_display = $myMedia.find('text-display');
+					if (expr_text_display.length) {
+						exprTextDisplay = parseExpression(expr_text_display);
+					}
 
-				    registerSteelSeries(
-                            rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-                            ssObject,
-                            ssProps,
-                            exprTextDisplay
-                        );
+					registerSteelSeries(
+							rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+							ssObject,
+							ssProps,
+							exprTextDisplay
+						);
 				} else
 /*
 #endif
 */
 				{
-				    // parse fill attributes
-				    var fill_color = '255,255,255';
-				    var fill_color_alarm = '255,255,255';
-				    var has_inside_color = $myMedia.find('has-inside-color').text();
-				    if (has_inside_color == 'true') {
-				        fill_color = $myMedia.find('fill-color').text();
-				        fill_color_alarm = $myMedia.find('fill-color-alarm').text();
-				    }
+					// parse fill attributes
+					var fill_color = '255,255,255';
+					var fill_color_alarm = '255,255,255';
+					var has_inside_color = $myMedia.find('has-inside-color').text();
+					if (has_inside_color == 'true') {
+						fill_color = $myMedia.find('fill-color').text();
+						fill_color_alarm = $myMedia.find('fill-color-alarm').text();
+					}
 
-				    // parse frame-attributes
-				    var frame_color = '0,0,0';
-				    var frame_color_alarm = '0,0,0';
-				    var has_frame_color = $myMedia.find('has-frame-color').text();
-				    if (has_frame_color == 'true') {
-				        frame_color = $myMedia.find('frame-color').text();
-				        frame_color_alarm = $myMedia.find('frame-color-alarm').text();
-				    }
-				    var line_width = $myMedia.find('line-width').text();
+					// parse frame-attributes
+					var frame_color = '0,0,0';
+					var frame_color_alarm = '0,0,0';
+					var has_frame_color = $myMedia.find('has-frame-color').text();
+					if (has_frame_color == 'true') {
+						frame_color = $myMedia.find('frame-color').text();
+						frame_color_alarm = $myMedia.find('frame-color-alarm').text();
+					}
+					var line_width = $myMedia.find('line-width').text();
 
-				    var center = $myMedia.find('center').text();
-				    var centerFields = center.split(',').map(Number);;
+					var center = $myMedia.find('center').text();
+					var centerFields = center.split(',').map(Number);;
 
-				    // parse expression
-				    var exprToggleColor = [];
-				    var expr_toggle_color = $myMedia.find('expr-toggle-color');
-				    if (expr_toggle_color.length) {
-				        exprToggleColor = parseExpression(expr_toggle_color);
-				    }
+					// parse expression
+					var exprToggleColor = [];
+					var expr_toggle_color = $myMedia.find('expr-toggle-color');
+					if (expr_toggle_color.length) {
+						exprToggleColor = parseExpression(expr_toggle_color);
+					}
 
-				    var exprLeft = [];
-				    var expr_left = $myMedia.find('expr-left');
-				    if (expr_left.length) {
-				        exprLeft = parseExpression(expr_left);
-				    }
+					var exprLeft = [];
+					var expr_left = $myMedia.find('expr-left');
+					if (expr_left.length) {
+						exprLeft = parseExpression(expr_left);
+					}
 
-				    var exprTop = [];
-				    var expr_top = $myMedia.find('expr-top');
-				    if (expr_top.length) {
-				        exprTop = parseExpression(expr_top);
-				    }
+					var exprTop = [];
+					var expr_top = $myMedia.find('expr-top');
+					if (expr_top.length) {
+						exprTop = parseExpression(expr_top);
+					}
 
-				    var exprRight = [];
-				    var expr_right = $myMedia.find('expr-right');
-				    if (expr_right.length) {
-				        exprRight = parseExpression(expr_right);
-				    }
+					var exprRight = [];
+					var expr_right = $myMedia.find('expr-right');
+					if (expr_right.length) {
+						exprRight = parseExpression(expr_right);
+					}
 
-				    var exprBottom = [];
-				    var expr_bottom = $myMedia.find('expr-bottom');
-				    if (expr_bottom.length) {
-				        exprBottom = parseExpression(expr_bottom);
-				    }
+					var exprBottom = [];
+					var expr_bottom = $myMedia.find('expr-bottom');
+					if (expr_bottom.length) {
+						exprBottom = parseExpression(expr_bottom);
+					}
 
-				    var exprInvisible = [];
-				    var expr_invisible = $myMedia.find('expr-invisible');
-				    if (expr_invisible.length) {
-				        exprInvisible = parseExpression(expr_invisible);
-				    }
+					var exprInvisible = [];
+					var expr_invisible = $myMedia.find('expr-invisible');
+					if (expr_invisible.length) {
+						exprInvisible = parseExpression(expr_invisible);
+					}
 
-				    registerSimpleShape(
-                            shape,
-                            rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-                            has_frame_color,
-                            "rgb(" + frame_color + ")",
-                            "rgb(" + frame_color_alarm + ")",
-                            line_width,
-                            has_inside_color,
-                            "rgb(" + fill_color + ")",
-                            "rgb(" + fill_color_alarm + ")",
-                            exprToggleColor,
-                            exprLeft, exprTop, exprRight, exprBottom,
-                            exprInvisible
-                        );
+					registerSimpleShape(
+							shape,
+							rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+							has_frame_color,
+							"rgb(" + frame_color + ")",
+							"rgb(" + frame_color_alarm + ")",
+							line_width,
+							has_inside_color,
+							"rgb(" + fill_color + ")",
+							"rgb(" + fill_color_alarm + ")",
+							exprToggleColor,
+							exprLeft, exprTop, exprRight, exprBottom,
+							exprInvisible
+						);
 
-				    parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
+					parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
 
-				    parseClickInfo($myMedia, rectFields);
+					parseClickInfo($myMedia, rectFields);
 				}
 			} else {
-			    Log("unknown simple-shape: " + shape);
+				Log("unknown simple-shape: " + shape);
 			}
 		} else if (type == 'bitmap') {
 			//console.debug("register bitmap");
@@ -517,7 +524,7 @@ function parse_visu_elements(content) {
 			var exprInvisible = [];
 			var expr_invisible = $myMedia.find('expr-invisible');
 			if (expr_invisible.length) {
-			    exprInvisible = parseExpression(expr_invisible);
+				exprInvisible = parseExpression(expr_invisible);
 			}
 
 			registerBitmap(
@@ -525,162 +532,162 @@ function parse_visu_elements(content) {
 				filename,
 				has_inside_color, fill_color, fill_color_alarm,
 				has_frame_color, frame_color, frame_color_alarm, line_width,
-                exprInvisible
+				exprInvisible
 				);
 
 			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
 
 			parseClickInfo($myMedia, rectFields);
 		} else if (type == 'button') {
-		    var rect = $myMedia.find('rect').text();
-		    var rectFields = rect.split(',').map(Number);;
+			var rect = $myMedia.find('rect').text();
+			var rectFields = rect.split(',').map(Number);;
 
-		    // parse fill attributes
-		    var fill_color = '255,255,255';
-		    var fill_color_alarm = '255,255,255';
-		    var has_inside_color = $myMedia.find('has-inside-color').text();
-		    if (has_inside_color == 'true') {
-		        fill_color = $myMedia.find('fill-color').text();
-		        fill_color_alarm = $myMedia.find('fill-color-alarm').text();
-		    }
+			// parse fill attributes
+			var fill_color = '255,255,255';
+			var fill_color_alarm = '255,255,255';
+			var has_inside_color = $myMedia.find('has-inside-color').text();
+			if (has_inside_color == 'true') {
+				fill_color = $myMedia.find('fill-color').text();
+				fill_color_alarm = $myMedia.find('fill-color-alarm').text();
+			}
 
-		    // parse frame-attributes
-		    var frame_color = '0,0,0';
-		    var frame_color_alarm = '0,0,0';
-		    var has_frame_color = $myMedia.find('has-frame-color').text();
-		    if (has_frame_color == 'true') {
-		        frame_color = $myMedia.find('frame-color').text();
-		        frame_color_alarm = $myMedia.find('frame-color-alarm').text();
-		    }
-		    var line_width = $myMedia.find('line-width').text();
+			// parse frame-attributes
+			var frame_color = '0,0,0';
+			var frame_color_alarm = '0,0,0';
+			var has_frame_color = $myMedia.find('has-frame-color').text();
+			if (has_frame_color == 'true') {
+				frame_color = $myMedia.find('frame-color').text();
+				frame_color_alarm = $myMedia.find('frame-color-alarm').text();
+			}
+			var line_width = $myMedia.find('line-width').text();
 
-		    var center = $myMedia.find('center').text();
-		    var centerFields = center.split(',').map(Number);;
+			var center = $myMedia.find('center').text();
+			var centerFields = center.split(',').map(Number);;
 
-		    // parse expression
-            // !!! TOGGLE VAR wird hier als TOGGLE COLOR verwendet !!!
-		    var exprToggleColor = [];
-		    var expr_toggle_color = $myMedia.find('expr-toggle-var');
-		    if (expr_toggle_color.length) {
-		        exprToggleColor = parseExpression(expr_toggle_color);
-		    }
+			// parse expression
+			// !!! TOGGLE VAR wird hier als TOGGLE COLOR verwendet !!!
+			var exprToggleColor = [];
+			var expr_toggle_color = $myMedia.find('expr-toggle-var');
+			if (expr_toggle_color.length) {
+				exprToggleColor = parseExpression(expr_toggle_color);
+			}
 
-		    var exprInvisible = [];
-		    var expr_invisible = $myMedia.find('expr-invisible');
-		    if (expr_invisible.length) {
-		        exprInvisible = parseExpression(expr_invisible);
-		    }
+			var exprInvisible = [];
+			var expr_invisible = $myMedia.find('expr-invisible');
+			if (expr_invisible.length) {
+				exprInvisible = parseExpression(expr_invisible);
+			}
 
-		    registerButton(
-                    rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-                    has_frame_color,
-                    "rgb(" + frame_color + ")",
-                    "rgb(" + frame_color_alarm + ")",
-                    line_width,
-                    has_inside_color,
-                    "rgb(" + fill_color + ")",
-                    "rgb(" + fill_color_alarm + ")",
-                    exprToggleColor,
-                    exprInvisible
-                );
+			registerButton(
+					rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+					has_frame_color,
+					"rgb(" + frame_color + ")",
+					"rgb(" + frame_color_alarm + ")",
+					line_width,
+					has_inside_color,
+					"rgb(" + fill_color + ")",
+					"rgb(" + fill_color_alarm + ")",
+					exprToggleColor,
+					exprInvisible
+				);
 
-		    parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
+			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
 
-		    parseClickInfo($myMedia, rectFields);
+			parseClickInfo($myMedia, rectFields);
 		} else if (type == 'polygon') {
-		    //console.debug("register polygon");
+			//console.debug("register polygon");
 
-		    var polyCount = parseInt($myMedia.find('poly-count').text());
-		    var polyShape = $myMedia.find('poly-shape').text();
-		    var points = [];
-		    $myMedia.find('point').each(function () {
-		        var val = $(this).text();
-		        points.push(val);
-		    })
+			var polyCount = parseInt($myMedia.find('poly-count').text());
+			var polyShape = $myMedia.find('poly-shape').text();
+			var points = [];
+			$myMedia.find('point').each(function () {
+				var val = $(this).text();
+				points.push(val);
+			})
 
-		    var center = $myMedia.find('center').text();
-		    var centerFields = center.split(',').map(Number);;
+			var center = $myMedia.find('center').text();
+			var centerFields = center.split(',').map(Number);;
 
-		    // parse fill attributes
-		    var fill_color = '255,255,255';
-		    var fill_color_alarm = '255,255,255';
-		    var has_inside_color = $myMedia.find('has-inside-color').text();
-		    if (has_inside_color === 'true') {
-		        fill_color = $myMedia.find('fill-color').text();
-		        fill_color_alarm = $myMedia.find('fill-color-alarm').text();
-		    }
+			// parse fill attributes
+			var fill_color = '255,255,255';
+			var fill_color_alarm = '255,255,255';
+			var has_inside_color = $myMedia.find('has-inside-color').text();
+			if (has_inside_color === 'true') {
+				fill_color = $myMedia.find('fill-color').text();
+				fill_color_alarm = $myMedia.find('fill-color-alarm').text();
+			}
 
-		    // parse frame-attributes
-		    var frame_color = '0,0,0';
-		    var frame_color_alarm = '0,0,0';
-		    var has_frame_color = $myMedia.find('has-frame-color').text();
-		    if (has_frame_color == 'true') {
-		        frame_color = $myMedia.find('frame-color').text();
-		        frame_color_alarm = $myMedia.find('frame-color-alarm').text();
-		    }
-		    var line_width = $myMedia.find('line-width').text();
+			// parse frame-attributes
+			var frame_color = '0,0,0';
+			var frame_color_alarm = '0,0,0';
+			var has_frame_color = $myMedia.find('has-frame-color').text();
+			if (has_frame_color == 'true') {
+				frame_color = $myMedia.find('frame-color').text();
+				frame_color_alarm = $myMedia.find('frame-color-alarm').text();
+			}
+			var line_width = $myMedia.find('line-width').text();
 
-		    // parse expression
-		    var exprToggleColor = [];
-		    var expr_toggle_color = $myMedia.find('expr-toggle-color');
-		    if (expr_toggle_color.length) {
-		        exprToggleColor = parseExpression(expr_toggle_color);
-		    }
+			// parse expression
+			var exprToggleColor = [];
+			var expr_toggle_color = $myMedia.find('expr-toggle-color');
+			if (expr_toggle_color.length) {
+				exprToggleColor = parseExpression(expr_toggle_color);
+			}
 
-		    var exprLeft = [];
-		    var expr_left = $myMedia.find('expr-left');
-		    if (expr_left.length) {
-		        exprLeft = parseExpression(expr_left);
-		    }
+			var exprLeft = [];
+			var expr_left = $myMedia.find('expr-left');
+			if (expr_left.length) {
+				exprLeft = parseExpression(expr_left);
+			}
 
-		    var exprTop = [];
-		    var expr_top = $myMedia.find('expr-top');
-		    if (expr_top.length) {
-		        exprTop = parseExpression(expr_top);
-		    }
+			var exprTop = [];
+			var expr_top = $myMedia.find('expr-top');
+			if (expr_top.length) {
+				exprTop = parseExpression(expr_top);
+			}
 
-		    var exprInvisible = [];
-		    var expr_invisible = $myMedia.find('expr-invisible');
-		    if (expr_invisible.length) {
-		        exprInvisible = parseExpression(expr_invisible);
-		    }
+			var exprInvisible = [];
+			var expr_invisible = $myMedia.find('expr-invisible');
+			if (expr_invisible.length) {
+				exprInvisible = parseExpression(expr_invisible);
+			}
 
-		    if ((polyShape == 'polygon') || (polyShape == 'polyline')) {
-		        registerPolygon(
-                        polyShape,
-                        points,
-                        has_frame_color,
-                        "rgb(" + frame_color + ")",
-                        "rgb(" + frame_color_alarm + ")",
-                        line_width,
-                        has_inside_color,
-                        "rgb(" + fill_color + ")",
-                        "rgb(" + fill_color_alarm + ")",
-                        exprToggleColor,
-                        exprLeft, exprTop,
-                        exprInvisible
-                    );
-		    } else {
-		        Log("unknown poly-shape: " + polyShape);
-		    }
+			if ((polyShape == 'polygon') || (polyShape == 'polyline')) {
+				registerPolygon(
+						polyShape,
+						points,
+						has_frame_color,
+						"rgb(" + frame_color + ")",
+						"rgb(" + frame_color_alarm + ")",
+						line_width,
+						has_inside_color,
+						"rgb(" + fill_color + ")",
+						"rgb(" + fill_color_alarm + ")",
+						exprToggleColor,
+						exprLeft, exprTop,
+						exprInvisible
+					);
+			} else {
+				Log("unknown poly-shape: " + polyShape);
+			}
 		} else if (type == 'group') {
-		    //console.debug("register group");
-		    var rect = $myMedia.find('rect').text();
-		    var rectFields = rect.split(',').map(Number);
+			//console.debug("register group");
+			var rect = $myMedia.find('rect').text();
+			var rectFields = rect.split(',').map(Number);
 
-		    var center = $myMedia.find('center').text();
-		    var centerFields = center.split(',').map(Number);
+			var center = $myMedia.find('center').text();
+			var centerFields = center.split(',').map(Number);
 
-		    registerGroup(rectFields[0], rectFields[1], rectFields[2], rectFields[3]);
-		    parsedGroups.push(new newGroup(rectFields[0], rectFields[1], rectFields[2], rectFields[3]));
-            
-		    parse_visu_elements($myMedia);
+			registerGroup(rectFields[0], rectFields[1], rectFields[2], rectFields[3]);
+			parsedGroups.push(new newGroup(rectFields[0], rectFields[1], rectFields[2], rectFields[3]));
+			
+			parse_visu_elements($myMedia);
 
-		    registerEndGroup();
-		    parsedGroups.pop();
+			registerEndGroup();
+			parsedGroups.pop();
 		}
 		else {
-		    Log("unknown type: " + type);
+			Log("unknown type: " + type);
 		}
 	});
 }
@@ -702,7 +709,7 @@ function load_visu(filename) {
 			//dataType: 'text/plain',
 			success: load_visu_compressed_success,
 			error: function (jqXHR, textStatus, errorThrown) {
-			    Log("load_visu " + textStatus + " " + errorThrown);
+				Log("load_visu " + textStatus + " " + errorThrown);
 			}
 		});
 	} else {
@@ -713,14 +720,14 @@ function load_visu(filename) {
 			url: filename,
 			success: load_visu_success,
 			error: function (jqXHR, textStatus, errorThrown) {
-			    Log("load_visu " + textStatus + " " + errorThrown);
+				Log("load_visu " + textStatus + " " + errorThrown);
 			}
 		});
 	}
 }
 
 // holt Aktualisierungen für alle bekannten Variablen vom webserver
-function update_vars() {
+function update_vars_std() {
 	if (perfUpdateStart > perfUpdateEnd)
 		return;
 
@@ -735,8 +742,8 @@ function update_vars() {
 
 	req = "|0|"+count+""+req+"|";
 
-    //Log("update_vars");
-    //Log("REQ = " + req);
+	//Log("update_vars");
+	//Log("REQ = " + req);
 
 	$.ajax({
 		type: 'POST',
@@ -745,52 +752,52 @@ function update_vars() {
 		url: postUrl,
 		data: req,
 		success: function (data) {
-		    //Log("ANS = " + data);
+			//Log("ANS = " + data);
 			var fields = data.split('|');
 			var count = 1; // split zählt bereits vor dem ersten trenner
 			$.each(visuVariables, function (key, obj) {
-			    //Log("TYPE = " + obj.varType + "; ANS = " + fields[count]);
-			    switch (obj.varType) {
-			        case VAR_TYPE_REAL:
-                    case VAR_TYPE_LREAL:
-                        obj.value = parseFloat(fields[count]);
-                        break;
+				//Log("TYPE = " + obj.varType + "; ANS = " + fields[count]);
+				switch (obj.varType) {
+					case VAR_TYPE_REAL:
+					case VAR_TYPE_LREAL:
+						obj.value = parseFloat(fields[count]);
+						break;
 
-			        //case VAR_TYPE_BOOL:
-			        //case VAR_TYPE_INT:
-			        //case VAR_TYPE_BYTE:
-			        //case VAR_TYPE_WORD:
-			        //case VAR_TYPE_DINT:
-			        //case VAR_TYPE_DWORD:
-			        //case VAR_TYPE_TIME:
-			        //case VAR_TYPE_STRING:
-			        //case VAR_TYPE_ARRAY:
-			        //case VAR_TYPE_ENUM:
-			        //case VAR_TYPE_USERDEF:
-			        //case VAR_TYPE_BITORBYTE:
-			        //case VAR_TYPE_POINTER:
-			        //case VAR_TYPE_SINT:
-			        //case VAR_TYPE_USINT:
-			        //case VAR_TYPE_UINT:
-			        //case VAR_TYPE_UDINT:
-			        //case VAR_TYPE_DATE:
-			        //case VAR_TYPE_TOD:
-			        //case VAR_TYPE_DT:
-			        //case VAR_TYPE_VOID:
-			        //case VAR_TYPE_REF:
-			        //case VAR_TYPE_NONE:
-			        default:
-			            if (obj.numBytes == 1) {
-			                obj.value = fields[count] & 0xFF;
-			            } else if (obj.numBytes == 2) {
-			                obj.value = fields[count] & 0xFFFF;
-			            } else if (obj.numBytes == 4) {
-			                obj.value = fields[count] & 0xFFFFFFFF;
-			            } else {
-			                obj.value = fields[count];
-			            }
-			            break;
-			    }
+					//case VAR_TYPE_BOOL:
+					//case VAR_TYPE_INT:
+					//case VAR_TYPE_BYTE:
+					//case VAR_TYPE_WORD:
+					//case VAR_TYPE_DINT:
+					//case VAR_TYPE_DWORD:
+					//case VAR_TYPE_TIME:
+					//case VAR_TYPE_STRING:
+					//case VAR_TYPE_ARRAY:
+					//case VAR_TYPE_ENUM:
+					//case VAR_TYPE_USERDEF:
+					//case VAR_TYPE_BITORBYTE:
+					//case VAR_TYPE_POINTER:
+					//case VAR_TYPE_SINT:
+					//case VAR_TYPE_USINT:
+					//case VAR_TYPE_UINT:
+					//case VAR_TYPE_UDINT:
+					//case VAR_TYPE_DATE:
+					//case VAR_TYPE_TOD:
+					//case VAR_TYPE_DT:
+					//case VAR_TYPE_VOID:
+					//case VAR_TYPE_REF:
+					//case VAR_TYPE_NONE:
+					default:
+						if (obj.numBytes == 1) {
+							obj.value = fields[count] & 0xFF;
+						} else if (obj.numBytes == 2) {
+							obj.value = fields[count] & 0xFFFF;
+						} else if (obj.numBytes == 4) {
+							obj.value = fields[count] & 0xFFFFFFFF;
+						} else {
+							obj.value = fields[count];
+						}
+						break;
+				}
 				count++;
 			});
 
@@ -798,13 +805,13 @@ function update_vars() {
 #ifdef USE_STEELSERIES
 */
 			for (var i in canvObjects) {
-			    co = canvObjects[i];
-			    if (co.exprTextDisplay.length > 0) {
-			        var textDisplay = 0;
-			        textDisplay = evalExpression(co.exprTextDisplay);
-			        //co.ssobj.setValueAnimated(textDisplay);
-			        co.ssobj.setValue(textDisplay);
-                }
+				co = canvObjects[i];
+				if (co.exprTextDisplay.length > 0) {
+					var textDisplay = 0;
+					textDisplay = evalExpression(co.exprTextDisplay);
+					//co.ssobj.setValueAnimated(textDisplay);
+					co.ssobj.setValue(textDisplay);
+				}
 			}
 /*
 #endif
@@ -812,23 +819,169 @@ function update_vars() {
 
 			perfUpdateEnd = new Date().getTime();
 			perfUpdate = perfUpdateEnd - perfUpdateStart;
-		    //Log("update_vars finished in " + perfUpdate + "ms");
+			//Log("update_vars finished in " + perfUpdate + "ms");
 		}
 	});
 }
 
+/*
+Um Flash-Speicherplatz zu sparen verwenden wir keine vollständige SOAP-Library
+sondern basteln unseren Request selbst zusammen
+*/
+function update_vars_soap() {
+	if (perfUpdateStart > perfUpdateEnd)
+		return;
+
+	perfUpdateStart = new Date().getTime();
+
+	var requestString =
+		'<?xml version="1.0" encoding="ISO-8859-1"?>'
+		+ '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">'
+		+ '<soap:Body>'
+		+ '<Read xmlns="http://opcfoundation.org/webservices/XMLDA/1.0/">'
+		+ '<Options ReturnItemTime="true" ReturnItemName="true" ClientRequestHandle="" LocaleID="en-US" />'
+		+ '<ItemList>'
+		+ '<Items ItemPath="" ItemName="PLC1.CurrentWriteAccessClientId" ClientItemHandle="" />'
+		+ '<Items ItemPath="" ItemName="PLC1.CurrentLanguage" ClientItemHandle="" />'
+		+ '<Items ItemPath="" ItemName="PLC1.CurrentCaller" ClientItemHandle="" />'
+		+ '<Items ItemPath="" ItemName="PLC1.CurrentVisu" ClientItemHandle="" />'
+	;
+
+	var variables = {};
+
+	$.each(visuVariables, function (key, obj) {
+		var objName = obj.name;
+		// es muss ein "PLC1." vorangestellt werden / sein
+		if (objName.substr(0, 4) != 'PLC1.') {
+			if (objName.substr(0, 1) == '.') {
+				objName = 'PLC1' + objName
+			} else {
+				objName = 'PLC1.' + objName
+			}
+		}
+		variables[objName] = obj;
+		requestString += '<Items ItemPath="" ItemName="'
+		requestString += objName
+		requestString += '" ClientItemHandle="" />'
+	});
+
+	requestString +=
+		'</ItemList>'
+		+ '</Read>'
+		+ '</soap:Body>'
+		+ '</soap:Envelope>'
+	;
+
+	//Log("update_vars_soap");
+	//Log("REQUEST= " + requestString);
+
+	$.ajax({
+	    type: 'POST',
+	    //async: false,
+	    async: true,
+	    url: postUrl,
+	    data: requestString,
+	    success: function (data) {
+	        // "data" sollte bereits als XML ankommen...
+
+	        // Beim Parsen mit Namespace muss in jQuery der Doppelpunkt (mit Backslash) escaped werden.
+	        // Der Backslash muss bei JQuery ankommen - deshalb Doppelt-Backslash
+	        // ns1:Items => ns1\\:Items
+	        $(data).find("ns1\\:Items").each(function () {
+		        var $item = $(this);
+
+		        var itemName = $item.attr("ItemName");
+
+		        var valueElement = $item.children('ns1\\:Value');
+		        var valueType = valueElement.attr("xsi:type");
+		        var value = valueElement.text();
+
+		        //Log("ITEM= " + itemName + " type= " + valueType + " value= " + value);
+
+		        obj = variables[itemName];
+		        if (obj != null) {
+			        switch (obj.varType) {
+				        case VAR_TYPE_REAL:
+				        case VAR_TYPE_LREAL:
+					        obj.value = parseFloat(value);
+					        break;
+
+			            case VAR_TYPE_BOOL:
+			                if (value == "true") {
+			                    obj.value = 1;
+			                } else {
+			                    obj.value = 0;
+			                }
+			                break;
+
+			            case VAR_TYPE_STRING:
+			                obj.value = value;
+			                break;
+
+					        //case VAR_TYPE_INT:
+					        //case VAR_TYPE_BYTE:
+					        //case VAR_TYPE_WORD:
+					        //case VAR_TYPE_DINT:
+					        //case VAR_TYPE_DWORD:
+					        //case VAR_TYPE_TIME:
+					        //case VAR_TYPE_ARRAY:
+					        //case VAR_TYPE_ENUM:
+					        //case VAR_TYPE_USERDEF:
+					        //case VAR_TYPE_BITORBYTE:
+					        //case VAR_TYPE_POINTER:
+					        //case VAR_TYPE_SINT:
+					        //case VAR_TYPE_USINT:
+					        //case VAR_TYPE_UINT:
+					        //case VAR_TYPE_UDINT:
+					        //case VAR_TYPE_DATE:
+					        //case VAR_TYPE_TOD:
+					        //case VAR_TYPE_DT:
+					        //case VAR_TYPE_VOID:
+					        //case VAR_TYPE_REF:
+			                //case VAR_TYPE_NONE:
+
+				        default:
+					        if (obj.numBytes == 1) {
+						        obj.value = value & 0xFF;
+					        } else if (obj.numBytes == 2) {
+						        obj.value = value & 0xFFFF;
+					        } else if (obj.numBytes == 4) {
+						        obj.value = value & 0xFFFFFFFF;
+					        } else {
+						        obj.value = value;
+					        }
+					        break;
+			        }
+		        }
+	        });
+
+	        perfUpdateEnd = new Date().getTime();
+	        perfUpdate = perfUpdateEnd - perfUpdateStart;
+	    }
+	});
+
+}
+
+// holt Aktualisierungen für alle bekannten Variablen vom webserver
+function update_vars() {
+	if (postFormat == POST_FORMAT_STANDARD) {
+		return update_vars_std();
+	} else if (postFormat == POST_FORMAT_SOAP) {
+		return update_vars_soap();
+	}
+}
 
 function pointerEventToXY(e) {
-    var out = { x: 0, y: 0 };
-    if (e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel') {
-        var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
-        out.x = touch.pageX;
-        out.y = touch.pageY;
-    } else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover' || e.type == 'mouseout' || e.type == 'mouseenter' || e.type == 'mouseleave') {
-        out.x = e.pageX;
-        out.y = e.pageY;
-    }
-    return out;
+	var out = { x: 0, y: 0 };
+	if (e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel') {
+		var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
+		out.x = touch.pageX;
+		out.y = touch.pageY;
+	} else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover' || e.type == 'mouseout' || e.type == 'mouseenter' || e.type == 'mouseleave') {
+		out.x = e.pageX;
+		out.y = e.pageY;
+	}
+	return out;
 };
 
 
@@ -838,52 +991,52 @@ function onClick( e ) {
 	var y = e.pageY - $("#canvas").offset().top;
 	Log("onClick");
 	logOverlayText += "onClick\n";
-    //Log("X " + e.pageX + " Y " + e.pageY);
-    //Log("X " + x + " Y " + y);
+	//Log("X " + e.pageX + " Y " + e.pageY);
+	//Log("X " + x + " Y " + y);
 
 	for (var i in clickRegions) {
-	    obj = clickRegions[i];
+		obj = clickRegions[i];
 
-	    //Log("obj.x " + obj.x + " obj.y " + obj.y + " (obj.x+obj.w) " + (obj.x + obj.w) + " (obj.y+obj.h) " + (obj.y + obj.h));
+		//Log("obj.x " + obj.x + " obj.y " + obj.y + " (obj.x+obj.w) " + (obj.x + obj.w) + " (obj.y+obj.h) " + (obj.y + obj.h));
 
-	    if (obj.isA == 'Toggle') {
-	        if ((obj.x <= x) && (obj.y <= y) && ((obj.x + obj.w) >= x) && ((obj.y + obj.h) >= y)) {
-	            //Log("onClick: found toggle: " + obj.variable);
-	            if (obj.variable != '') {
-	                var newval = 1 - visuVariables[obj.variable].value;
-	                var req = '|1|1|0|' + visuVariables[obj.variable].addrP + '|' + newval + '|';
+		if (obj.isA == 'Toggle') {
+			if ((obj.x <= x) && (obj.y <= y) && ((obj.x + obj.w) >= x) && ((obj.y + obj.h) >= y)) {
+				//Log("onClick: found toggle: " + obj.variable);
+				if (obj.variable != '') {
+					var newval = 1 - visuVariables[obj.variable].value;
+					var req = '|1|1|0|' + visuVariables[obj.variable].addrP + '|' + newval + '|';
 
-	                $.ajax({
-	                    type: 'POST',
-	                    async: false,
-	                    url: postUrl,
-	                    data: req,
-	                    //success: function( data ) {
-	                    //	Log("success: " + data);
-	                    //}
-	                });
+					$.ajax({
+						type: 'POST',
+						async: false,
+						url: postUrl,
+						data: req,
+						//success: function( data ) {
+						//	Log("success: " + data);
+						//}
+					});
 
-	                visuVariables[obj.variable].value = newval;
-	                update();
-	            }
-	            return;
-	        }
-	    } else if (obj.isA == 'Zoom') {
-	        if ((obj.x <= x) && (obj.y <= y) && ((obj.x + obj.w) >= x) && ((obj.y + obj.h) >= y)) {
-	            switchToVisu(obj.visu);
-	            return;
-	        }
-	    }
+					visuVariables[obj.variable].value = newval;
+					update();
+				}
+				return;
+			}
+		} else if (obj.isA == 'Zoom') {
+			if ((obj.x <= x) && (obj.y <= y) && ((obj.x + obj.w) >= x) && ((obj.y + obj.h) >= y)) {
+				switchToVisu(obj.visu);
+				return;
+			}
+		}
 	}
 }
 
 // der MouseDown-Handler
 function onMouseDown(e) {
-    //var x = e.pageX - $("#canvas").offset().left;
-    //var y = e.pageY - $("#canvas").offset().top;
-    var pos = pointerEventToXY(e);
-    var x = pos.x;
-    var y = pos.y;
+	//var x = e.pageX - $("#canvas").offset().left;
+	//var y = e.pageY - $("#canvas").offset().top;
+	var pos = pointerEventToXY(e);
+	var x = pos.x;
+	var y = pos.y;
 
 	Log("onMouseDown");
 	Log("X " + x + " Y " + y);
@@ -893,30 +1046,30 @@ function onMouseDown(e) {
 	HandlePendingMouseUps();
 
 	for (var i in clickRegions) {
-	    obj = clickRegions[i];
+		obj = clickRegions[i];
 
-	    //Log("obj.x " + obj.x + " obj.y " + obj.y + " (obj.x+obj.w) " + (obj.x + obj.w) + " (obj.y+obj.h) " + (obj.y + obj.h));
+		//Log("obj.x " + obj.x + " obj.y " + obj.y + " (obj.x+obj.w) " + (obj.x + obj.w) + " (obj.y+obj.h) " + (obj.y + obj.h));
 
-	    if (obj.isA == 'Tap') {
-	        if ((obj.x <= x) && (obj.y <= y) && (obj.x + obj.w >= x) && (obj.y + obj.h >= y)) {
-	            PendingMouseUpObjects.push(obj);
-	            if (obj.variable != '') {
-	                var newval = obj.newval;
-	                var req = '|1|1|0|' + visuVariables[obj.variable].addrP + '|' + newval + '|';
+		if (obj.isA == 'Tap') {
+			if ((obj.x <= x) && (obj.y <= y) && (obj.x + obj.w >= x) && (obj.y + obj.h >= y)) {
+				PendingMouseUpObjects.push(obj);
+				if (obj.variable != '') {
+					var newval = obj.newval;
+					var req = '|1|1|0|' + visuVariables[obj.variable].addrP + '|' + newval + '|';
 
-	                $.ajax({
-	                    type: 'POST',
-	                    async: false,
-	                    url: postUrl,
-	                    data: req,
-	                });
+					$.ajax({
+						type: 'POST',
+						async: false,
+						url: postUrl,
+						data: req,
+					});
 
-	                visuVariables[obj.variable].value = newval;
-	                update();
-	            }
-	            return;
-	        }
-	    }
+					visuVariables[obj.variable].value = newval;
+					update();
+				}
+				return;
+			}
+		}
 	}
 
 }
@@ -949,8 +1102,8 @@ function HandlePendingMouseUps() {
 // Deshalb wurde der normale MouseUp (der genauso funktionierte wie der MouseDown) ersetzt durch
 // den Mechanismus "PendingMouseUp".
 function onMouseUp(e) {
-    Log("onMouseUp");
-    HandlePendingMouseUps();
+	Log("onMouseUp");
+	HandlePendingMouseUps();
 }
 
 
