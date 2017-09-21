@@ -313,6 +313,8 @@ function load_visu_success(content) {
 	perfLoadEnd = new Date().getTime();
 	perfLoad = perfLoadEnd - perfLoadStart;
 
+	var dynTextFile = '';
+
 	//Log("load_visu_success in " + perfLoad + "ms");
 
 	//var xmlstr = content.xml ? content.xml : (new XMLSerializer()).serializeToString(content);
@@ -352,6 +354,15 @@ function load_visu_success(content) {
 				);
 		}
 
+		// wird Dynamic-Text verwendet?
+		var dynTextFlag = $myMedia.find('use-dynamic-text').text();
+		if (dynTextFlag.length && dynTextFlag == 'true') {
+			dynTextFile = $myMedia.find('dynamic-text-file').text();
+			visuUseDynamicText = true;
+		} else {
+			visuUseDynamicText = false;
+		}
+
 		parsedGroups = [];
 		parsedGroups.push(new newGroup(0, 0, visuSizeX, visuSizeY));
 		parse_visu_elements($myMedia);
@@ -359,6 +370,21 @@ function load_visu_success(content) {
 		// jetzt noch (einmalig) die Reihenfolge der Klick-Elemente umdrehen um verdeckende Elemente zu erkennen
 		clickRegions.reverse();
 	});
+
+	if (visuUseDynamicText) {
+	    Log("load dynTextFile <" + dynTextFile + ">");
+		$.ajax({
+			type: 'GET',
+			async: false,
+			cache: false,
+			url: plcDir + "/" + dynTextFile,
+			success: load_dyntextfile_success,
+			error: function (jqXHR, textStatus, errorThrown) {
+				visuUseDynamicText = false;
+				Log("dyntextfile " + textStatus + " " + errorThrown);
+			}
+		});
+	}
 }
 
 function parse_visu_elements(content) {
@@ -692,6 +718,47 @@ function parse_visu_elements(content) {
 	});
 }
 
+function load_dyntextfile_success(content) {
+
+    $(content).find(">dynamic-text").each(function () {
+        var $dynTextBlock = $(this);
+
+        $dynTextBlock.find(">header").each(function () {
+            var $header = $(this);
+
+            visuDynTextDefaultLanguage = 'english';
+            var defaultLanguage = $header.find('default-language').text();
+            if (defaultLanguage.length) {
+                visuDynTextDefaultLanguage = defaultLanguage;
+            }
+
+            // TODO: <default-font>
+        });
+
+        $dynTextBlock.find(">text-list").each(function () {
+            var $textList = $(this);
+
+            $textList.find(">text").each(function () {
+                var $text = $(this);
+
+                var prefix = $text.attr("prefix");
+
+                dynamicTexts[prefix] = {};
+
+                $text.children().each(function () {
+                    var $child = $(this);
+
+                    var language = this.nodeName;
+                    var foreignText = $child.text();
+
+                    // Log('dynamicTexts['+prefix+']['+language+'] = '+foreignText);
+                    dynamicTexts[prefix][language] = foreignText;
+                });
+            });
+        });
+    });
+}
+
 function load_visu(filename) {
 	console.debug("load " + filename);
 
@@ -876,88 +943,88 @@ function update_vars_soap() {
 	//Log("REQUEST= " + requestString);
 
 	$.ajax({
-	    type: 'POST',
-	    //async: false,
-	    async: true,
-	    url: postUrl,
-	    data: requestString,
-	    success: function (data) {
-	        // "data" sollte bereits als XML ankommen...
+		type: 'POST',
+		//async: false,
+		async: true,
+		url: postUrl,
+		data: requestString,
+		success: function (data) {
+			// "data" sollte bereits als XML ankommen...
 
-	        // Beim Parsen mit Namespace muss in jQuery der Doppelpunkt (mit Backslash) escaped werden.
-	        // Der Backslash muss bei JQuery ankommen - deshalb Doppelt-Backslash
-	        // ns1:Items => ns1\\:Items
-	        $(data).find("ns1\\:Items").each(function () {
-		        var $item = $(this);
+			// Beim Parsen mit Namespace muss in jQuery der Doppelpunkt (mit Backslash) escaped werden.
+			// Der Backslash muss bei JQuery ankommen - deshalb Doppelt-Backslash
+			// ns1:Items => ns1\\:Items
+			$(data).find("ns1\\:Items").each(function () {
+				var $item = $(this);
 
-		        var itemName = $item.attr("ItemName");
+				var itemName = $item.attr("ItemName");
 
-		        var valueElement = $item.children('ns1\\:Value');
-		        var valueType = valueElement.attr("xsi:type");
-		        var value = valueElement.text();
+				var valueElement = $item.children('ns1\\:Value');
+				var valueType = valueElement.attr("xsi:type");
+				var value = valueElement.text();
 
-		        //Log("ITEM= " + itemName + " type= " + valueType + " value= " + value);
+				//Log("ITEM= " + itemName + " type= " + valueType + " value= " + value);
 
-		        obj = variables[itemName];
-		        if (obj != null) {
-			        switch (obj.varType) {
-				        case VAR_TYPE_REAL:
-				        case VAR_TYPE_LREAL:
-					        obj.value = parseFloat(value);
-					        break;
+				obj = variables[itemName];
+				if (obj != null) {
+					switch (obj.varType) {
+						case VAR_TYPE_REAL:
+						case VAR_TYPE_LREAL:
+							obj.value = parseFloat(value);
+							break;
 
-			            case VAR_TYPE_BOOL:
-			                if (value == "true") {
-			                    obj.value = 1;
-			                } else {
-			                    obj.value = 0;
-			                }
-			                break;
+						case VAR_TYPE_BOOL:
+							if (value == "true") {
+								obj.value = 1;
+							} else {
+								obj.value = 0;
+							}
+							break;
 
-			            case VAR_TYPE_STRING:
-			                obj.value = value;
-			                break;
+						case VAR_TYPE_STRING:
+							obj.value = value;
+							break;
 
-					        //case VAR_TYPE_INT:
-					        //case VAR_TYPE_BYTE:
-					        //case VAR_TYPE_WORD:
-					        //case VAR_TYPE_DINT:
-					        //case VAR_TYPE_DWORD:
-					        //case VAR_TYPE_TIME:
-					        //case VAR_TYPE_ARRAY:
-					        //case VAR_TYPE_ENUM:
-					        //case VAR_TYPE_USERDEF:
-					        //case VAR_TYPE_BITORBYTE:
-					        //case VAR_TYPE_POINTER:
-					        //case VAR_TYPE_SINT:
-					        //case VAR_TYPE_USINT:
-					        //case VAR_TYPE_UINT:
-					        //case VAR_TYPE_UDINT:
-					        //case VAR_TYPE_DATE:
-					        //case VAR_TYPE_TOD:
-					        //case VAR_TYPE_DT:
-					        //case VAR_TYPE_VOID:
-					        //case VAR_TYPE_REF:
-			                //case VAR_TYPE_NONE:
+							//case VAR_TYPE_INT:
+							//case VAR_TYPE_BYTE:
+							//case VAR_TYPE_WORD:
+							//case VAR_TYPE_DINT:
+							//case VAR_TYPE_DWORD:
+							//case VAR_TYPE_TIME:
+							//case VAR_TYPE_ARRAY:
+							//case VAR_TYPE_ENUM:
+							//case VAR_TYPE_USERDEF:
+							//case VAR_TYPE_BITORBYTE:
+							//case VAR_TYPE_POINTER:
+							//case VAR_TYPE_SINT:
+							//case VAR_TYPE_USINT:
+							//case VAR_TYPE_UINT:
+							//case VAR_TYPE_UDINT:
+							//case VAR_TYPE_DATE:
+							//case VAR_TYPE_TOD:
+							//case VAR_TYPE_DT:
+							//case VAR_TYPE_VOID:
+							//case VAR_TYPE_REF:
+							//case VAR_TYPE_NONE:
 
-				        default:
-					        if (obj.numBytes == 1) {
-						        obj.value = value & 0xFF;
-					        } else if (obj.numBytes == 2) {
-						        obj.value = value & 0xFFFF;
-					        } else if (obj.numBytes == 4) {
-						        obj.value = value & 0xFFFFFFFF;
-					        } else {
-						        obj.value = value;
-					        }
-					        break;
-			        }
-		        }
-	        });
+						default:
+							if (obj.numBytes == 1) {
+								obj.value = value & 0xFF;
+							} else if (obj.numBytes == 2) {
+								obj.value = value & 0xFFFF;
+							} else if (obj.numBytes == 4) {
+								obj.value = value & 0xFFFFFFFF;
+							} else {
+								obj.value = value;
+							}
+							break;
+					}
+				}
+			});
 
-	        perfUpdateEnd = new Date().getTime();
-	        perfUpdate = perfUpdateEnd - perfUpdateStart;
-	    }
+			perfUpdateEnd = new Date().getTime();
+			perfUpdate = perfUpdateEnd - perfUpdateStart;
+		}
 	});
 
 }

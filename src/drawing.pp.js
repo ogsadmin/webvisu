@@ -2,6 +2,7 @@
 
 var visuVariables = {};
 var drawObjects = [];
+var dynamicTexts = {};
 
 // TODO: alle Klick-Elemente in ein Array zusammenfassen (wegen "verdeckende Elemente")
 var clickRegions = [];
@@ -10,6 +11,8 @@ var visuName = "";
 var visuSizeX = 0;
 var visuSizeY = 0;
 var visuCompressed = 0;
+var visuUseDynamicText = false;
+var visuDynTextDefaultLanguage = 'english';
 
 // globale variablen
 var updateInterval = 500;
@@ -52,6 +55,11 @@ function switchToVisu(visu) {
     visuVariables = {};
     drawObjects = [];
     clickRegions = [];
+
+    // TODO: klären, ob jede Visu ihre eigenen DynamicTexts haben kann oder ob es genügen würde
+    //       sie nur einmal zu laden.
+    visuUseDynamicText = false;
+    dynamicTexts = {};
 
 /*
 #ifdef USE_STEELSERIES
@@ -471,13 +479,33 @@ function registerClickZoom(x, y, w, h, visu) {
 // ****************************************************************************
 
 /* entfernt die Pipe-Zeichen, welche ein Leerzeichen oder Sonderzeichen einschließen
-    ruft sprintf für den String auf, sofern ein %-Zeichen enthalten ist
+
+   falls visuUseDynamicText gesetzt ist ersetzt diese Funktion den dynamic 
+   text %<...> im String, falls ein %< vorhanden ist.
+
+   ruft sprintf für den String auf, sofern ein %-Zeichen enthalten ist
 */
 function strformat(format, val) {
     // wegen des PreProcessors können wir leider keine /-Syntax für die RegEx nehmen
     format = format.replace(new RegExp('\\| \\|', 'g'), ' ');
     format = format.replace(new RegExp('\\|>\\|', 'g'), '>');
     format = format.replace(new RegExp('\\|<\\|', 'g'), '<');
+
+    if (visuUseDynamicText == true) {
+        while (format.indexOf('%<') > -1) {
+            //Log("found dynamic text on <" + format + ">");
+            var re = new RegExp('%<([^>]+)>', 'g');
+            dynTextIds = re.exec(format);
+            if (dynTextIds == null) {
+                break;
+            }
+            dynTextId = dynTextIds[1];
+            dynTextPlaceholder = '%<' + dynTextId + '>';
+            //Log("replace dynamic text <" + dynTextPlaceholder + "> with <" + dynamicTexts[dynTextIds[index]][visuDynTextDefaultLanguage] + ">");
+            format = format.replace(dynTextPlaceholder, dynamicTexts[dynTextId][visuDynTextDefaultLanguage]);
+        }
+    }
+
     if (format.indexOf('%') > -1) {
         format = sprintf(format, val);
     }
