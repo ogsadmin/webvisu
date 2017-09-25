@@ -516,8 +516,27 @@ function strformat(format, val) {
         }
     }
 
-    if (format.indexOf('%') > -1) {
-        format = sprintf(format, val);
+    if (format.indexOf('%t') > -1) {
+        // #23: spezielle Anforderung: %t will aktuelle PC-Uhrzeit haben
+        var now = new Date();
+        /* 
+        toDateString()  Converts the date portion of a Date object into a readable string
+        toGMTString()   Deprecated. Use the toUTCString() method instead
+        toISOString()   Returns the date as a string, using the ISO standard
+        toJSON()    Returns the date as a string, formatted as a JSON date
+        toLocaleDateString()    Returns the date portion of a Date object as a string, using locale conventions
+        toLocaleTimeString()    Returns the time portion of a Date object as a string, using locale conventions
+        toLocaleString()    Converts a Date object to a string, using locale conventions
+        toString()  Converts a Date object to a string
+        toTimeString()  Converts the time portion of a Date object to a string
+        toUTCString() Converts a Date object to a string, according to universal time
+        */
+        //format = now.toString();
+        format = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+    } else {
+        if (format.indexOf('%') > -1) {
+            format = sprintf(format, val);
+        }
     }
     return format;
 }
