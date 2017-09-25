@@ -247,7 +247,12 @@ function registerText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, t
 // Bitmap
 
 // constructor
-function newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, lineWidth, invisibleExpr) {
+function newBitmap(
+    x, y, w, h, fileName,
+    hasInsideColor, fillStyle, fillStyleAlarm,
+    hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
+    invisibleExpr
+    ) {
     this.isA = "Bitmap";
     this.x = parseInt(x);
     this.y = parseInt(y);
@@ -257,18 +262,23 @@ function newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleA
     this.img = new Image();
     this.img.src = plcDir + '/' + fileName;
 
-    this.has_inside_color = has_inside_color;
+    this.hasInsideColor = hasInsideColor;
     this.fillStyle = fillStyle;
     this.fillStyleAlarm = fillStyleAlarm;
-    this.has_frame_color = has_frame_color;
+    this.hasFrameColor = hasFrameColor;
     this.strokeStyle = strokeStyle;
     this.strokeStyleAlarm = strokeStyleAlarm;
     this.lineWidth = lineWidth==0 ? 1 : lineWidth;
     this.invisibleExpr = invisibleExpr;
 }
 
-function registerBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width,invisibleExpr) {
-    drawObjects.push(new newBitmap(x, y, w, h, fileName, has_inside_color, fillStyle, fillStyleAlarm, has_frame_color, strokeStyle, strokeStyleAlarm, line_width, invisibleExpr));
+function registerBitmap(
+    x, y, w, h, fileName,
+    hasInsideColor, fillStyle, fillStyleAlarm,
+    hasFrameColor, strokeStyle, strokeStyleAlarm, line_width,
+    invisibleExpr
+    ) {
+    drawObjects.push(new newBitmap(x, y, w, h, fileName, hasInsideColor, fillStyle, fillStyleAlarm, hasFrameColor, strokeStyle, strokeStyleAlarm, line_width, invisibleExpr));
 }
 
 
@@ -673,7 +683,7 @@ function drawAllObjects(ctx, objects) {
                 Log("drawImage " + obj.img.src + " error " + e.name);
             }
             ctx.rect(obj.x, obj.y, obj.w, obj.h);
-            if (obj.has_frame_color === 'true') {
+            if (obj.hasFrameColor == 'true') {
                 ctx.lineWidth = obj.lineWidth;
                 ctx.strokeStyle = obj.strokeStyle;
                 ctx.stroke();

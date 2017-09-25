@@ -372,7 +372,7 @@ function load_visu_success(content) {
 	});
 
 	if (visuUseDynamicText) {
-	    Log("load dynTextFile <" + dynTextFile + ">");
+		Log("load dynTextFile <" + dynTextFile + ">");
 		$.ajax({
 			type: 'GET',
 			async: false,
@@ -556,8 +556,13 @@ function parse_visu_elements(content) {
 			registerBitmap(
 				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
 				filename,
-				has_inside_color, fill_color, fill_color_alarm,
-				has_frame_color, frame_color, frame_color_alarm, line_width,
+				has_inside_color,
+				"rgb(" + fill_color + ")",
+				"rgb(" + fill_color_alarm + ")",
+				has_frame_color,
+				"rgb(" + frame_color + ")",
+				"rgb(" + frame_color_alarm + ")",
+				line_width,
 				exprInvisible
 				);
 
@@ -720,43 +725,43 @@ function parse_visu_elements(content) {
 
 function load_dyntextfile_success(content) {
 
-    $(content).find(">dynamic-text").each(function () {
-        var $dynTextBlock = $(this);
+	$(content).find(">dynamic-text").each(function () {
+		var $dynTextBlock = $(this);
 
-        $dynTextBlock.find(">header").each(function () {
-            var $header = $(this);
+		$dynTextBlock.find(">header").each(function () {
+			var $header = $(this);
 
-            visuDynTextDefaultLanguage = 'english';
-            var defaultLanguage = $header.find('default-language').text();
-            if (defaultLanguage.length) {
-                visuDynTextDefaultLanguage = defaultLanguage;
-            }
+			visuDynTextDefaultLanguage = 'english';
+			var defaultLanguage = $header.find('default-language').text();
+			if (defaultLanguage.length) {
+				visuDynTextDefaultLanguage = defaultLanguage;
+			}
 
-            // TODO: <default-font>
-        });
+			// TODO: <default-font>
+		});
 
-        $dynTextBlock.find(">text-list").each(function () {
-            var $textList = $(this);
+		$dynTextBlock.find(">text-list").each(function () {
+			var $textList = $(this);
 
-            $textList.find(">text").each(function () {
-                var $text = $(this);
+			$textList.find(">text").each(function () {
+				var $text = $(this);
 
-                var prefix = $text.attr("prefix");
+				var prefix = $text.attr("prefix");
 
-                dynamicTexts[prefix] = {};
+				dynamicTexts[prefix] = {};
 
-                $text.children().each(function () {
-                    var $child = $(this);
+				$text.children().each(function () {
+					var $child = $(this);
 
-                    var language = this.nodeName;
-                    var foreignText = $child.text();
+					var language = this.nodeName;
+					var foreignText = $child.text();
 
-                    // Log('dynamicTexts['+prefix+']['+language+'] = '+foreignText);
-                    dynamicTexts[prefix][language] = foreignText;
-                });
-            });
-        });
-    });
+					// Log('dynamicTexts['+prefix+']['+language+'] = '+foreignText);
+					dynamicTexts[prefix][language] = foreignText;
+				});
+			});
+		});
+	});
 }
 
 function load_visu(filename) {
