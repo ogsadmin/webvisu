@@ -570,6 +570,13 @@ function parse_visu_elements(content) {
 
 			parseClickInfo($myMedia, rectFields);
 		} else if (type == 'button') {
+		    // #22: auch Buttons können eine Bitmap beherbergen
+		    var filename = $myMedia.find('file-name').text();
+		    if (filename.length) {
+		        var fileFields = filename.split('\\');
+		        filename = fileFields[fileFields.length - 1];
+		    }
+
 			var rect = $myMedia.find('rect').text();
 			var rectFields = rect.split(',').map(Number);;
 
@@ -619,7 +626,8 @@ function parse_visu_elements(content) {
 					"rgb(" + fill_color + ")",
 					"rgb(" + fill_color_alarm + ")",
 					exprToggleColor,
-					exprInvisible
+					exprInvisible,
+                    filename
 				);
 
 			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);

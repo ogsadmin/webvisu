@@ -180,7 +180,8 @@ function newButton(
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
     alarmExpr,
-    invisibleExpr
+    invisibleExpr,
+    bitmapFilename
 ) {
     this.isA = 'Button';
 
@@ -200,6 +201,13 @@ function newButton(
 
     this.alarmExpr = alarmExpr;
     this.invisibleExpr = invisibleExpr;
+
+    this.bitmapFilename = bitmapFilename;
+    this.img = null;
+    if (bitmapFilename.length) {
+        this.img = new Image();
+        this.img.src = plcDir + '/' + bitmapFilename;
+    }
 }
 
 function registerButton(
@@ -207,14 +215,16 @@ function registerButton(
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
     alarmExpr,
-    invisibleExpr
+    invisibleExpr,
+    bitmapFilename
     ) {
     drawObjects.push(new newButton(
             x, y, w, h,
             hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
             hasInsideColor, fillStyle, fillStyleAlarm,
             alarmExpr,
-            invisibleExpr
+            invisibleExpr,
+            bitmapFilename
         ));
 }
 
@@ -739,12 +749,21 @@ function drawAllObjects(ctx, objects) {
                 strokeStyle = obj.strokeStyle;
             }
 
-            // draw fill
-            if (obj.hasInsideColor == 'true') {
-                ctx.fillStyle = fillStyle;
-                ctx.fill();
+            // #22: draw bitmap (if any)
+            if (obj.bitmapFilename.length) {
+                //Log("drawImage " + obj.bitmapFilename);
+                try {
+                    ctx.drawImage(obj.img, 0, 0, obj.img.width, obj.img.height, obj.x, obj.y, obj.w, obj.h);
+                } catch (e) {
+                    Log("drawImage " + obj.img.src + " error " + e.name);
+                }
+            } else {
+                // draw fill - only if no bitmap is active
+                if (obj.hasInsideColor == 'true') {
+                    ctx.fillStyle = fillStyle;
+                    ctx.fill();
+                }
             }
-
             // draw border
             if (obj.hasFrameColor == 'true') {
                 ctx.lineWidth = obj.lineWidth;
