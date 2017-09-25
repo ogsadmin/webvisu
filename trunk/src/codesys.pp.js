@@ -849,7 +849,28 @@ function update_vars_std() {
 					//case VAR_TYPE_WORD:
 					//case VAR_TYPE_DINT:
 					//case VAR_TYPE_DWORD:
-					//case VAR_TYPE_TIME:
+
+				    case VAR_TYPE_TIME:
+				        try {
+				            value = parseInt(fields[count]);
+				            ms = value % 1000;
+				            value /= 1000;
+				            value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
+				            s = value % 60;
+				            value /= 60;
+				            value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
+				            m = value % 60;
+				            value /= 60;
+				            value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
+				            h = value;
+
+				            obj.value = "T#" + h + "h" + m + "m" + s + "s" + ms + "ms";
+				        } catch (e) {
+				            Log("time " + fields[count] + " error: " + e.name);
+				        }
+				        break;
+
+
 					//case VAR_TYPE_STRING:
 					//case VAR_TYPE_ARRAY:
 					//case VAR_TYPE_ENUM:
@@ -860,10 +881,51 @@ function update_vars_std() {
 					//case VAR_TYPE_USINT:
 					//case VAR_TYPE_UINT:
 					//case VAR_TYPE_UDINT:
-					//case VAR_TYPE_DATE:
-					//case VAR_TYPE_TOD:
-					//case VAR_TYPE_DT:
-					//case VAR_TYPE_VOID:
+				    case VAR_TYPE_DATE:
+				        try {
+				            //Log("try to decode date " + fields[count]);
+				            var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+				            var tzo = new Date().getTimezoneOffset() * 60;
+				            d.setUTCSeconds(parseInt(fields[count]) + tzo);
+				            obj.value = d.toLocaleDateString()
+				        } catch (e) {
+				            Log("date " + fields[count] + " error: " + e.name);
+				        }
+				        break;
+
+					case VAR_TYPE_TOD:
+					    try {
+					        value = parseInt(fields[count]);
+					        ms = value % 1000;
+					        value /= 1000;
+					        value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
+					        s = value % 60;
+					        value /= 60;
+					        value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
+					        m = value % 60;
+					        value /= 60;
+					        value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
+					        h = value;
+
+					        obj.value = "TOD#" + h + ":" + m + ":" + s + "." + ms;
+					    } catch (e) {
+					        Log("time of day " + fields[count] + " error: " + e.name);
+					    }
+					    break;
+
+				    case VAR_TYPE_DT:
+				        try {
+				            //Log("try to decode date " + fields[count]);
+				            var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+				            var tzo = new Date().getTimezoneOffset() * 60;
+				            d.setUTCSeconds(parseInt(fields[count]) + tzo);
+				            obj.value = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+				        } catch (e) {
+				            Log("datetime " + fields[count] + " error: " + e.name);
+				        }
+				        break;
+
+				    //case VAR_TYPE_VOID:
 					//case VAR_TYPE_REF:
 					//case VAR_TYPE_NONE:
 					default:
@@ -1014,8 +1076,19 @@ function update_vars_soap() {
 							//case VAR_TYPE_UINT:
 							//case VAR_TYPE_UDINT:
 							//case VAR_TYPE_DATE:
-							//case VAR_TYPE_TOD:
-							//case VAR_TYPE_DT:
+						    //case VAR_TYPE_TOD:
+
+					    case VAR_TYPE_DT:
+					        try {
+					            //Log("try to decode date " + value);
+					            var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+					            d.setSeconds(parseInt(value));
+					            obj.value = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+					        } catch (e) {
+					            Log("date " + value + " error: " + e.name);
+					        }
+					        break;
+
 							//case VAR_TYPE_VOID:
 							//case VAR_TYPE_REF:
 							//case VAR_TYPE_NONE:
