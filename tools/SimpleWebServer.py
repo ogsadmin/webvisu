@@ -88,8 +88,17 @@ class CustomHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 varType = int(fields[fieldCounter])
                 fieldCounter += 1
 
-                # wir antworten mal überall mit "0"
-                answer += '0|'
+                if(varType == VAR_TYPE_DATE):
+                    answer += '1498780800|'                 # d#2017-06-30
+                elif(varType == VAR_TYPE_TOD):
+                    answer += '45296000|'                   # tod#12:34:56 (ms)
+                elif(varType == VAR_TYPE_DT):
+                    answer += '1498826096|'                 # dt#2017-06-30-12:34:56
+                elif(varType == VAR_TYPE_TIME):
+                    answer += '358000|'                     # t#5m58s (ms)
+                else:
+                    # wir antworten mal überall sonst mit "0"
+                    answer += '0|'
 
                 varCounter+=1
 
