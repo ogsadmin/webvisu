@@ -45,6 +45,14 @@
 /*
 #endif
 */
+
+            // sollen wir einen performance-test durchführen?
+            if (getUrlParameter('doPerfTest') != undefined) {
+                Log("doPerfTest: starting performance-test");
+                doPerfTest();
+            }
+
+
             // finden wir mal heraus wo unsere Visu liegt
 			determineVisuLocation();
 

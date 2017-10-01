@@ -1,5 +1,11 @@
 // drawing.js
 
+/* TODO:
+ - prüfen, ob wir das ständige Repaint nicht vermeiden könnten
+ - prüfen, ob wir nicht auf eine objektorientierte (fertige) Render-Engine umsteigen sollten:
+   z.B. https://konvajs.github.io/
+*/
+
 var visuVariables = {};
 var drawObjects = [];
 var dynamicTexts = {};
