@@ -50,6 +50,22 @@ String.prototype.endsWith = String.prototype.endsWith || function (suffix) {
 //  return this.match(suffix + "$") == suffix;
 };
 
+//// String replaceAll
+//// test performance 266ms vs RegExp 123ms
+//String.prototype.replaceAll1 = function (target, replacement) {
+//    return this.split(target).join(replacement);
+//};
+
+//// test performance 342ms vs RegExp 123ms
+//String.prototype.replaceAll2 = function (src, dest) {
+//    var text = this;
+//    do {
+//        text2 = text;
+//        text = text2.replace(src, dest);
+//    } while (text2 != text);
+//    return text;
+//};
+
 
 function fileExists(url) {
     exists = false;
@@ -84,4 +100,44 @@ function determineVisuLocation() {
         postUrl = '/UPnPDevice/TcPlcDataServiceDa.dll';
         postFormat = POST_FORMAT_SOAP;
     }
+}
+
+
+// diese Funktion startet einen performance-test um ein paar Unklarheiten zu beseitigen
+function doPerfTest() {
+    perfTestStart = new Date().getTime();
+    for (a = 0; a < 10000; a++) {
+        text = "dies ist ein | | kleiner |<|Test|>| um RegExp | | gegen |<|normalen|>| String-Replace zu vergleichen";
+        // wegen des PreProcessors können wir leider keine /-Syntax für die RegEx nehmen
+        text = text.replace(new RegExp('\\| \\|', 'g'), ' ');
+        text = text.replace(new RegExp('\\|>\\|', 'g'), '>');
+        text = text.replace(new RegExp('\\|<\\|', 'g'), '<');
+    }
+    perfTestEnd = new Date().getTime();
+    perfTest = perfTestEnd - perfTestStart;
+    Log("perTest RegExp=" + perfTest + "ms");
+
+    //perfTestStart = new Date().getTime();
+    //for (a = 0; a < 10000; a++) {
+    //    text = "dies ist ein | | kleiner |<|Test|>| um RegExp | | gegen |<|normalen|>| String-Replace zu vergleichen";
+
+    //    text = text.replaceAll1('| |', ' ');
+    //    text = text.replaceAll1('|>|', '>');
+    //    text = text.replaceAll1('|<|', '<');
+    //}
+    //perfTestEnd = new Date().getTime();
+    //perfTest = perfTestEnd - perfTestStart;
+    //Log("perTest replaceAll1=" + perfTest + "ms");
+
+    //perfTestStart = new Date().getTime();
+    //for (a = 0; a < 10000; a++) {
+    //    text = "dies ist ein | | kleiner |<|Test|>| um RegExp | | gegen |<|normalen|>| String-Replace zu vergleichen";
+
+    //    text = text.replaceAll2('| |', ' ');
+    //    text = text.replaceAll2('|>|', '>');
+    //    text = text.replaceAll2('|<|', '<');
+    //}
+    //perfTestEnd = new Date().getTime();
+    //perfTest = perfTestEnd - perfTestStart;
+    //Log("perTest replaceAll2=" + perfTest + "ms");
 }
