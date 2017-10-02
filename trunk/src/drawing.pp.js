@@ -88,7 +88,12 @@ function switchToVisu(visu) {
 
     // INIs neu laden
     load_ini(plcDir + "/visu_ini.xml");
+
     // neue Visu laden
+    if (filenamesLowercase == true) {
+        visu = visu.toLowerCase();
+    }
+
     var filename = plcDir + "/" + visu;
     if (visuCompressed == 1) {
         filename += "_xml.zip";
@@ -212,6 +217,11 @@ function newButton(
     this.img = null;
     if (bitmapFilename.length) {
         this.img = new Image();
+
+        if (filenamesLowercase == true) {
+            bitmapFilename = bitmapFilename.toLowerCase();
+        }
+
         this.img.src = plcDir + '/' + bitmapFilename;
     }
 }
@@ -276,6 +286,11 @@ function newBitmap(
     this.h = parseInt(h);
     this.fileName = fileName;
     this.img = new Image();
+
+    if (filenamesLowercase == true) {
+        fileName = fileName.toLowerCase();
+    }
+
     this.img.src = plcDir + '/' + fileName;
 
     this.hasInsideColor = hasInsideColor;
