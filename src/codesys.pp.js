@@ -38,6 +38,17 @@ const POST_FORMAT_STANDARD = 0
 const POST_FORMAT_SOAP = 1
 var postFormat = POST_FORMAT_STANDARD;
 
+/**
+Diese variable steuert ob Dateinamen (vor dem Laden vom Server) in 
+Kleinbuchstaben umgewandelt werden sollen.
+
+Hintergrund ist, dass einige Steuerungen Case-Sensitive sind; die User jedoch 
+frei in der Eingabe. Es scheint so, als ob auf diesen Steuerungen die Dateien
+beim Hochladen in Kleinschreibung umgewandelt werden; die Namen in den Visu-
+Files bleiben jedoch CamelCase.
+*/ 
+var filenamesLowercase = false;
+
 var PendingMouseUpObjects = [];
 
 var parsedGroups = [];

@@ -87,6 +87,14 @@ function determineVisuLocation() {
         plcDir = "/PLC";
         postUrl = '/plc/webvisu.htm';
         postFormat = POST_FORMAT_STANDARD;
+    } else if (fileExists('/webvisu/visu_ini.xml')) {
+        // eine neuere Wago (PFC-Serie)
+        Log('found in /webvisu');
+        plcDir = "/webvisu";
+        postUrl = '/webvisu/webvisu.htm';
+        postFormat = POST_FORMAT_STANDARD;
+        // es handelt sich um eine CaseSensitive Linux-Steuerung
+        filenamesLowercase = true;
     } else if (fileExists('/visu_ini.xml')) {
         // könnte eine Beck sein
         Log('found in /');
