@@ -378,7 +378,13 @@ function load_visu_success(content) {
 		parsedGroups.push(new newGroup(0, 0, visuSizeX, visuSizeY));
 		parse_visu_elements($myMedia);
 
-		// jetzt noch (einmalig) die Reihenfolge der Klick-Elemente umdrehen um verdeckende Elemente zu erkennen
+		/* Jetzt noch (einmalig) die Reihenfolge der Klick-Elemente umdrehen 
+		   um verdeckende Elemente zu erkennen.
+		   Hintergrund: Zeichnet man ein Element "über" ein anderes, so ist es 
+		   in Ladereihenfolge hinter dem darunter liegenden. Das untenliegende
+		   Element wird also vor dem darüberliegenden ausgewertet.
+		   Das wäre falsch - deshalb drehen wir es hier.
+		 */
 		clickRegions.reverse();
 	});
 
@@ -581,12 +587,12 @@ function parse_visu_elements(content) {
 
 			parseClickInfo($myMedia, rectFields);
 		} else if (type == 'button') {
-		    // #22: auch Buttons können eine Bitmap beherbergen
-		    var filename = $myMedia.find('file-name').text();
-		    if (filename.length) {
-		        var fileFields = filename.split('\\');
-		        filename = fileFields[fileFields.length - 1];
-		    }
+			// #22: auch Buttons können eine Bitmap beherbergen
+			var filename = $myMedia.find('file-name').text();
+			if (filename.length) {
+				var fileFields = filename.split('\\');
+				filename = fileFields[fileFields.length - 1];
+			}
 
 			var rect = $myMedia.find('rect').text();
 			var rectFields = rect.split(',').map(Number);;
@@ -638,7 +644,7 @@ function parse_visu_elements(content) {
 					"rgb(" + fill_color_alarm + ")",
 					exprToggleColor,
 					exprInvisible,
-                    filename
+					filename
 				);
 
 			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
@@ -861,25 +867,25 @@ function update_vars_std() {
 					//case VAR_TYPE_DINT:
 					//case VAR_TYPE_DWORD:
 
-				    case VAR_TYPE_TIME:
-				        try {
-				            value = parseInt(fields[count]);
-				            ms = value % 1000;
-				            value /= 1000;
-				            value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
-				            s = value % 60;
-				            value /= 60;
-				            value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
-				            m = value % 60;
-				            value /= 60;
-				            value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
-				            h = value;
+					case VAR_TYPE_TIME:
+						try {
+							value = parseInt(fields[count]);
+							ms = value % 1000;
+							value /= 1000;
+							value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
+							s = value % 60;
+							value /= 60;
+							value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
+							m = value % 60;
+							value /= 60;
+							value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
+							h = value;
 
-				            obj.value = "T#" + h + "h" + m + "m" + s + "s" + ms + "ms";
-				        } catch (e) {
-				            Log("time " + fields[count] + " error: " + e.name);
-				        }
-				        break;
+							obj.value = "T#" + h + "h" + m + "m" + s + "s" + ms + "ms";
+						} catch (e) {
+							Log("time " + fields[count] + " error: " + e.name);
+						}
+						break;
 
 
 					//case VAR_TYPE_STRING:
@@ -892,51 +898,51 @@ function update_vars_std() {
 					//case VAR_TYPE_USINT:
 					//case VAR_TYPE_UINT:
 					//case VAR_TYPE_UDINT:
-				    case VAR_TYPE_DATE:
-				        try {
-				            //Log("try to decode date " + fields[count]);
-				            var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-				            var tzo = new Date().getTimezoneOffset() * 60;
-				            d.setUTCSeconds(parseInt(fields[count]) + tzo);
-				            obj.value = d.toLocaleDateString()
-				        } catch (e) {
-				            Log("date " + fields[count] + " error: " + e.name);
-				        }
-				        break;
+					case VAR_TYPE_DATE:
+						try {
+							//Log("try to decode date " + fields[count]);
+							var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+							var tzo = new Date().getTimezoneOffset() * 60;
+							d.setUTCSeconds(parseInt(fields[count]) + tzo);
+							obj.value = d.toLocaleDateString()
+						} catch (e) {
+							Log("date " + fields[count] + " error: " + e.name);
+						}
+						break;
 
 					case VAR_TYPE_TOD:
-					    try {
-					        value = parseInt(fields[count]);
-					        ms = value % 1000;
-					        value /= 1000;
-					        value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
-					        s = value % 60;
-					        value /= 60;
-					        value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
-					        m = value % 60;
-					        value /= 60;
-					        value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
-					        h = value;
+						try {
+							value = parseInt(fields[count]);
+							ms = value % 1000;
+							value /= 1000;
+							value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
+							s = value % 60;
+							value /= 60;
+							value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
+							m = value % 60;
+							value /= 60;
+							value |= 0; // All bitwise operations work on signed 32-bit integers. Using them converts a float to an integer. 
+							h = value;
 
-					        obj.value = "TOD#" + h + ":" + m + ":" + s + "." + ms;
-					    } catch (e) {
-					        Log("time of day " + fields[count] + " error: " + e.name);
-					    }
-					    break;
+							obj.value = "TOD#" + h + ":" + m + ":" + s + "." + ms;
+						} catch (e) {
+							Log("time of day " + fields[count] + " error: " + e.name);
+						}
+						break;
 
-				    case VAR_TYPE_DT:
-				        try {
-				            //Log("try to decode date " + fields[count]);
-				            var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-				            var tzo = new Date().getTimezoneOffset() * 60;
-				            d.setUTCSeconds(parseInt(fields[count]) + tzo);
-				            obj.value = d.toLocaleDateString() + " " + d.toLocaleTimeString();
-				        } catch (e) {
-				            Log("datetime " + fields[count] + " error: " + e.name);
-				        }
-				        break;
+					case VAR_TYPE_DT:
+						try {
+							//Log("try to decode date " + fields[count]);
+							var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+							var tzo = new Date().getTimezoneOffset() * 60;
+							d.setUTCSeconds(parseInt(fields[count]) + tzo);
+							obj.value = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+						} catch (e) {
+							Log("datetime " + fields[count] + " error: " + e.name);
+						}
+						break;
 
-				    //case VAR_TYPE_VOID:
+					//case VAR_TYPE_VOID:
 					//case VAR_TYPE_REF:
 					//case VAR_TYPE_NONE:
 					default:
@@ -1087,18 +1093,18 @@ function update_vars_soap() {
 							//case VAR_TYPE_UINT:
 							//case VAR_TYPE_UDINT:
 							//case VAR_TYPE_DATE:
-						    //case VAR_TYPE_TOD:
+							//case VAR_TYPE_TOD:
 
-					    case VAR_TYPE_DT:
-					        try {
-					            //Log("try to decode date " + value);
-					            var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-					            d.setSeconds(parseInt(value));
-					            obj.value = d.toLocaleDateString() + " " + d.toLocaleTimeString();
-					        } catch (e) {
-					            Log("date " + value + " error: " + e.name);
-					        }
-					        break;
+						case VAR_TYPE_DT:
+							try {
+								//Log("try to decode date " + value);
+								var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+								d.setSeconds(parseInt(value));
+								obj.value = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+							} catch (e) {
+								Log("date " + value + " error: " + e.name);
+							}
+							break;
 
 							//case VAR_TYPE_VOID:
 							//case VAR_TYPE_REF:

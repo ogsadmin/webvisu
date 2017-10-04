@@ -88,6 +88,7 @@ class CustomHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 varType = int(fields[fieldCounter])
                 fieldCounter += 1
 
+                # Dummydaten einfüllen - falls es Sinn macht
                 if(varType == VAR_TYPE_DATE):
                     answer += '1498780800|'                 # d#2017-06-30
                 elif(varType == VAR_TYPE_TOD):

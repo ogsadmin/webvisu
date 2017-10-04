@@ -622,7 +622,10 @@ function evalExpression(expr) {
         } else if (expr[i].operation == 'const') {
             result.push(parseFloat(expr[i].value));
         } else if (expr[i].operation == 'op') {
-            if (expr[i].value == 'OR(2)') {
+            if (expr[i].value == 'NOT') {
+                var v1 = result.pop();
+                result.push( !v1 );
+            } else if (expr[i].value == 'OR(2)') {
                 var v1 = result.pop();
                 var v2 = result.pop();
                 result.push(v1 || v2);
@@ -646,7 +649,19 @@ function evalExpression(expr) {
                 var v1 = result.pop();
                 var v2 = result.pop();
                 result.push(v2 - v1);
+            } else if (expr[i].value == '>(2)') {
+                var v1 = result.pop();
+                var v2 = result.pop();
+                result.push(v2 > v1);
+            } else if (expr[i].value == '<(2)') {
+                var v1 = result.pop();
+                var v2 = result.pop();
+                result.push(v2 < v1);
+            } else {
+                Log("error: expression operation op < " + expr[i].value + " > unknown");
             }
+        } else {
+            Log("error: expression operation < " + expr[i].operation + " > unknown");
         }
     }
     return result[0];
