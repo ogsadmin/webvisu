@@ -518,6 +518,23 @@ function registerClickZoom(x, y, w, h, visu) {
 }
 
 // ****************************************************************************
+// ClickEdit
+
+// constructor
+function regClickEdit(x, y, w, h, variable) {
+    this.isA = 'Edit';
+    this.x = parseInt(x);
+    this.y = parseInt(y);
+    this.w = parseInt(w);
+    this.h = parseInt(h);
+    this.variable = variable;
+}
+
+function registerClickEdit(x, y, w, h, variable) {
+    clickRegions.push(new regClickEdit(x, y, w, h, variable));
+}
+
+// ****************************************************************************
 
 /* entfernt die Pipe-Zeichen, welche ein Leerzeichen oder Sonderzeichen einschließen
 
@@ -622,43 +639,75 @@ function evalExpression(expr) {
         } else if (expr[i].operation == 'const') {
             result.push(parseFloat(expr[i].value));
         } else if (expr[i].operation == 'op') {
-            if (expr[i].value == 'NOT') {
-                var v1 = result.pop();
-                result.push( !v1 );
-            } else if (expr[i].value == 'OR(2)') {
-                var v1 = result.pop();
-                var v2 = result.pop();
-                result.push(v1 || v2);
-            } else if (expr[i].value == 'AND(2)') {
-                var v1 = result.pop();
-                var v2 = result.pop();
-                result.push(v1 && v2);
-            } else if (expr[i].value == '/(2)') {
-                var v1 = result.pop();
-                var v2 = result.pop();
-                result.push(v2 / v1);
-            } else if (expr[i].value == '*(2)') {
-                var v1 = result.pop();
-                var v2 = result.pop();
-                result.push(v2 * v1);
-            } else if (expr[i].value == '+(2)') {
-                var v1 = result.pop();
-                var v2 = result.pop();
-                result.push(v2 + v1);
-            } else if (expr[i].value == '-(2)') {
-                var v1 = result.pop();
-                var v2 = result.pop();
-                result.push(v2 - v1);
-            } else if (expr[i].value == '>(2)') {
-                var v1 = result.pop();
-                var v2 = result.pop();
-                result.push(v2 > v1);
-            } else if (expr[i].value == '<(2)') {
-                var v1 = result.pop();
-                var v2 = result.pop();
-                result.push(v2 < v1);
-            } else {
-                Log("error: expression operation op < " + expr[i].value + " > unknown");
+            for (c = 1; c < expr[i].count; c++) {
+                if (expr[i].value == 'NOT') {
+                    // eigentlich kein count
+                    var v1 = result.pop();
+                    result.push( !v1 );
+                } else if (expr[i].value == 'XOR') {
+                    // eigentlich kein count
+                    var v1 = result.pop();
+                    var v2 = result.pop();
+                    result.push(v2 ^ v1);
+                } else if (expr[i].value == 'OR') {
+                    var v1 = result.pop();
+                    var v2 = result.pop();
+                    result.push(v2 || v1);
+                } else if (expr[i].value == 'AND') {
+                    var v1 = result.pop();
+                    var v2 = result.pop();
+                    result.push(v2 && v1);
+                } else if (expr[i].value == 'MOD') {
+                    var v1 = result.pop();
+                    var v2 = result.pop();
+                    result.push(v2 % v1);
+                } else if (expr[i].value == '/') {
+                    // TODO: kann das so stimmen?
+                    //       a / b ist nicht b / a
+                    var v1 = result.pop();
+                    var v2 = result.pop();
+                    result.push(v2 / v1);
+                } else if (expr[i].value == '*') {
+                    var v1 = result.pop();
+                    var v2 = result.pop();
+                    result.push(v2 * v1);
+                } else if (expr[i].value == '+') {
+                    var v1 = result.pop();
+                    var v2 = result.pop();
+                    result.push(v2 + v1);
+                } else if (expr[i].value == '-') {
+                    // TODO: kann das so stimmen?
+                    //       a - b ist nicht b - a
+                    var v1 = result.pop();
+                    var v2 = result.pop();
+                    result.push(v2 - v1);
+                } else if (expr[i].value == '>') {
+                    var v1 = result.pop();
+                    var v2 = result.pop();
+                    result.push(v2 > v1);
+                } else if (expr[i].value == '<') {
+                    var v1 = result.pop();
+                    var v2 = result.pop();
+                    result.push(v2 < v1);
+                } else if (expr[i].value == '<=') {
+                    var v1 = result.pop();
+                    var v2 = result.pop();
+                    result.push(v2 <= v1);
+                } else if (expr[i].value == '>=') {
+                    var v1 = result.pop();
+                    var v2 = result.pop();
+                    result.push(v2 >= v1);
+                } else if (expr[i].value == '=') {
+                    var v1 = result.pop();
+                    var v2 = result.pop();
+                    result.push(v2 == v1);
+                } else if (expr[i].value == '<>') {
+                    var v1 = result.pop();
+                    var v2 = result.pop();
+                    result.push(v2 != v1);
+                } else {
+                    Log("error: expression operation op < " + expr[i].value + " > unknown");
+                }
             }
         } else {
             Log("error: expression operation < " + expr[i].operation + " > unknown");

@@ -53,10 +53,15 @@ var PendingMouseUpObjects = [];
 
 var parsedGroups = [];
 
+/* wenn ein Input-Feld aktiv ist zeigt das diese Variable an. */
+var inputFieldActive = false;
+
+
 // constructor
-function expression(operation, value) {
-	this.operation = operation;
-	this.value = value;
+function expression(operation, count, value) {
+    this.operation = operation;
+    this.count = count;
+    this.value = value;
 }
 
 function extract_var_addr( content ) {
@@ -102,7 +107,23 @@ function parseExpression(parentTag) {
 		exprTag.children().each(function () {
 			var tagName = this.tagName;
 			var val = $(this).text();
-			expr.push(new expression(tagName, val));
+			var count = 1;
+
+		    //Log("parseExpression <" + tagName + "> <" + val + ">");
+
+		    // Operatoren wollen wir weiter auseinander nehmen
+			if (tagName == 'op') {
+			    // suche nach dem Klammerausdruck - z.B. "MOD(2)"
+			    if (val.indexOf('(') > -1) {
+			        countStr = val.substr(val.indexOf('(') + 1);
+			        countStr.replace(')', '');
+			        count = parseInt(countStr);
+			        val = val.substr(0, val.indexOf('('));
+			        //Log("  <" + val + "> <" + count + ">");
+			    }
+			}
+
+			expr.push(new expression(tagName, count, val));
 		});
 	}
 	return expr;
@@ -531,6 +552,44 @@ function parse_visu_elements(content) {
 					parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
 
 					parseClickInfo($myMedia, rectFields);
+
+                    // parse Input Info
+					var enableTextInput = $myMedia.find('enable-text-input').text();
+					if (enableTextInput === 'true') {
+					    // TODO: <text-input-type>0</text-input-type>
+
+					    // in der <text-display> Expression findet sich die Zielvariable
+
+					    // TODO: eigentlich wäre das eine Expression
+					    //var exprTextDisplay = [];
+					    //var expr_text_display = $myMedia.find('text-display');
+					    //if (expr_text_display.length) {
+					    //    exprTextDisplay = parseExpression(expr_text_display);
+					    //}
+
+					    var textDisplay = $myMedia.find('text-display');
+					    variableName = '';
+					    if (textDisplay.length) {
+					        var textDisplayExpr = textDisplay.find('expr');
+					        if (textDisplayExpr.length) {
+					            variableName = textDisplayExpr.find('var').text();
+					        }
+					    }
+
+					    rectFields[0] += parsedGroups[parsedGroups.length - 1].x;
+						rectFields[1] += parsedGroups[parsedGroups.length - 1].y;
+						rectFields[2] += parsedGroups[parsedGroups.length - 1].x;
+						rectFields[3] += parsedGroups[parsedGroups.length - 1].y;
+
+					    // TODO: "versteckter Text": <hidden-input>false</hidden-input>
+						// TODO: "max len"
+						// TODO: "min len"
+
+						registerClickEdit(
+							rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+							variableName
+							);
+					}
 				}
 			} else {
 				Log("unknown simple-shape: " + shape);
@@ -1154,6 +1213,47 @@ function pointerEventToXY(e) {
 	return out;
 };
 
+function onInputFieldKeyPressed(event, fieldName, variableName) {
+    // ESC + ENTER behandeln wir selbst
+    if (event.which == 27 || event.keyCode == 27) {
+        // ESC: Feld einfach schließen
+        var input = document.getElementById(fieldName);
+        var parent = document.getElementById("contain");
+
+        parent.removeChild(input);
+
+        inputFieldActive = false;
+        return false;
+    } else if (event.which == 13 || event.keyCode == 13) {
+        // ENTER: Wert übernehmen und Feld schließen
+		var input = document.getElementById(fieldName);
+		var parent = document.getElementById("contain");
+
+		newval = input.value;
+		parent.removeChild(input);
+
+		//Log("SET " + variableName + " = " + newval);
+
+		var req = '|1|1|0|' + visuVariables[variableName].addrP + '|' + newval + '|';
+
+		$.ajax({
+			type: 'POST',
+			async: false,
+			url: postUrl,
+			data: req,
+		});
+
+		visuVariables[variableName].value = newval;
+		update();
+
+		inputFieldActive = false;
+		return false;
+	}
+
+    // alle anderen Tasten lassen wir vom Browser handeln
+	return true;
+}
+
 
 // der Click-Handler
 function onClick( e ) {
@@ -1163,6 +1263,12 @@ function onClick( e ) {
 	logOverlayText += "onClick\n";
 	//Log("X " + e.pageX + " Y " + e.pageY);
 	//Log("X " + x + " Y " + y);
+
+	if (inputFieldActive == true) {
+	    // wir akzeptieren keine Klicks solange ein Inputfeld aktiv ist
+	    Log("inputFieldActive - exiting");
+	    return;
+	}
 
 	for (var i in clickRegions) {
 		obj = clickRegions[i];
@@ -1196,6 +1302,43 @@ function onClick( e ) {
 				switchToVisu(obj.visu);
 				return;
 			}
+		} else if (obj.isA == 'Edit') {
+		    if ((obj.x <= x) && (obj.y <= y) && ((obj.x + obj.w) >= x) && ((obj.y + obj.h) >= y)) {
+		        // Wir erzeugen (temporär) ein HTML-Input-Field
+		        // dieses lassen wir komplett vom Browser bedienen, bie ENTER grdrückt wird
+		        // als Callback für Tastendrücke geben wir "onInputFieldKeyPressed" an.
+		        var input = document.createElement('input');
+		        input.setAttribute('type', 'text');
+		        input.setAttribute('id', 'inputField');
+		        strStyle = 'z-index:2; position:absolute; box-sizing:border-box; ';
+		        strStyle += 'top:' + obj.y + 'px; ';
+		        strStyle += 'left:' + obj.x + 'px; ';
+
+		        /* TODO:
+                 * https://www.w3schools.com/TAGs/tag_input.asp
+                 * height geht nicht für "input text", sondern nur für "input image"
+                 * width geht nicht für "input text", sondern nur für "input image"
+                 * min/max
+                 * maxlength
+                 * pattern
+                 * size
+                 */
+		        strStyle += 'width:' + obj.w + 'px; ';
+		        strStyle += 'heigth:' + obj.h + 'px; ';
+
+		        input.setAttribute('style', strStyle);
+		        input.setAttribute('value', visuVariables[obj.variable].value);
+		        input.setAttribute('onkeypress', "return onInputFieldKeyPressed(event, 'inputField', '" + obj.variable + "')");
+
+		        var parent = document.getElementById("contain");
+		        parent.appendChild(input);
+
+		        input.focus();
+		        input.select();
+
+		        inputFieldActive = true;
+		        return;
+		    }
 		}
 	}
 }
@@ -1210,6 +1353,12 @@ function onMouseDown(e) {
 
 	Log("onMouseDown");
 	Log("X " + x + " Y " + y);
+
+	if (inputFieldActive == true) {
+	    // wir akzeptieren keine Klicks solange ein Inputfeld aktiv ist
+	    Log("inputFieldActive - exiting");
+	    return;
+	}
 
 	// ein neuer MouseDown hatte sicherlich einen MouseUp voran - nur, falls der verloren ging
 	// passiert komischerweise ab und zu bei Firefox
@@ -1272,7 +1421,14 @@ function HandlePendingMouseUps() {
 // Deshalb wurde der normale MouseUp (der genauso funktionierte wie der MouseDown) ersetzt durch
 // den Mechanismus "PendingMouseUp".
 function onMouseUp(e) {
-	Log("onMouseUp");
+    Log("onMouseUp");
+
+    if (inputFieldActive == true) {
+        // wir akzeptieren keine Klicks solange ein Inputfeld aktiv ist
+        Log("inputFieldActive - exiting");
+        return;
+    }
+
 	HandlePendingMouseUps();
 }
 
