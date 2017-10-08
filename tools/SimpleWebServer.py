@@ -97,6 +97,8 @@ class CustomHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                     answer += '1498826096|'                 # dt#2017-06-30-12:34:56
                 elif(varType == VAR_TYPE_TIME):
                     answer += '358000|'                     # t#5m58s (ms)
+                elif(varType == VAR_TYPE_STRING):
+                    answer += 'hallo|'
                 else:
                     # wir antworten mal überall sonst mit "0"
                     answer += '0|'
