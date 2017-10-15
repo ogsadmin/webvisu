@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO8859-1"?>
+<dynamic-text>
+
+  <header>
+    <default-language>english</default-language>
+    <default-font>
+       <language>deutsch</language>
+       <font-name>Arial</font-name>
+       <font-color>0,0,0</font-color>
+       <font-height>-13</font-height>
+       <font-weight>700</font-weight>
+       <font-italic>false</font-italic>
+       <font-underline>false</font-underline>
+       <font-strike-out>false</font-strike-out>
+       <font-char-set>0</font-char-set>
+    </default-font>
+    <default-font>
+       <language>english</language>
+       <font-name>Arial</font-name>
+       <font-color>0,0,0</font-color>
+       <font-height>-13</font-height>
+       <font-weight>700</font-weight>
+       <font-italic>false</font-italic>
+       <font-underline>false</font-underline>
+       <font-strike-out>false</font-strike-out>
+       <font-char-set>0</font-char-set>
+    </default-font>
+  </header>
+
+  <text-list>
+    <text prefix="DYNTEXT1" id="0">
+       <deutsch>Dynamischer Text 1</deutsch>
+       <english>dynamic text one</english>
+    </text>
+    <text prefix="DYNTEXTTOOLTIP1" id="0">
+       <deutsch>Tooltip für dynamischen Text 1</deutsch>
+       <english>Tooltip for dynamic text one</english>
+    </text>
+
+  </text-list>
+
+</dynamic-text>
+
