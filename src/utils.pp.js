@@ -13,7 +13,7 @@ function Log(text) {
 }
 
 
-// gibt das Value eines "key=value" Paares aus der URL zurück
+// gibt das Value eines "key=value" Paares aus der URL zurï¿½ck
 // oder "undefined"
 function getUrlParameter(key) {
     var query = window.location.search.substring(1); 
@@ -31,7 +31,7 @@ function getUrlParameter(key) {
 };
 
 
-// falls Array kein map unterstützt (für ältere Browser)
+// falls Array kein map unterstï¿½tzt (fï¿½r ï¿½ltere Browser)
 // damit kann man z.B.: var b = a.split(',').map(Number);
 Array.prototype.map = Array.prototype.map || function (_x) {
     for (var o = [], i = 0; i < this.length; i++) {
@@ -96,13 +96,13 @@ function determineVisuLocation() {
         // es handelt sich um eine CaseSensitive Linux-Steuerung
         filenamesLowercase = true;
     } else if (fileExists('/visu_ini.xml')) {
-        // könnte eine Beck sein
+        // kÃ¶nnte eine Beck sein
         Log('found in /');
         plcDir = "";
         postUrl = '/webvisu.htm';
         postFormat = POST_FORMAT_STANDARD;
     } else if (fileExists('/TcWebVisu/visu_ini.xml')) {
-        // Müsste ein TwinCat (Beckhoff) sein
+        // mÃ¼sste ein TwinCat (Beckhoff) sein
         Log('found in /TcWebVisu');
         plcDir = "/TcWebVisu";
         postUrl = '/UPnPDevice/TcPlcDataServiceDa.dll';
@@ -116,7 +116,7 @@ function doPerfTest() {
     perfTestStart = new Date().getTime();
     for (a = 0; a < 10000; a++) {
         text = "dies ist ein | | kleiner |<|Test|>| um RegExp | | gegen |<|normalen|>| String-Replace zu vergleichen";
-        // wegen des PreProcessors können wir leider keine /-Syntax für die RegEx nehmen
+        // wegen des PreProcessors kï¿½nnen wir leider keine /-Syntax fï¿½r die RegEx nehmen
         text = text.replace(new RegExp('\\| \\|', 'g'), ' ');
         text = text.replace(new RegExp('\\|>\\|', 'g'), '>');
         text = text.replace(new RegExp('\\|<\\|', 'g'), '<');
