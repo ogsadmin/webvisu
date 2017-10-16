@@ -1,0 +1,44 @@
+<HTML>
+<HEAD>
+   <TITLE>CoDeSys WebVisualization</TITLE>
+	<style type="text/css">
+	/******* basic tags *******/
+	body
+	{
+  		margin: 0;
+  		padding: 0;
+	}
+   	</style>
+	<script>
+
+		function CookieHandling()
+		{
+			applet = document.getElementById("webvisuapplet")
+			stTodo = applet.databaseCookieInteraction();
+			if (stTodo=="write")			
+			{
+				var expire = new Date();
+				var oneyearLater = expire.getTime() + 365 * 24 * 3600 * 1000;
+				expire.setTime(oneyearLater);
+				document.cookie=applet.databaseCookieGetValue() + ";expires=" + expire.toGMTString();
+			}
+			else if (stTodo=="read")
+			{
+				applet.databaseCookieSetValue(document.cookie);	
+			}
+			setTimeout("CookieHandling()", 2000);
+		}	
+	</script>
+</HEAD>
+<BODY onload="CookieHandling()">
+<APPLET CODEBASE=. CODE=webvisu/WebVisu.class name="WebVisu" width="99%" height="99%" id="webvisuapplet">
+<param name="archive" value="webvisu.jar,minml.jar">
+<param name="STARTVISU" value="PLC_VISU">
+<param name="UPDATETIME" value="200">
+<param name="USECURRENTVISU" value="FALSE">
+<param name="USEFIXSOCKETCONNECTION" value="FALSE">
+<param name="USEURLCONNECTION" value="TRUE">
+<param name="COMPRESSEDFILES" value="TRUE">
+</APPLET> 
+</BODY>
+</HTML>
