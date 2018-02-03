@@ -208,22 +208,30 @@ function parseClickInfo(myMedia, rectFields) {
 	rectFields[2] += parsedGroups[parsedGroups.length - 1].x;
 	rectFields[3] += parsedGroups[parsedGroups.length - 1].y;
 
-	/*
-		<expr-toggle-var>
-			<expr>
-				<var>PLC_PRG.bVarToggeln</var>
-			</expr>
-		</expr-toggle-var>
+	/* Die Reihenfolge der Registrierung ist ausschlaggebend fÃ¼r die Funktion 
+	   von Mehrfach-Aktionen.
+	   Die zoom-to-visu muss als letztes ausgefÃ¼hrt werden, da sie den 
+	   AusfÃ¼hrungsablauf unterbricht (lÃ¤dt neue Visu). Da wir nach dem Laden
+	   die Reihenfolge drehen muss zoom-to-visu entsprechend als erstes 
+	   registriert werden.
 	*/
-	var expr_toggle_var = myMedia.find('expr-toggle-var');
+
+	/*
+		<expr-zoom>
+			<expr>
+				<placeholder>PLC_VISU</placeholder>
+			</expr>
+		</expr-zoom>
+	*/
+	var expr_zoom = myMedia.find('expr-zoom');
 	value = '';
-	if (expr_toggle_var.length) {
-		var expr_toggle_var_exp = expr_toggle_var.find('expr');
-		if (expr_toggle_var_exp.length) {
-			value = expr_toggle_var_exp.find('var').text();
-			registerClickToggle(
+	if (expr_zoom.length) {
+		var expr_zoom_exp = expr_zoom.find('expr');
+		if (expr_zoom_exp.length) {
+			newvisu = expr_zoom_exp.find('placeholder').text();
+			registerClickZoom(
 				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-				value
+				newvisu
 				);
 		}
 	}
@@ -250,25 +258,26 @@ function parseClickInfo(myMedia, rectFields) {
 	}
 
 	/*
-		<expr-zoom>
+		<expr-toggle-var>
 			<expr>
-				<placeholder>PLC_VISU</placeholder>
+				<var>PLC_PRG.bVarToggeln</var>
 			</expr>
-		</expr-zoom>
+		</expr-toggle-var>
 	*/
-	var expr_zoom = myMedia.find('expr-zoom');
+	var expr_toggle_var = myMedia.find('expr-toggle-var');
 	value = '';
-	if (expr_zoom.length) {
-		var expr_zoom_exp = expr_zoom.find('expr');
-		if (expr_zoom_exp.length) {
-			newvisu = expr_zoom_exp.find('placeholder').text();
-			registerClickZoom(
+	if (expr_toggle_var.length) {
+		var expr_toggle_var_exp = expr_toggle_var.find('expr');
+		if (expr_toggle_var_exp.length) {
+			value = expr_toggle_var_exp.find('var').text();
+			registerClickToggle(
 				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-				newvisu
+				value
 				);
 		}
 	}
 
+	
 	/* TODO:
 		<input-action-list>
 			<expr-assign>
@@ -401,10 +410,10 @@ function load_visu_success(content) {
 
 		/* Jetzt noch (einmalig) die Reihenfolge der Klick-Elemente umdrehen 
 		   um verdeckende Elemente zu erkennen.
-		   Hintergrund: Zeichnet man ein Element "über" ein anderes, so ist es 
+		   Hintergrund: Zeichnet man ein Element "ï¿½ber" ein anderes, so ist es 
 		   in Ladereihenfolge hinter dem darunter liegenden. Das untenliegende
-		   Element wird also vor dem darüberliegenden ausgewertet.
-		   Das wäre falsch - deshalb drehen wir es hier.
+		   Element wird also vor dem darï¿½berliegenden ausgewertet.
+		   Das wï¿½re falsch - deshalb drehen wir es hier.
 		 */
 		clickRegions.reverse();
 	});
@@ -560,7 +569,7 @@ function parse_visu_elements(content) {
 
 					    // in der <text-display> Expression findet sich die Zielvariable
 
-					    // TODO: eigentlich wäre das eine Expression
+					    // TODO: eigentlich wï¿½re das eine Expression
 					    //var exprTextDisplay = [];
 					    //var expr_text_display = $myMedia.find('text-display');
 					    //if (expr_text_display.length) {
@@ -646,7 +655,7 @@ function parse_visu_elements(content) {
 
 			parseClickInfo($myMedia, rectFields);
 		} else if (type == 'button') {
-			// #22: auch Buttons können eine Bitmap beherbergen
+			// #22: auch Buttons kï¿½nnen eine Bitmap beherbergen
 			var filename = $myMedia.find('file-name').text();
 			if (filename.length) {
 				var fileFields = filename.split('\\');
@@ -882,7 +891,7 @@ function load_visu(filename) {
 	}
 }
 
-// holt Aktualisierungen für alle bekannten Variablen vom webserver
+// holt Aktualisierungen fï¿½r alle bekannten Variablen vom webserver
 function update_vars_std() {
 	if (perfUpdateStart > perfUpdateEnd)
 		return;
@@ -910,7 +919,7 @@ function update_vars_std() {
 		success: function (data) {
 			//Log("ANS = " + data);
 			var fields = data.split('|');
-			var count = 1; // split zählt bereits vor dem ersten trenner
+			var count = 1; // split zï¿½hlt bereits vor dem ersten trenner
 			$.each(visuVariables, function (key, obj) {
 				//Log("TYPE = " + obj.varType + "; ANS = " + fields[count]);
 				switch (obj.varType) {
@@ -1043,7 +1052,7 @@ function update_vars_std() {
 }
 
 /*
-Um Flash-Speicherplatz zu sparen verwenden wir keine vollständige SOAP-Library
+Um Flash-Speicherplatz zu sparen verwenden wir keine vollstï¿½ndige SOAP-Library
 sondern basteln unseren Request selbst zusammen
 */
 function update_vars_soap() {
@@ -1191,7 +1200,7 @@ function update_vars_soap() {
 
 }
 
-// holt Aktualisierungen für alle bekannten Variablen vom webserver
+// holt Aktualisierungen fï¿½r alle bekannten Variablen vom webserver
 function update_vars() {
 	if (postFormat == POST_FORMAT_STANDARD) {
 		return update_vars_std();
@@ -1216,7 +1225,7 @@ function pointerEventToXY(e) {
 function onInputFieldKeyPressed(event, fieldName, variableName) {
     // ESC + ENTER behandeln wir selbst
     if (event.which == 27 || event.keyCode == 27) {
-        // ESC: Feld einfach schließen
+        // ESC: Feld einfach schlieï¿½en
         var input = document.getElementById(fieldName);
         var parent = document.getElementById("contain");
 
@@ -1225,7 +1234,7 @@ function onInputFieldKeyPressed(event, fieldName, variableName) {
         inputFieldActive = false;
         return false;
     } else if (event.which == 13 || event.keyCode == 13) {
-        // ENTER: Wert übernehmen und Feld schließen
+        // ENTER: Wert ï¿½bernehmen und Feld schlieï¿½en
 		var input = document.getElementById(fieldName);
 		var parent = document.getElementById("contain");
 
@@ -1304,9 +1313,9 @@ function onClick( e ) {
 			}
 		} else if (obj.isA == 'Edit') {
 		    if ((obj.x <= x) && (obj.y <= y) && ((obj.x + obj.w) >= x) && ((obj.y + obj.h) >= y)) {
-		        // Wir erzeugen (temporär) ein HTML-Input-Field
-		        // dieses lassen wir komplett vom Browser bedienen, bie ENTER grdrückt wird
-		        // als Callback für Tastendrücke geben wir "onInputFieldKeyPressed" an.
+		        // Wir erzeugen (temporï¿½r) ein HTML-Input-Field
+		        // dieses lassen wir komplett vom Browser bedienen, bie ENTER grdrï¿½ckt wird
+		        // als Callback fï¿½r Tastendrï¿½cke geben wir "onInputFieldKeyPressed" an.
 		        var input = document.createElement('input');
 		        input.setAttribute('type', 'text');
 		        input.setAttribute('id', 'inputField');
@@ -1316,8 +1325,8 @@ function onClick( e ) {
 
 		        /* TODO:
                  * https://www.w3schools.com/TAGs/tag_input.asp
-                 * height geht nicht für "input text", sondern nur für "input image"
-                 * width geht nicht für "input text", sondern nur für "input image"
+                 * height geht nicht fï¿½r "input text", sondern nur fï¿½r "input image"
+                 * width geht nicht fï¿½r "input text", sondern nur fï¿½r "input image"
                  * min/max
                  * maxlength
                  * pattern
