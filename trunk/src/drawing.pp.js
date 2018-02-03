@@ -1,8 +1,8 @@
 // drawing.js
 
 /* TODO:
- - prüfen, ob wir das ständige Repaint nicht vermeiden könnten
- - prüfen, ob wir nicht auf eine objektorientierte (fertige) Render-Engine umsteigen sollten:
+ - prï¿½fen, ob wir das stï¿½ndige Repaint nicht vermeiden kï¿½nnten
+ - prï¿½fen, ob wir nicht auf eine objektorientierte (fertige) Render-Engine umsteigen sollten:
    z.B. https://konvajs.github.io/
 */
 
@@ -35,7 +35,7 @@ var canvObjects = [];
 #endif
 */
 
-// performance-Zähler
+// performance-Zï¿½hler
 var perfWriteout = 0;
 var perfCount = 0;
 var perfLoadStart = 0;
@@ -57,12 +57,12 @@ var useTouchEvents = ('ontouchstart' in window);
 
 
 function switchToVisu(visu) {
-    // alle Arrays und Variablenzuordnungen löschen
+    // alle Arrays und Variablenzuordnungen lï¿½schen
     visuVariables = {};
     drawObjects = [];
     clickRegions = [];
 
-    // TODO: klären, ob jede Visu ihre eigenen DynamicTexts haben kann oder ob es genügen würde
+    // TODO: klï¿½ren, ob jede Visu ihre eigenen DynamicTexts haben kann oder ob es genï¿½gen wï¿½rde
     //       sie nur einmal zu laden.
     visuUseDynamicText = false;
     dynamicTexts = {};
@@ -536,15 +536,15 @@ function registerClickEdit(x, y, w, h, variable) {
 
 // ****************************************************************************
 
-/* entfernt die Pipe-Zeichen, welche ein Leerzeichen oder Sonderzeichen einschließen
+/* entfernt die Pipe-Zeichen, welche ein Leerzeichen oder Sonderzeichen einschlieÃŸen
 
    falls visuUseDynamicText gesetzt ist ersetzt diese Funktion den dynamic 
    text %<...> im String, falls ein %< vorhanden ist.
 
-   ruft sprintf für den String auf, sofern ein %-Zeichen enthalten ist
+   ruft sprintf fÃ¼r den String auf, sofern ein %-Zeichen enthalten ist
 */
 function strformat(format, val) {
-    // wegen des PreProcessors können wir leider keine /-Syntax für die RegEx nehmen
+    // wegen des PreProcessors kÃ¶nnen wir leider keine /-Syntax fÃ¼r die RegEx nehmen
     format = format.replace(new RegExp('\\| \\|', 'g'), ' ');
     format = format.replace(new RegExp('\\|>\\|', 'g'), '>');
     format = format.replace(new RegExp('\\|<\\|', 'g'), '<');
@@ -935,7 +935,7 @@ function drawAllObjects(ctx, objects) {
                 }
             }
 
-            // Füllung beachten wir nur bei geschlossenen Polygonen
+            // Fï¿½llung beachten wir nur bei geschlossenen Polygonen
             if (obj.polyShape == 'polygon') {
                 // draw fill
                 if (obj.hasInsideColor == 'true') {
