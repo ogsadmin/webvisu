@@ -4,6 +4,7 @@ Wie das ganze funktioniert ist im [Wiki](http://sourceforge.net/p/webvisu/wiki/H
 ## Voraussetzungen
 - Die Web-Visualisierung der Steuerung muss im Projekt aktiviert sein. 
 - Seit v18 kann die Option "Komprimierung" aktiviert oder deaktiviert sein - WebVisu kann jetzt beides verarbeiten. 
+- Seit v76 werden "Dynamische Texte" unterstÃ¼tzt
 
 
 ## Installation
@@ -14,4 +15,4 @@ Danach mit einem beliebigen Browser (auch iPad oder iPhone) die Adresse
 http://[IpMeinerSteuerung]/webserv/WebVisu.html
 aufrufen und die bisher integrierten Features sollten tun.
 
-Viel Spaß!
+Viel Spaï¿½!
