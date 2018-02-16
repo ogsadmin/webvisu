@@ -840,8 +840,11 @@ function load_dyntextfile_success(content) {
 				var $text = $(this);
 
 				var prefix = $text.attr("prefix");
+				var id = $text.attr("id");
 
-				dynamicTexts[prefix] = {};
+				key = prefix + "_" + id;
+
+				dynamicTexts[key] = {};
 
 				$text.children().each(function () {
 					var $child = $(this);
@@ -850,7 +853,7 @@ function load_dyntextfile_success(content) {
 					var foreignText = $child.text();
 
 					// Log('dynamicTexts['+prefix+']['+language+'] = '+foreignText);
-					dynamicTexts[prefix][language] = foreignText;
+					dynamicTexts[key][language] = foreignText;
 				});
 			});
 		});

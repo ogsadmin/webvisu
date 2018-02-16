@@ -559,8 +559,12 @@ function strformat(format, val) {
             }
             dynTextId = dynTextIds[1];
             dynTextPlaceholder = '%<' + dynTextId + '>';
-            //Log("replace dynamic text <" + dynTextPlaceholder + "> with <" + dynamicTexts[dynTextIds[index]][visuDynTextDefaultLanguage] + ">");
-            format = format.replace(dynTextPlaceholder, dynamicTexts[dynTextId][visuDynTextDefaultLanguage]);
+            dynTextKey = dynTextId + "_" + val;
+            if (dynTextKey in dynamicTexts) {
+                format = format.replace(dynTextPlaceholder, dynamicTexts[dynTextKey][visuDynTextDefaultLanguage]);
+            } else {
+                format = format.replace(dynTextPlaceholder, dynTextKey);
+            }
         }
     }
 
@@ -1014,6 +1018,7 @@ function drawAllObjects(ctx, objects) {
             if (obj.exprTextDisplay.length > 0) { textDisplay = evalExpression(obj.exprTextDisplay); }
             txt = strformat(obj.format, textDisplay);
             //Log('write text <' + txt + '>');
+            
 
             // multiline? Dann mehrere Texte schreiben
             if (txt.indexOf('\n') > -1) {
