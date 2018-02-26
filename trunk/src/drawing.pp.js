@@ -551,10 +551,11 @@ function strformat(format, val) {
 
     if (visuUseDynamicText == true) {
         while (format.indexOf('%<') > -1) {
-            //Log("found dynamic text on <" + format + ">");
+            // Log("found dynamic text on <" + format + ">");
             var re = new RegExp('%<([^>]+)>', 'g');
             dynTextIds = re.exec(format);
             if (dynTextIds == null) {
+                Log("ERROR: dynTextIds == null")
                 break;
             }
             dynTextId = dynTextIds[1];
@@ -939,7 +940,7 @@ function drawAllObjects(ctx, objects) {
                 }
             }
 
-            // F�llung beachten wir nur bei geschlossenen Polygonen
+            // Füllung beachten wir nur bei geschlossenen Polygonen
             if (obj.polyShape == 'polygon') {
                 // draw fill
                 if (obj.hasInsideColor == 'true') {

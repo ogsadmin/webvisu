@@ -399,6 +399,17 @@ function load_visu_success(content) {
 		var dynTextFlag = $myMedia.find('use-dynamic-text').text();
 		if (dynTextFlag.length && dynTextFlag == 'true') {
 			dynTextFile = $myMedia.find('dynamic-text-file').text();
+			/* jetzt wirds eklig: CoDeSys erzeugt auf einer WAGO-Steuerung den XML-Eintrag:
+			 * <dynamic-text-file>C:\USERS\FOO\DESKTOP\PROJ\TEXTFILES\DYNAMICTEXTS.XML</dynamic-text-file>
+			 * Wir gehen also mal davon aus, dass nur der Dateiname wichtig ist?
+			 * Auch steht hier (natürlich) nicht ob es ein XML oder ein XML.ZIP ist. 
+			 * Die Datei auf unserer Steuerung heist: "dynamictexts_xml.zip" (alles klein?).
+			 */
+			dynTextFile = dynTextFile.replace(/^.*[\\\/]/, '');
+			dynTextFile = dynTextFile.toLowerCase();
+			if (visuCompressed == 1) {
+				dynTextFile = dynTextFile.replace('.xml', '_xml.zip');
+			}
 			visuUseDynamicText = true;
 		} else {
 			visuUseDynamicText = false;
@@ -419,20 +430,10 @@ function load_visu_success(content) {
 	});
 
 	if (visuUseDynamicText) {
-		Log("load dynTextFile <" + dynTextFile + ">");
-		$.ajax({
-			type: 'GET',
-			async: false,
-			cache: false,
-			url: plcDir + "/" + dynTextFile,
-			success: load_dyntextfile_success,
-			error: function (jqXHR, textStatus, errorThrown) {
-				visuUseDynamicText = false;
-				Log("dyntextfile " + textStatus + " " + errorThrown);
-			}
-		});
+		load_dyntextfile(plcDir + "/" + dynTextFile);
 	}
 }
+
 
 function parse_visu_elements(content) {
 
@@ -858,6 +859,61 @@ function load_dyntextfile_success(content) {
 			});
 		});
 	});
+}
+
+// mit zip.js und inflate.js
+function load_dyntextfile_compressed_success(content) {
+	Log("dyntextfile is compressed - try to inflate");
+
+	zip.useWebWorkers = false;
+	// use a zip.BlobReader object to read zipped data stored into blob variable
+	zip.createReader(new zip.BlobReader(content), function (zipReader) {
+		// get entries from the zip file
+		zipReader.getEntries(function (entries) {
+			// get data from the first file - using the right encoding!
+			entries[0].getData(new zip.TextWriter("ISO-8859-1"), function (data) {
+				// close the reader and calls callback function with uncompressed data as parameter
+				zipReader.close();
+				//CheckStr8(data);
+				var xml = $.parseXML(data);
+				load_dyntextfile_success(xml);
+			});
+		});
+	}, function(message) { 
+		visuUseDynamicText = false;
+		console.error(message); 
+	});
+}
+
+function load_dyntextfile(filename) {
+	Log("load dyntextfile " + filename);
+
+	if (visuCompressed == 1) {
+		$.ajax({
+			type: 'GET',
+			async: false,
+			cache: false,
+			url: filename,
+			dataType: 'blob', // mit zip.js und inflate.js
+			success: load_dyntextfile_compressed_success,
+			error: function (jqXHR, textStatus, errorThrown) {
+				visuUseDynamicText = false;
+				Log("ERROR: load_dyntextfile " + textStatus + " " + errorThrown);
+			}
+		});
+	} else {
+		$.ajax({
+			type: 'GET',
+			async: false,
+			cache: false,
+			url: filename,
+			success: load_dyntextfile_success,
+			error: function (jqXHR, textStatus, errorThrown) {
+				visuUseDynamicText = false;
+				Log("ERROR: load_dyntextfile " + textStatus + " " + errorThrown);
+			}
+		});
+	}
 }
 
 function load_visu(filename) {
