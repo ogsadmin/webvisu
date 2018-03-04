@@ -1,8 +1,8 @@
 // drawing.js
 
 /* TODO:
- - pr�fen, ob wir das st�ndige Repaint nicht vermeiden k�nnten
- - pr�fen, ob wir nicht auf eine objektorientierte (fertige) Render-Engine umsteigen sollten:
+ - prüfen, ob wir das ständige Repaint nicht vermeiden könnten
+ - prüfen, ob wir nicht auf eine objektorientierte (fertige) Render-Engine umsteigen sollten:
    z.B. https://konvajs.github.io/
 */
 
@@ -62,7 +62,7 @@ function switchToVisu(visu) {
     drawObjects = [];
     clickRegions = [];
 
-    // TODO: kl�ren, ob jede Visu ihre eigenen DynamicTexts haben kann oder ob es gen�gen w�rde
+    // TODO: klären, ob jede Visu ihre eigenen DynamicTexts haben kann oder ob es genügen würde
     //       sie nur einmal zu laden.
     visuUseDynamicText = false;
     dynamicTexts = {};
@@ -532,6 +532,24 @@ function regClickEdit(x, y, w, h, variable) {
 
 function registerClickEdit(x, y, w, h, variable) {
     clickRegions.push(new regClickEdit(x, y, w, h, variable));
+}
+
+// ****************************************************************************
+// ClickAction
+
+// constructor
+function regClickAction(x, y, w, h, variable, newvalExpr) {
+    this.isA = 'Action';
+    this.x = parseInt(x);
+    this.y = parseInt(y);
+    this.w = parseInt(w);
+    this.h = parseInt(h);
+    this.variable = variable;
+    this.newvalExpr = newvalExpr;
+}
+
+function registerClickAction(x, y, w, h, variable, newvalExpr) {
+    clickRegions.push(new regClickAction(x, y, w, h, variable, newvalExpr));
 }
 
 // ****************************************************************************
