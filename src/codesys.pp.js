@@ -277,8 +277,9 @@ function parseClickInfo(myMedia, rectFields) {
 		}
 	}
 
-	
-	/* TODO:
+	/*
+		INTERN ASSIGN value:=value+0.5
+		
 		<input-action-list>
 			<expr-assign>
 				<lvalue>
@@ -296,6 +297,78 @@ function parseClickInfo(myMedia, rectFields) {
 			</expr-assign>
 		</input-action-list>
 	*/
+	var input_action_list = myMedia.find('input-action-list');
+	value = '';
+	if (input_action_list.length) {
+		/* TODO: gibt es in der <input-action-list> mehrere Actions? */
+		/* TODO: gibt es außer <expr-assign> auch andere Actions? */
+		var input_action_list_expr_assign = input_action_list.find('expr-assign');
+		if (input_action_list_expr_assign.length) {
+			var input_action_list_expr_assign_lvalue = input_action_list.find('lvalue');
+			var input_action_list_expr_assign_rvalue = input_action_list.find('rvalue');
+			if (input_action_list_expr_assign_lvalue.length && input_action_list_expr_assign_rvalue.length) {
+				var input_action_list_expr_assign_lvalue_expr = input_action_list_expr_assign_lvalue.find('expr');
+				if (input_action_list_expr_assign_lvalue_expr.length) {
+					/* TODO: kann ein <lvalue> auch etwas anderes sein als ein <expr> <var>? */
+					lvalue = input_action_list_expr_assign_lvalue.find('var').text();
+					rvalueExpr = parseExpression(input_action_list_expr_assign_rvalue);
+
+					registerClickAction(
+						rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+						lvalue, rvalueExpr
+						);
+				}
+			}
+		}
+	}
+	
+	/* TODO:
+		<input-action-list>
+			<execute><![CDATA[INTERN CAM]]></execute>
+			<execute><![CDATA[INTERN CHANGEPASSWORD]]></execute>
+			<execute><![CDATA[INTERN CHANGEUSERLEVEL]]></execute>
+			<execute><![CDATA[INTERN CNC]]></execute>
+			<execute><![CDATA[INTERN DEFINERECEIPT PLC_PRG.dwInputTest]]></execute>
+			<execute><![CDATA[INTERN DELAY PLC_PRG.dwInputTest]]></execute>
+			<execute><![CDATA[INTERN EXECUTEMAKRO PLC_PRG.dwInputTest]]></execute>
+			<execute><![CDATA[INTERN EXITPROGRAM]]></execute>
+			<execute><![CDATA[INTERN HELP PLC_PRG.dwInputTest]]></execute>
+			<execute><![CDATA[INTERN LANGUAGE PLC_PRG.dwInputTest]]></execute>
+			<execute><![CDATA[INTERN LANGUAGEDIALOG]]></execute>
+			<execute><![CDATA[INTERN LOADWATCH]]></execute>
+			<execute><![CDATA[INTERN PRINT]]></execute>
+			<execute>PLC_PRG.dwInputTest</execute>
+			<execute><![CDATA[INTERN READRECEIPT PLC_PRG.dwInputTest]]></execute>
+			<execute><![CDATA[INTERN SAVEPROJECT]]></execute>
+			<execute><![CDATA[INTERN SAVEWATCH]]></execute>
+			<execute><![CDATA[INTERN TRACE]]></execute>
+			<execute><![CDATA[INTERN WRITERECEIPT PLC_PRG.dwInputTest]]></execute>
+		</input-action-list>
+
+		nur für die Verwendung in einer Web-Visualisierung:
+			INTERN LINK <URL> 
+				Die Web-Visualisierung wechselt innerhalb des Browsers zu der
+				angegebenen URL (Unified resource location, z.B."INTERN LINK http://www.3s-software.com"
+
+			INTERN LINK <HTTP-Adresse der Datei>
+				Eine Datei wird geöffnet; z.B. "INTERN LINK http://localhost:8080/test.pdf"
+		
+			INTERN LINK mailto:<EMail-Adresse>
+				Eine Eingabemaske zum Versenden einer EMail an die gegebene
+				Adresse wird geöffnet; z.B."INTERN LINK mailto:s.sdfjksk@companyxy.com"
+
+			INTERN CONNECT_TO <PLCName>|<Start-Visu>
+				Die Zielsteuerung wird gewechselt; Voraussetzung ist, dass der
+				WebServer entsprechend mit den Verbindungsparametern für
+				mehrere Steuerungen konfiguriert ist und eine passende ini-Datei für
+				den PLC-Handler vorliegt.
+				PLC-Name: Name der Steuerung, wie in der ini-Datei des PLCHandlers
+				definiert.
+				Start-Visu: Name der gewünschten Start-Visualisierungsseite.
+				Der WebServer baut die Verbindung zur entsprechenden Steuerung
+				automatisch auf.
+				Beispiel: "INTERN CONNECT_TO PLC1|PLC_VISU"
+	*/	
 }
 
 function array_buffer_8_to_string(buf) {
@@ -570,7 +643,7 @@ function parse_visu_elements(content) {
 
 					    // in der <text-display> Expression findet sich die Zielvariable
 
-					    // TODO: eigentlich w�re das eine Expression
+					    // TODO: eigentlich wäre das eine Expression
 					    //var exprTextDisplay = [];
 					    //var expr_text_display = $myMedia.find('text-display');
 					    //if (expr_text_display.length) {
@@ -1372,9 +1445,9 @@ function onClick( e ) {
 			}
 		} else if (obj.isA == 'Edit') {
 		    if ((obj.x <= x) && (obj.y <= y) && ((obj.x + obj.w) >= x) && ((obj.y + obj.h) >= y)) {
-		        // Wir erzeugen (tempor�r) ein HTML-Input-Field
-		        // dieses lassen wir komplett vom Browser bedienen, bie ENTER grdr�ckt wird
-		        // als Callback f�r Tastendr�cke geben wir "onInputFieldKeyPressed" an.
+		        // Wir erzeugen (temporär) ein HTML-Input-Field
+		        // dieses lassen wir komplett vom Browser bedienen, bis ENTER grdrückt wird
+		        // als Callback für Tastendrücke geben wir "onInputFieldKeyPressed" an.
 		        var input = document.createElement('input');
 		        input.setAttribute('type', 'text');
 		        input.setAttribute('id', 'inputField');
@@ -1384,8 +1457,8 @@ function onClick( e ) {
 
 		        /* TODO:
                  * https://www.w3schools.com/TAGs/tag_input.asp
-                 * height geht nicht f�r "input text", sondern nur f�r "input image"
-                 * width geht nicht f�r "input text", sondern nur f�r "input image"
+                 * height geht nicht für "input text", sondern nur für "input image"
+                 * width geht nicht für "input text", sondern nur für "input image"
                  * min/max
                  * maxlength
                  * pattern
@@ -1407,6 +1480,30 @@ function onClick( e ) {
 		        inputFieldActive = true;
 		        return;
 		    }
+		} else if (obj.isA == 'Action') {
+			if ((obj.x <= x) && (obj.y <= y) && ((obj.x + obj.w) >= x) && ((obj.y + obj.h) >= y)) {
+				//Log("onClick: found action: " + obj.variable);
+				if ((obj.variable != '') && (obj.newvalExpr.length > 0)) {
+					var newval = evalExpression(obj.newvalExpr);
+					var req = '|1|1|0|' + visuVariables[obj.variable].addrP + '|' + newval + '|';
+
+					$.ajax({
+						type: 'POST',
+						async: false,
+						url: postUrl,
+						data: req,
+						//success: function( data ) {
+						//	Log("success: " + data);
+						//}
+					});
+
+					visuVariables[obj.variable].value = newval;
+					update();
+				}
+				return;
+			}
+		} else {
+			Log("onClick: found unknown object: " + obj.isA);
 		}
 	}
 }
