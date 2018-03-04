@@ -478,7 +478,7 @@ function load_visu_success(content) {
 			 * Auch steht hier (natürlich) nicht ob es ein XML oder ein XML.ZIP ist. 
 			 * Die Datei auf unserer Steuerung heist: "dynamictexts_xml.zip" (alles klein?).
 			 */
-			dynTextFile = dynTextFile.replace(/^.*[\\\/]/, '');
+			dynTextFile = dynTextFile.replace(new RegExp('^.*[\\\/]'), '');
 			dynTextFile = dynTextFile.toLowerCase();
 			if (visuCompressed == 1) {
 				dynTextFile = dynTextFile.replace('.xml', '_xml.zip');
