@@ -478,7 +478,7 @@ function load_visu_success(content) {
 			 * Auch steht hier (natürlich) nicht ob es ein XML oder ein XML.ZIP ist. 
 			 * Die Datei auf unserer Steuerung heist: "dynamictexts_xml.zip" (alles klein?).
 			 */
-			dynTextFile = dynTextFile.replace(new RegExp('^.*[\\\/]'), '');
+			dynTextFile = dynTextFile.replace(new RegExp('^.*[\\\\\\/]'), '');
 			dynTextFile = dynTextFile.toLowerCase();
 			if (visuCompressed == 1) {
 				dynTextFile = dynTextFile.replace('.xml', '_xml.zip');
@@ -494,10 +494,10 @@ function load_visu_success(content) {
 
 		/* Jetzt noch (einmalig) die Reihenfolge der Klick-Elemente umdrehen 
 		   um verdeckende Elemente zu erkennen.
-		   Hintergrund: Zeichnet man ein Element "�ber" ein anderes, so ist es 
+		   Hintergrund: Zeichnet man ein Element "über" ein anderes, so ist es 
 		   in Ladereihenfolge hinter dem darunter liegenden. Das untenliegende
-		   Element wird also vor dem dar�berliegenden ausgewertet.
-		   Das w�re falsch - deshalb drehen wir es hier.
+		   Element wird also vor dem darüberliegenden ausgewertet.
+		   Das wäre falsch - deshalb drehen wir es hier.
 		 */
 		clickRegions.reverse();
 	});
