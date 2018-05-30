@@ -103,6 +103,11 @@
 				Log("set startVisu to <" + startVisu + ">");
 			}
 
+			// Klick-Kontext erzeugen
+			// Die Variablen sind in "drawing.js" definiert.
+			clickCanvas = document.createElement('canvas');
+			clickContext = clickCanvas.getContext('2d');
+
 			switchToVisu(startVisu);
 
 			$('#canvas').on("click", onClick);

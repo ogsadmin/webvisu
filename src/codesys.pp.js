@@ -201,8 +201,8 @@ function parseTextInfo(myMedia, centerFields, rectFields, exprInvisible) {
 		);
 }
 
-function parseClickInfo(myMedia, rectFields) {
-
+function parseClickInfo(myMedia, rectFields, objId) {
+	/* Offsets der letzten Gruppenzuordnung als Korrekturwerte addieren */
 	rectFields[0] += parsedGroups[parsedGroups.length - 1].x;
 	rectFields[1] += parsedGroups[parsedGroups.length - 1].y;
 	rectFields[2] += parsedGroups[parsedGroups.length - 1].x;
@@ -211,30 +211,8 @@ function parseClickInfo(myMedia, rectFields) {
 	/* Die Reihenfolge der Registrierung ist ausschlaggebend für die Funktion 
 	   von Mehrfach-Aktionen.
 	   Die zoom-to-visu muss als letztes ausgeführt werden, da sie den 
-	   Ausführungsablauf unterbricht (lädt neue Visu). Da wir nach dem Laden
-	   die Reihenfolge drehen muss zoom-to-visu entsprechend als erstes 
-	   registriert werden.
+	   Ausführungsablauf unterbricht (lädt neue Visu).
 	*/
-
-	/*
-		<expr-zoom>
-			<expr>
-				<placeholder>PLC_VISU</placeholder>
-			</expr>
-		</expr-zoom>
-	*/
-	var expr_zoom = myMedia.find('expr-zoom');
-	value = '';
-	if (expr_zoom.length) {
-		var expr_zoom_exp = expr_zoom.find('expr');
-		if (expr_zoom_exp.length) {
-			newvisu = expr_zoom_exp.find('placeholder').text();
-			registerClickZoom(
-				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-				newvisu
-				);
-		}
-	}
 
 	/*
 		<expr-tap-var>
@@ -250,10 +228,7 @@ function parseClickInfo(myMedia, rectFields) {
 		if (expr_tap_var_exp.length) {
 			value = expr_tap_var_exp.find('var').text();
 			var tap_false = myMedia.find('tap-false').text();
-			registerClickTap(
-				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-				value, (tap_false == 'true' ? 0 : 1)
-				);
+			registerClickObj_Tap(objId, value, (tap_false == 'true' ? 0 : 1));
 		}
 	}
 
@@ -270,10 +245,7 @@ function parseClickInfo(myMedia, rectFields) {
 		var expr_toggle_var_exp = expr_toggle_var.find('expr');
 		if (expr_toggle_var_exp.length) {
 			value = expr_toggle_var_exp.find('var').text();
-			registerClickToggle(
-				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-				value
-				);
+			registerClickObj_Toggle(objId, value);
 		}
 	}
 
@@ -312,11 +284,7 @@ function parseClickInfo(myMedia, rectFields) {
 					/* TODO: kann ein <lvalue> auch etwas anderes sein als ein <expr> <var>? */
 					lvalue = input_action_list_expr_assign_lvalue.find('var').text();
 					rvalueExpr = parseExpression(input_action_list_expr_assign_rvalue);
-
-					registerClickAction(
-						rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-						lvalue, rvalueExpr
-						);
+					registerClickObj_Action(objId, lvalue, rvalueExpr);
 				}
 			}
 		}
@@ -369,6 +337,61 @@ function parseClickInfo(myMedia, rectFields) {
 				automatisch auf.
 				Beispiel: "INTERN CONNECT_TO PLC1|PLC_VISU"
 	*/	
+
+	/*
+		<expr-zoom>
+			<expr>
+				<placeholder>PLC_VISU</placeholder>
+			</expr>
+		</expr-zoom>
+	*/
+	var expr_zoom = myMedia.find('expr-zoom');
+	value = '';
+	if (expr_zoom.length) {
+		var expr_zoom_exp = expr_zoom.find('expr');
+		if (expr_zoom_exp.length) {
+			newvisu = expr_zoom_exp.find('placeholder').text();
+			registerClickObj_Zoom(objId, newvisu);
+		}
+	}
+}
+
+function parseEditInfo(myMedia, rectFields, objId) {
+	/* Offsets der letzten Gruppenzuordnung als Korrekturwerte addieren */
+	rectFields[0] += parsedGroups[parsedGroups.length - 1].x;
+	rectFields[1] += parsedGroups[parsedGroups.length - 1].y;
+	rectFields[2] += parsedGroups[parsedGroups.length - 1].x;
+	rectFields[3] += parsedGroups[parsedGroups.length - 1].y;
+
+	// parse Input Info
+	var enableTextInput = myMedia.find('enable-text-input').text();
+	if (enableTextInput === 'true') {
+		// TODO: <text-input-type>0</text-input-type>
+
+		// in der <text-display> Expression findet sich die Zielvariable
+
+		// TODO: eigentlich wäre das eine Expression
+		//var exprTextDisplay = [];
+		//var expr_text_display = myMedia.find('text-display');
+		//if (expr_text_display.length) {
+		//    exprTextDisplay = parseExpression(expr_text_display);
+		//}
+
+		var textDisplay = myMedia.find('text-display');
+		variableName = '';
+		if (textDisplay.length) {
+			var textDisplayExpr = textDisplay.find('expr');
+			if (textDisplayExpr.length) {
+				variableName = textDisplayExpr.find('var').text();
+			}
+		}
+
+		// TODO: "versteckter Text": <hidden-input>false</hidden-input>
+		// TODO: "max len"
+		// TODO: "min len"
+
+		registerClickObj_Edit(objId,  rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1], variableName);
+	}
 }
 
 function array_buffer_8_to_string(buf) {
@@ -455,6 +478,9 @@ function load_visu_success(content) {
 		//$('#canvas').WIDTH = visuSizeX+1;
 		//$('#canvas').HEIGHT = visuSizeY+1;
 
+		// Klick-Kontext konfigurieren
+		clickCanvas.width = visuSizeX + 1;
+		clickCanvas.height = visuSizeY + 1;
 
 		// optional kann der Hintergrund auch aus einem Bitmap-File bestehen
 		var bitmap = $myMedia.find('bitmap').text();
@@ -491,15 +517,6 @@ function load_visu_success(content) {
 		parsedGroups = [];
 		parsedGroups.push(new newGroup(0, 0, visuSizeX, visuSizeY));
 		parse_visu_elements($myMedia);
-
-		/* Jetzt noch (einmalig) die Reihenfolge der Klick-Elemente umdrehen 
-		   um verdeckende Elemente zu erkennen.
-		   Hintergrund: Zeichnet man ein Element "über" ein anderes, so ist es 
-		   in Ladereihenfolge hinter dem darunter liegenden. Das untenliegende
-		   Element wird also vor dem darüberliegenden ausgewertet.
-		   Das wäre falsch - deshalb drehen wir es hier.
-		 */
-		clickRegions.reverse();
 	});
 
 	if (visuUseDynamicText) {
@@ -617,7 +634,7 @@ function parse_visu_elements(content) {
 						exprInvisible = parseExpression(expr_invisible);
 					}
 
-					registerSimpleShape(
+					var objId = registerSimpleShape(
 							shape,
 							rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
 							has_frame_color,
@@ -633,46 +650,8 @@ function parse_visu_elements(content) {
 						);
 
 					parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
-
-					parseClickInfo($myMedia, rectFields);
-
-                    // parse Input Info
-					var enableTextInput = $myMedia.find('enable-text-input').text();
-					if (enableTextInput === 'true') {
-					    // TODO: <text-input-type>0</text-input-type>
-
-					    // in der <text-display> Expression findet sich die Zielvariable
-
-					    // TODO: eigentlich wäre das eine Expression
-					    //var exprTextDisplay = [];
-					    //var expr_text_display = $myMedia.find('text-display');
-					    //if (expr_text_display.length) {
-					    //    exprTextDisplay = parseExpression(expr_text_display);
-					    //}
-
-					    var textDisplay = $myMedia.find('text-display');
-					    variableName = '';
-					    if (textDisplay.length) {
-					        var textDisplayExpr = textDisplay.find('expr');
-					        if (textDisplayExpr.length) {
-					            variableName = textDisplayExpr.find('var').text();
-					        }
-					    }
-
-					    rectFields[0] += parsedGroups[parsedGroups.length - 1].x;
-						rectFields[1] += parsedGroups[parsedGroups.length - 1].y;
-						rectFields[2] += parsedGroups[parsedGroups.length - 1].x;
-						rectFields[3] += parsedGroups[parsedGroups.length - 1].y;
-
-					    // TODO: "versteckter Text": <hidden-input>false</hidden-input>
-						// TODO: "max len"
-						// TODO: "min len"
-
-						registerClickEdit(
-							rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-							variableName
-							);
-					}
+					parseClickInfo($myMedia, rectFields, objId);
+					parseEditInfo($myMedia, rectFields, objId);
 				}
 			} else {
 				Log("unknown simple-shape: " + shape);
@@ -712,7 +691,7 @@ function parse_visu_elements(content) {
 				exprInvisible = parseExpression(expr_invisible);
 			}
 
-			registerBitmap(
+			var objId = registerBitmap(
 				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
 				filename,
 				has_inside_color,
@@ -726,8 +705,8 @@ function parse_visu_elements(content) {
 				);
 
 			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
-
-			parseClickInfo($myMedia, rectFields);
+			parseClickInfo($myMedia, rectFields, objId);
+			parseEditInfo($myMedia, rectFields, objId);
 		} else if (type == 'button') {
 			// #22: auch Buttons k�nnen eine Bitmap beherbergen
 			var filename = $myMedia.find('file-name').text();
@@ -775,7 +754,7 @@ function parse_visu_elements(content) {
 				exprInvisible = parseExpression(expr_invisible);
 			}
 
-			registerButton(
+			var objId = registerButton(
 					rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
 					has_frame_color,
 					"rgb(" + frame_color + ")",
@@ -790,8 +769,8 @@ function parse_visu_elements(content) {
 				);
 
 			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
-
-			parseClickInfo($myMedia, rectFields);
+			parseClickInfo($myMedia, rectFields, objId);
+			parseEditInfo($myMedia, rectFields, objId);
 		} else if (type == 'polygon') {
 			//console.debug("register polygon");
 
@@ -1023,7 +1002,7 @@ function load_visu(filename) {
 	}
 }
 
-// holt Aktualisierungen f�r alle bekannten Variablen vom webserver
+// holt Aktualisierungen für alle bekannten Variablen vom webserver
 function update_vars_std() {
 	if (perfUpdateStart > perfUpdateEnd)
 		return;
@@ -1051,7 +1030,7 @@ function update_vars_std() {
 		success: function (data) {
 			//Log("ANS = " + data);
 			var fields = data.split('|');
-			var count = 1; // split z�hlt bereits vor dem ersten trenner
+			var count = 1; // split zählt bereits vor dem ersten trenner
 			$.each(visuVariables, function (key, obj) {
 				//Log("TYPE = " + obj.varType + "; ANS = " + fields[count]);
 				switch (obj.varType) {
@@ -1332,7 +1311,7 @@ function update_vars_soap() {
 
 }
 
-// holt Aktualisierungen f�r alle bekannten Variablen vom webserver
+// holt Aktualisierungen für alle bekannten Variablen vom webserver
 function update_vars() {
 	if (postFormat == POST_FORMAT_STANDARD) {
 		return update_vars_std();
@@ -1347,17 +1326,19 @@ function pointerEventToXY(e) {
 		var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
 		out.x = touch.pageX;
 		out.y = touch.pageY;
-	} else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover' || e.type == 'mouseout' || e.type == 'mouseenter' || e.type == 'mouseleave') {
+	} else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover' || e.type == 'mouseout' || e.type == 'mouseenter' || e.type == 'mouseleave' || e.type == 'click') {
 		out.x = e.pageX;
 		out.y = e.pageY;
 	}
+	out.x -= $("#canvas").offset().left;
+	out.y -= $("#canvas").offset().top;
 	return out;
 };
 
 function onInputFieldKeyPressed(event, fieldName, variableName) {
     // ESC + ENTER behandeln wir selbst
     if (event.which == 27 || event.keyCode == 27) {
-        // ESC: Feld einfach schlie�en
+        // ESC: Feld einfach schließen
         var input = document.getElementById(fieldName);
         var parent = document.getElementById("contain");
 
@@ -1366,7 +1347,7 @@ function onInputFieldKeyPressed(event, fieldName, variableName) {
         inputFieldActive = false;
         return false;
     } else if (event.which == 13 || event.keyCode == 13) {
-        // ENTER: Wert �bernehmen und Feld schlie�en
+        // ENTER: Wert übernehmen und Feld schließen
 		var input = document.getElementById(fieldName);
 		var parent = document.getElementById("contain");
 
@@ -1398,30 +1379,44 @@ function onInputFieldKeyPressed(event, fieldName, variableName) {
 
 // der Click-Handler
 function onClick( e ) {
-	var x = e.pageX-$("#canvas").offset().left;
-	var y = e.pageY - $("#canvas").offset().top;
-	Log("onClick");
-	logOverlayText += "onClick\n";
-	//Log("X " + e.pageX + " Y " + e.pageY);
+	var pos = pointerEventToXY(e);
+	var x = pos.x;
+	var y = pos.y;
+
+	//Log("onClick");
 	//Log("X " + x + " Y " + y);
 
 	if (inputFieldActive == true) {
 	    // wir akzeptieren keine Klicks solange ein Inputfeld aktiv ist
-	    Log("inputFieldActive - exiting");
+	    Log("inputFieldActive - exiting onClick");
 	    return;
 	}
 
-	for (var i in clickRegions) {
-		obj = clickRegions[i];
+	// Klick-Kontext
+	// herausfinden welches Objekt geklickt wurde...
+	var imageData = clickContext.getImageData(x, y, 1, 1);
+	var objId = imageData.data[0] << 16 | imageData.data[1] << 8 | imageData.data[2];
+	if(objId == 0xFFFFFF) {
+	    Log("clicked on background - exiting onClick");
+	    return;
+	}
+		
+	// nicht der Hintergrund...
+	//Log("onClick X:" + x + " Y:" + y + " objId:" + objId);
 
-		//Log("obj.x " + obj.x + " obj.y " + obj.y + " (obj.x+obj.w) " + (obj.x + obj.w) + " (obj.y+obj.h) " + (obj.y + obj.h));
+	if(objId in clickObject) {
+		obj = drawObjects[objId];
+		Log("onClick at X:" + x + " Y:" + y + " on:" + obj.isA);
 
-		if (obj.isA == 'Toggle') {
-			if ((obj.x <= x) && (obj.y <= y) && ((obj.x + obj.w) >= x) && ((obj.y + obj.h) >= y)) {
-				//Log("onClick: found toggle: " + obj.variable);
-				if (obj.variable != '') {
-					var newval = 1 - visuVariables[obj.variable].value;
-					var req = '|1|1|0|' + visuVariables[obj.variable].addrP + '|' + newval + '|';
+		for (var eventNo in clickObject[objId]) {
+			event = clickObject[objId][eventNo];
+			Log("  event " + event.isA);
+
+			if (event.isA == 'Toggle') {
+				//Log("onClick: found toggle: " + event.variable);
+				if (event.variable != '') {
+					var newval = 1 - visuVariables[event.variable].value;
+					var req = '|1|1|0|' + visuVariables[event.variable].addrP + '|' + newval + '|';
 
 					$.ajax({
 						type: 'POST',
@@ -1433,18 +1428,14 @@ function onClick( e ) {
 						//}
 					});
 
-					visuVariables[obj.variable].value = newval;
+					visuVariables[event.variable].value = newval;
 					update();
 				}
+			} else if (event.isA == 'Zoom') {
+				switchToVisu(event.visu);
+				// Bei "ZOOM" müssen wir abbrechen, da eine neue Visu geladen wird...
 				return;
-			}
-		} else if (obj.isA == 'Zoom') {
-			if ((obj.x <= x) && (obj.y <= y) && ((obj.x + obj.w) >= x) && ((obj.y + obj.h) >= y)) {
-				switchToVisu(obj.visu);
-				return;
-			}
-		} else if (obj.isA == 'Edit') {
-		    if ((obj.x <= x) && (obj.y <= y) && ((obj.x + obj.w) >= x) && ((obj.y + obj.h) >= y)) {
+			} else if (event.isA == 'Edit') {
 		        // Wir erzeugen (temporär) ein HTML-Input-Field
 		        // dieses lassen wir komplett vom Browser bedienen, bis ENTER grdrückt wird
 		        // als Callback für Tastendrücke geben wir "onInputFieldKeyPressed" an.
@@ -1452,8 +1443,8 @@ function onClick( e ) {
 		        input.setAttribute('type', 'text');
 		        input.setAttribute('id', 'inputField');
 		        strStyle = 'z-index:2; position:absolute; box-sizing:border-box; ';
-		        strStyle += 'top:' + obj.y + 'px; ';
-		        strStyle += 'left:' + obj.x + 'px; ';
+		        strStyle += 'top:' + event.y + 'px; ';
+		        strStyle += 'left:' + event.x + 'px; ';
 
 		        /* TODO:
                  * https://www.w3schools.com/TAGs/tag_input.asp
@@ -1464,12 +1455,12 @@ function onClick( e ) {
                  * pattern
                  * size
                  */
-		        strStyle += 'width:' + obj.w + 'px; ';
-		        strStyle += 'heigth:' + obj.h + 'px; ';
+		        strStyle += 'width:' + event.w + 'px; ';
+		        strStyle += 'heigth:' + event.h + 'px; ';
 
 		        input.setAttribute('style', strStyle);
-		        input.setAttribute('value', visuVariables[obj.variable].value);
-		        input.setAttribute('onkeypress', "return onInputFieldKeyPressed(event, 'inputField', '" + obj.variable + "')");
+		        input.setAttribute('value', visuVariables[event.variable].value);
+		        input.setAttribute('onkeypress', "return onInputFieldKeyPressed(event, 'inputField', '" + event.variable + "')");
 
 		        var parent = document.getElementById("contain");
 		        parent.appendChild(input);
@@ -1478,14 +1469,11 @@ function onClick( e ) {
 		        input.select();
 
 		        inputFieldActive = true;
-		        return;
-		    }
-		} else if (obj.isA == 'Action') {
-			if ((obj.x <= x) && (obj.y <= y) && ((obj.x + obj.w) >= x) && ((obj.y + obj.h) >= y)) {
-				//Log("onClick: found action: " + obj.variable);
-				if ((obj.variable != '') && (obj.newvalExpr.length > 0)) {
-					var newval = evalExpression(obj.newvalExpr);
-					var req = '|1|1|0|' + visuVariables[obj.variable].addrP + '|' + newval + '|';
+			} else if (event.isA == 'Action') {
+				//Log("onClick: found action: " + event.variable);
+				if ((event.variable != '') && (event.newvalExpr.length > 0)) {
+					var newval = evalExpression(event.newvalExpr);
+					var req = '|1|1|0|' + visuVariables[event.variable].addrP + '|' + newval + '|';
 
 					$.ajax({
 						type: 'POST',
@@ -1497,27 +1485,27 @@ function onClick( e ) {
 						//}
 					});
 
-					visuVariables[obj.variable].value = newval;
+					visuVariables[event.variable].value = newval;
 					update();
 				}
-				return;
+			} else if (event.isA == 'Tap') {
+				// 'Tap' wird in onMouseDown gehandelt
+				// tue nichts
+			} else {
+				Log("onClick: found unknown event: " + event.isA);
 			}
-		} else {
-			Log("onClick: found unknown object: " + obj.isA);
 		}
 	}
 }
 
 // der MouseDown-Handler
 function onMouseDown(e) {
-	//var x = e.pageX - $("#canvas").offset().left;
-	//var y = e.pageY - $("#canvas").offset().top;
 	var pos = pointerEventToXY(e);
 	var x = pos.x;
 	var y = pos.y;
 
-	Log("onMouseDown");
-	Log("X " + x + " Y " + y);
+	//Log("onMouseDown");
+	//Log("X " + x + " Y " + y);
 
 	if (inputFieldActive == true) {
 	    // wir akzeptieren keine Klicks solange ein Inputfeld aktiv ist
@@ -1529,17 +1517,31 @@ function onMouseDown(e) {
 	// passiert komischerweise ab und zu bei Firefox
 	HandlePendingMouseUps();
 
-	for (var i in clickRegions) {
-		obj = clickRegions[i];
+	// Klick-Kontext
+	// herausfinden welches Objekt geklickt wurde...
+	var imageData = clickContext.getImageData(x, y, 1, 1);
+	var objId = imageData.data[0] << 16 | imageData.data[1] << 8 | imageData.data[2];
+	if(objId == 0xFFFFFF) {
+	    Log("clicked on background - exiting onMouseDown");
+	    return;
+	}
+		
+	// nicht der Hintergrund...
+	//Log("onMouseDown X:" + x + " Y:" + y + " objId:" + objId);
 
-		//Log("obj.x " + obj.x + " obj.y " + obj.y + " (obj.x+obj.w) " + (obj.x + obj.w) + " (obj.y+obj.h) " + (obj.y + obj.h));
+	if(objId in clickObject) {
+		obj = drawObjects[objId];
+		Log("onMouseDown at X:" + x + " Y:" + y + " on:" + obj.isA);
 
-		if (obj.isA == 'Tap') {
-			if ((obj.x <= x) && (obj.y <= y) && (obj.x + obj.w >= x) && (obj.y + obj.h >= y)) {
-				PendingMouseUpObjects.push(obj);
-				if (obj.variable != '') {
-					var newval = obj.newval;
-					var req = '|1|1|0|' + visuVariables[obj.variable].addrP + '|' + newval + '|';
+		for (var eventNo in clickObject[objId]) {
+			event = clickObject[objId][eventNo];
+			Log("  event " + event.isA);
+
+			if (event.isA == 'Tap') {
+				PendingMouseUpObjects.push(event);
+				if (event.variable != '') {
+					var newval = event.newval;
+					var req = '|1|1|0|' + visuVariables[event.variable].addrP + '|' + newval + '|';
 
 					$.ajax({
 						type: 'POST',
@@ -1548,14 +1550,12 @@ function onMouseDown(e) {
 						data: req,
 					});
 
-					visuVariables[obj.variable].value = newval;
+					visuVariables[event.variable].value = newval;
 					update();
 				}
-				return;
 			}
 		}
 	}
-
 }
 
 // Ein MouseDown registriert die betroffenen Objekte in der PendingMouseUp Liste.
@@ -1586,7 +1586,7 @@ function HandlePendingMouseUps() {
 // Deshalb wurde der normale MouseUp (der genauso funktionierte wie der MouseDown) ersetzt durch
 // den Mechanismus "PendingMouseUp".
 function onMouseUp(e) {
-    Log("onMouseUp");
+    //Log("onMouseUp");
 
     if (inputFieldActive == true) {
         // wir akzeptieren keine Klicks solange ein Inputfeld aktiv ist
