@@ -10,8 +10,11 @@ var visuVariables = {};
 var drawObjects = [];
 var dynamicTexts = {};
 
-// TODO: alle Klick-Elemente in ein Array zusammenfassen (wegen "verdeckende Elemente")
-var clickRegions = [];
+// Klick-Kontext
+var clickCanvas = null;
+var clickContext = null;
+// Dict (objID -> "ARRAY von Actions")
+var clickObject = {};
 
 var visuName = "";
 var visuSizeX = 0;
@@ -60,7 +63,7 @@ function switchToVisu(visu) {
     // alle Arrays und Variablenzuordnungen l�schen
     visuVariables = {};
     drawObjects = [];
-    clickRegions = [];
+    clickObject = {};
 
     // TODO: klären, ob jede Visu ihre eigenen DynamicTexts haben kann oder ob es genügen würde
     //       sie nur einmal zu laden.
@@ -180,6 +183,9 @@ function registerSimpleShape(
             leftExpr, topExpr, rightExpr, bottomExpr,
             invisibleExpr
         ));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerSimpleShape return "+(drawObjects.length-1))
+    return drawObjects.length-1;
 }
 
 // ****************************************************************************
@@ -242,6 +248,9 @@ function registerButton(
             invisibleExpr,
             bitmapFilename
         ));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerButton return "+(drawObjects.length-1))
+    return drawObjects.length-1;
 }
 
 // ****************************************************************************
@@ -267,6 +276,9 @@ function newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAl
 
 function registerText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic, invisibleExpr) {
     drawObjects.push(new newText(x, y, format, exprTextDisplay, fillStyle, exprTextColor, textAlignHorz, textAlignVert, fontName, fontHeight, fontWeight, fontItalic, invisibleExpr));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerText return "+(drawObjects.length-1))
+    return drawObjects.length-1;
 }
 
 // ****************************************************************************
@@ -310,6 +322,9 @@ function registerBitmap(
     invisibleExpr
     ) {
     drawObjects.push(new newBitmap(x, y, w, h, fileName, hasInsideColor, fillStyle, fillStyleAlarm, hasFrameColor, strokeStyle, strokeStyleAlarm, line_width, invisibleExpr));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerBitmap return "+(drawObjects.length-1))
+    return drawObjects.length-1;
 }
 
 
@@ -365,6 +380,9 @@ function registerPolygon(
             leftExpr, topExpr,
             invisibleExpr
         ));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerPolygon return "+(drawObjects.length-1))
+    return drawObjects.length-1;
 }
 
 // ****************************************************************************
@@ -388,6 +406,9 @@ function registerGroup(
     drawObjects.push(new newGroup(
             x, y, w, h
         ));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerGroup return "+(drawObjects.length-1))
+    return drawObjects.length-1;
 }
 
 // ****************************************************************************
@@ -399,10 +420,12 @@ function newEndGroup(
     this.isA = 'EndGroup';
 }
 
-function registerEndGroup(
-    ) {
+function registerEndGroup() {
     drawObjects.push(new newEndGroup(
         ));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerEndGroup return "+(drawObjects.length-1))
+    return drawObjects.length-1;
 }
 
 /*
@@ -446,6 +469,9 @@ function registerSteelSeries(
             properties,
             exprTextDisplay
         ));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerSteelSeries return "+(drawObjects.length-1))
+    return drawObjects.length-1;
 }
 
 // constructor
@@ -468,60 +494,56 @@ function registerCanvObj(canvas, ssobj, exprTextDisplay) {
 // ClickToggle
 
 // constructor
-function newClickToggle(x, y, w, h, variable) {
+function clickObj_Toggle(variable) {
     this.isA = 'Toggle';
-    this.x = parseInt(x);
-    this.y = parseInt(y);
-    this.w = parseInt(w);
-    this.h = parseInt(h);
     this.variable = variable;
 }
 
-function registerClickToggle(x, y, w, h, variable) {
-    clickRegions.push(new newClickToggle(x, y, w, h, variable));
+function registerClickObj_Toggle(objId, variable) {
+    if(!(objId in clickObject)) {
+        clickObject[objId] = []; // Array von Klick-Info
+    }
+    clickObject[objId].push(new clickObj_Toggle(variable));
 }
-
 
 // ****************************************************************************
 // ClickTap
 
 // constructor
-function regClickTap(x, y, w, h, variable, newval) {
+function clickObj_Tap(variable, newval) {
     this.isA = 'Tap';
-    this.x = parseInt(x);
-    this.y = parseInt(y);
-    this.w = parseInt(w);
-    this.h = parseInt(h);
     this.variable = variable;
     this.newval = newval;
 }
 
-function registerClickTap(x, y, w, h, variable, newval) {
-    clickRegions.push(new regClickTap(x, y, w, h, variable, newval));
+function registerClickObj_Tap(objId, variable, newval) {
+    if(!(objId in clickObject)) {
+        clickObject[objId] = []; // Array von Klick-Info
+    }
+    clickObject[objId].push(new clickObj_Tap(variable, newval));
 }
 
 // ****************************************************************************
 // ClickZoom
 
 // constructor
-function regClickZoom(x, y, w, h, visu) {
+function clickObj_Zoom(visu) {
     this.isA = 'Zoom';
-    this.x = parseInt(x);
-    this.y = parseInt(y);
-    this.w = parseInt(w);
-    this.h = parseInt(h);
     this.visu = visu;
 }
 
-function registerClickZoom(x, y, w, h, visu) {
-    clickRegions.push(new regClickZoom(x, y, w, h, visu));
+function registerClickObj_Zoom(objId, visu) {
+    if(!(objId in clickObject)) {
+        clickObject[objId] = []; // Array von Klick-Info
+    }
+    clickObject[objId].push(new clickObj_Zoom(visu));
 }
 
 // ****************************************************************************
 // ClickEdit
 
 // constructor
-function regClickEdit(x, y, w, h, variable) {
+function clickObj_Edit(x, y, w, h, variable) {
     this.isA = 'Edit';
     this.x = parseInt(x);
     this.y = parseInt(y);
@@ -530,26 +552,30 @@ function regClickEdit(x, y, w, h, variable) {
     this.variable = variable;
 }
 
-function registerClickEdit(x, y, w, h, variable) {
-    clickRegions.push(new regClickEdit(x, y, w, h, variable));
+function registerClickObj_Edit(objId, x, y, w, h, variable) {
+    //Log("registerClickObj_Edit("+objId+",...)");
+    if(!(objId in clickObject)) {
+        clickObject[objId] = []; // Array von Klick-Info
+    }
+    clickObject[objId].push(new clickObj_Edit(x, y, w, h, variable));
 }
 
 // ****************************************************************************
 // ClickAction
 
 // constructor
-function regClickAction(x, y, w, h, variable, newvalExpr) {
+function clickObj_Action(variable, newvalExpr) {
     this.isA = 'Action';
-    this.x = parseInt(x);
-    this.y = parseInt(y);
-    this.w = parseInt(w);
-    this.h = parseInt(h);
     this.variable = variable;
     this.newvalExpr = newvalExpr;
 }
 
-function registerClickAction(x, y, w, h, variable, newvalExpr) {
-    clickRegions.push(new regClickAction(x, y, w, h, variable, newvalExpr));
+function registerClickObj_Action(objId, variable, newvalExpr) {
+    //Log("registerClickObj_Action("+objId+",...)");
+    if(!(objId in clickObject)) {
+        clickObject[objId] = []; // Array von Klick-Info
+    }
+    clickObject[objId].push(new clickObj_Action(variable, newvalExpr));
 }
 
 // ****************************************************************************
@@ -651,6 +677,29 @@ CanvasRenderingContext2D.prototype.ellipseByCenter = function (cx, cy, w, h) {
     return this;
 }
 
+// Klick-Kontext Helper
+
+/* Achtung: 
+   Laut HTML5 müssen Browser die Image-Daten "unpremultiplied" verwalten.
+   Einige alte Browser nutzen jedoch zur Beschleunigung "premultiplied" Daten.
+   Das kann zu Farbveränderungen führen und damit könnte es sein, dass dieser
+   Mechanismus der Klick-Erkennung nicht mehr funktioniert.
+   Allerdings würde (normalerweise) lediglich der Alpha-Kanal in die Farb-
+   veränderung einwirken. Diesen setzen wir (implizit) auf 255, wodurch auch 
+   bei fehlerhaften Browsern kein Problem auftreten sollte.
+*/
+
+// Konvertiert einen 24-Bit-Integer in einen Farbwert ('#123456')
+function decimalToColorString(number) {
+    ret = parseInt(number).toString(16);
+    while (ret.length < 6) {
+        ret = "0" + ret;
+    }
+    //Log("decimalToColorString("+number+") => "+ret);
+    return "#"+ret;
+}
+
+// Expression Helper
 
 function evalExpression(expr) {
     var result = [];
@@ -739,9 +788,9 @@ function evalExpression(expr) {
     return result[0];
 }
 
-function drawAllObjects(ctx, objects) {
-    for (var i in objects) {
-        obj = objects[i];
+function drawAllObjects(ctx, clickContext, objects) {
+    for (var objId in objects) {
+        obj = objects[objId];
         if (obj.isA == "SimpleShape") {
             // is invisible?
             if (obj.invisibleExpr.length > 0) {
@@ -751,6 +800,9 @@ function drawAllObjects(ctx, objects) {
             }
 
             ctx.beginPath();
+            clickContext.beginPath();
+            clickContext.fillStyle = decimalToColorString(objId);
+            clickContext.strokeStyle = decimalToColorString(objId);
 
             var left = 0;
             if (obj.leftExpr.length > 0) { left = evalExpression(obj.leftExpr); }
@@ -764,13 +816,16 @@ function drawAllObjects(ctx, objects) {
             switch (obj.shape) {
                 case 'rectangle':
                     ctx.rect(obj.x + left, obj.y + top, obj.w + right - left, obj.h + bottom - top);
+                    clickContext.rect(obj.x + left, obj.y + top, obj.w + right - left, obj.h + bottom - top);
                     break;
                 case 'round-rect':
                     radius = (obj.w + right - left) / 20;
                     ctx.roundRect(obj.x + left, obj.y + top, obj.w + right - left, obj.h + bottom - top, radius);
+                    clickContext.roundRect(obj.x + left, obj.y + top, obj.w + right - left, obj.h + bottom - top, radius);
                     break;
                 case 'circle':
                     ctx.ellipse(obj.x + left, obj.y + top, obj.w + right - left, obj.h + bottom - top);
+                    clickContext.ellipse(obj.x + left, obj.y + top, obj.w + right - left, obj.h + bottom - top);
                     break;
                 case 'line':
                     ctx.moveTo(obj.x + left, obj.y + top + obj.h + bottom - top);
@@ -796,15 +851,18 @@ function drawAllObjects(ctx, objects) {
                 ctx.fillStyle = fillStyle;
                 ctx.fill();
             }
+            clickContext.fill();
 
             // draw border
             if (obj.hasFrameColor == 'true') {
                 ctx.lineWidth = obj.lineWidth;
                 ctx.strokeStyle = strokeStyle;
                 ctx.stroke();
+                clickContext.stroke();
             }
 
             ctx.closePath();
+            clickContext.closePath();
         } else if (obj.isA == "Bitmap") {
             // is invisible?
             if (obj.invisibleExpr.length > 0) {
@@ -814,18 +872,26 @@ function drawAllObjects(ctx, objects) {
             }
 
             ctx.beginPath();
+            clickContext.beginPath();
+            clickContext.fillStyle = decimalToColorString(objId);
+            clickContext.strokeStyle = decimalToColorString(objId);
+
             try {
                 ctx.drawImage(obj.img, 0, 0, obj.img.width, obj.img.height, obj.x, obj.y, obj.w, obj.h);
             } catch (e) {
                 Log("drawImage " + obj.img.src + " error " + e.name);
             }
             ctx.rect(obj.x, obj.y, obj.w, obj.h);
+            clickContext.rect(obj.x, obj.y, obj.w, obj.h);
+            clickContext.fill();
             if (obj.hasFrameColor == 'true') {
                 ctx.lineWidth = obj.lineWidth;
                 ctx.strokeStyle = obj.strokeStyle;
                 ctx.stroke();
+                clickContext.stroke();
             }
             ctx.closePath();
+            clickContext.closePath();
         } else if (obj.isA == "Button") {
             // is invisible?
             if (obj.invisibleExpr.length > 0) {
@@ -835,8 +901,12 @@ function drawAllObjects(ctx, objects) {
             }
 
             ctx.beginPath();
+            clickContext.beginPath();
+            clickContext.fillStyle = decimalToColorString(objId);
+            clickContext.strokeStyle = decimalToColorString(objId);
 
             ctx.rect(obj.x, obj.y, obj.w, obj.h);
+            clickContext.rect(obj.x, obj.y, obj.w, obj.h);
 
             fillStyle = '';
             strokeStyle = '';
@@ -872,14 +942,18 @@ function drawAllObjects(ctx, objects) {
                     ctx.fill();
                 }
             }
+            clickContext.fill();
+            
             // draw border
             if (obj.hasFrameColor == 'true') {
                 ctx.lineWidth = obj.lineWidth;
                 ctx.strokeStyle = strokeStyle;
                 ctx.stroke();
+                clickContext.stroke();
             }
 
             ctx.closePath();
+            clickContext.closePath();
 
             // draw button frame :-)
             abstand = 2;
@@ -917,6 +991,9 @@ function drawAllObjects(ctx, objects) {
             }
 
             ctx.beginPath();
+            clickContext.beginPath();
+            clickContext.fillStyle = decimalToColorString(objId);
+            clickContext.strokeStyle = decimalToColorString(objId);
 
             var left = 0;
             if (obj.leftExpr.length > 0) { left = evalExpression(obj.leftExpr); }
@@ -925,8 +1002,8 @@ function drawAllObjects(ctx, objects) {
 
             var first = true;
             var firstPointFields = [];
-            for (var i in obj.points) {
-                point = obj.points[i];
+            for (var ptId in obj.points) {
+                point = obj.points[ptId];
                 var pointFields = point.split(',');
                 x = parseInt(pointFields[0]);
                 y = parseInt(pointFields[1]);
@@ -934,9 +1011,11 @@ function drawAllObjects(ctx, objects) {
                 if (first) {
                     firstPointFields = pointFields;
                     ctx.moveTo(x + left, y + top);
+                    clickContext.moveTo(x + left, y + top);
                     first = false;
                 } else {
                     ctx.lineTo(x + left, y + top);
+                    clickContext.lineTo(x + left, y + top);
                 }
             }
 
@@ -945,6 +1024,7 @@ function drawAllObjects(ctx, objects) {
                 x = parseInt(firstPointFields[0]);
                 y = parseInt(firstPointFields[1]);
                 ctx.lineTo(x + left, y + top);
+                clickContext.lineTo(x + left, y + top);
             }
 
             fillStyle = obj.fillStyle;
@@ -965,6 +1045,7 @@ function drawAllObjects(ctx, objects) {
                     ctx.fillStyle = fillStyle;
                     ctx.fill();
                 }
+                clickContext.fill();
             }
 
             // draw border
@@ -972,9 +1053,11 @@ function drawAllObjects(ctx, objects) {
                 ctx.lineWidth = obj.lineWidth;
                 ctx.strokeStyle = strokeStyle;
                 ctx.stroke();
+                clickContext.stroke();
             }
 
             ctx.closePath();
+            clickContext.closePath();
         } else if (obj.isA == "Text") {
             // is invisible?
             if (obj.invisibleExpr.length > 0) {
@@ -1054,8 +1137,8 @@ function drawAllObjects(ctx, objects) {
                     /* do nothing */
                 }
 
-                for (var i in lines) {
-                    var line = lines[i];
+                for (var lineId in lines) {
+                    var line = lines[lineId];
 
                     ctx.fillText(line, obj.x, myY);
 
@@ -1069,8 +1152,11 @@ function drawAllObjects(ctx, objects) {
         } else if (obj.isA == "Group") {
             ctx.save();
             ctx.translate(obj.x, obj.y);
+            clickContext.save();
+            clickContext.translate(obj.x, obj.y);
         } else if (obj.isA == "EndGroup") {
             ctx.restore();
+            clickContext.restore();
 /*
 #ifdef USE_STEELSERIES
 */
@@ -1124,8 +1210,19 @@ function draw() {
     ctx.clearRect(0, 0, visuSizeX, visuSizeY);
     ctx.closePath();
 
-    drawAllObjects(ctx, drawObjects);
+    // Klick-Kontext ebenfalls vorbereiten.
+    clickContext.beginPath();
+    clickContext.fillStyle = '#FFFFFF';
+    clickContext.fillRect(0, 0, visuSizeX, visuSizeY);
+    //clickContext.clearRect(0, 0, visuSizeX, visuSizeY);
+    clickContext.closePath();
 
+    drawAllObjects(ctx, clickContext, drawObjects);
+
+    //ctx.beginPath();
+    //ctx.drawImage(clickCanvas, 0, 0);
+    //ctx.closePath();
+    
     // performance-Messungen ausgeben
     if (perfWriteout > 0) {
         perfCount++;
