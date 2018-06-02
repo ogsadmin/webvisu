@@ -1219,6 +1219,7 @@ function draw() {
 
     drawAllObjects(ctx, clickContext, drawObjects);
 
+    // Um die Klick-Regionen sichtbar zu machen...
     //ctx.beginPath();
     //ctx.drawImage(clickCanvas, 0, 0);
     //ctx.closePath();

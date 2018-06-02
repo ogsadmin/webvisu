@@ -201,13 +201,7 @@ function parseTextInfo(myMedia, centerFields, rectFields, exprInvisible) {
 		);
 }
 
-function parseClickInfo(myMedia, rectFields, objId) {
-	/* Offsets der letzten Gruppenzuordnung als Korrekturwerte addieren */
-	rectFields[0] += parsedGroups[parsedGroups.length - 1].x;
-	rectFields[1] += parsedGroups[parsedGroups.length - 1].y;
-	rectFields[2] += parsedGroups[parsedGroups.length - 1].x;
-	rectFields[3] += parsedGroups[parsedGroups.length - 1].y;
-
+function parseClickInfo(myMedia, objId) {
 	/* Die Reihenfolge der Registrierung ist ausschlaggebend für die Funktion 
 	   von Mehrfach-Aktionen.
 	   Die zoom-to-visu muss als letztes ausgeführt werden, da sie den 
@@ -650,7 +644,7 @@ function parse_visu_elements(content) {
 						);
 
 					parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
-					parseClickInfo($myMedia, rectFields, objId);
+					parseClickInfo($myMedia, objId);
 					parseEditInfo($myMedia, rectFields, objId);
 				}
 			} else {
@@ -705,7 +699,7 @@ function parse_visu_elements(content) {
 				);
 
 			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
-			parseClickInfo($myMedia, rectFields, objId);
+			parseClickInfo($myMedia, objId);
 			parseEditInfo($myMedia, rectFields, objId);
 		} else if (type == 'button') {
 			// #22: auch Buttons k�nnen eine Bitmap beherbergen
@@ -769,7 +763,7 @@ function parse_visu_elements(content) {
 				);
 
 			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
-			parseClickInfo($myMedia, rectFields, objId);
+			parseClickInfo($myMedia, objId);
 			parseEditInfo($myMedia, rectFields, objId);
 		} else if (type == 'polygon') {
 			//console.debug("register polygon");
@@ -830,7 +824,7 @@ function parse_visu_elements(content) {
 			}
 
 			if ((polyShape == 'polygon') || (polyShape == 'polyline')) {
-				registerPolygon(
+				var objId = registerPolygon(
 						polyShape,
 						points,
 						has_frame_color,
@@ -844,6 +838,13 @@ function parse_visu_elements(content) {
 						exprLeft, exprTop,
 						exprInvisible
 					);
+
+				if (polyShape == 'polygon') {
+					parseClickInfo($myMedia, objId);
+				}
+				// TODO:
+				//parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
+				//parseEditInfo($myMedia, rectFields, objId);
 			} else {
 				Log("unknown poly-shape: " + polyShape);
 			}
