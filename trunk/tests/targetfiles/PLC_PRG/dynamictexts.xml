@@ -33,9 +33,35 @@
        <english>dynamic text one</english>
     </text>
     <text prefix="DYNTEXTTOOLTIP1" id="0">
-       <deutsch>Tooltip für dynamischen Text 1</deutsch>
+       <deutsch>Tooltip fï¿½r dynamischen Text 1</deutsch>
        <english>Tooltip for dynamic text one</english>
     </text>
+
+    <text prefix="DYNTEXT2" id="0">
+       <deutsch>NULL</deutsch>
+       <english>ZERO</english>
+    </text>
+    <text prefix="DYNTEXT2" id="1">
+       <deutsch>EINZ</deutsch>
+       <english>ONE</english>
+    </text>
+    <text prefix="DYNTEXT2" id="2">
+       <deutsch>ZWEI</deutsch>
+       <english>TWO</english>
+    </text>
+    <text prefix="DYNTEXT2" id="3">
+       <deutsch>DREI</deutsch>
+       <english>THREE</english>
+    </text>
+    <text prefix="DYNTEXT2" id="4">
+       <deutsch>VIER</deutsch>
+       <english>FOUR</english>
+    </text>
+    <text prefix="DYNTEXT2" id="5">
+       <deutsch>FÃœNF</deutsch>
+       <english>FIVE</english>
+    </text>
+
 
   </text-list>
 

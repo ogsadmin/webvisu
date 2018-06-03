@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <visualisation>
-	<time-stamp>1507206184,157827770</time-stamp>
+	<time-stamp>1527952720,2682046647</time-stamp>
 	<name>PLC_VISU_2</name>
 	<symplified-user-input>false</symplified-user-input>
 	<keyboard-usage-for-table>true</keyboard-usage-for-table>
@@ -533,12 +533,96 @@ Var| |Tasten]]>
 		<hidden-input>false</hidden-input>
 		<rect>15,215,126,251</rect>
 	</element>
+	<element type="polygon">
+		<poly-count>5</poly-count>
+		<poly-shape>polygon</poly-shape>
+		<point>425,60</point>
+		<point>425,60</point>
+		<point>370,100</point>
+		<point>480,100</point>
+		<point>480,100</point>
+		<elem-id>18</elem-id>
+		<center>436,84</center>
+		<line-width>0</line-width>
+		<has-frame-color>true</has-frame-color>
+		<has-inside-color>true</has-inside-color>
+		<frame-color>0,0,0</frame-color>
+		<frame-color-alarm>0,0,0</frame-color-alarm>
+		<fill-color>255,255,255</fill-color>
+		<fill-color-alarm>255,255,255</fill-color-alarm>
+		<text-align-horz>center</text-align-horz>
+		<text-align-vert>center</text-align-vert>
+		<font-height>-12</font-height>
+		<font-height-point-size>9</font-height-point-size>
+		<font-weight>400</font-weight>
+		<font-italic>false</font-italic>
+		<font-underline>false</font-underline>
+		<font-strike-out>false</font-strike-out>
+		<font-char-set>0</font-char-set>
+		<text-id>34</text-id>
+		<font-name><![CDATA[Lucida Sans Typewriter]]></font-name>
+		<font-color>255,0,0</font-color>
+		<tap-false>false</tap-false>
+		<expr-tap-var>
+			<expr>
+				<var>PLC_PRG.bVarTasten</var>
+			</expr>
+		</expr-tap-var>
+		<enable-text-input>false</enable-text-input>
+		<text-format>
+			<![CDATA[Polygon
+Var| |Tasten]]>
+		</text-format>
+		<hidden-input>false</hidden-input>
+	</element>
+	<element type="polygon">
+		<poly-count>5</poly-count>
+		<poly-shape>polygon</poly-shape>
+		<point>425,60</point>
+		<point>425,60</point>
+		<point>370,100</point>
+		<point>480,100</point>
+		<point>480,100</point>
+		<elem-id>19</elem-id>
+		<center>436,84</center>
+		<line-width>0</line-width>
+		<has-frame-color>true</has-frame-color>
+		<has-inside-color>true</has-inside-color>
+		<frame-color>0,0,0</frame-color>
+		<frame-color-alarm>0,0,0</frame-color-alarm>
+		<fill-color>255,255,255</fill-color>
+		<fill-color-alarm>255,255,255</fill-color-alarm>
+		<text-align-horz>center</text-align-horz>
+		<text-align-vert>center</text-align-vert>
+		<font-height>-12</font-height>
+		<font-height-point-size>9</font-height-point-size>
+		<font-weight>400</font-weight>
+		<font-italic>false</font-italic>
+		<font-underline>false</font-underline>
+		<font-strike-out>false</font-strike-out>
+		<font-char-set>0</font-char-set>
+		<text-id>35</text-id>
+		<font-name><![CDATA[Lucida Sans Typewriter]]></font-name>
+		<font-color>255,0,0</font-color>
+		<tap-false>false</tap-false>
+		<expr-tap-var>
+			<expr>
+				<var>PLC_PRG.bVarTasten</var>
+			</expr>
+		</expr-tap-var>
+		<enable-text-input>false</enable-text-input>
+		<text-format>
+			<![CDATA[Polygon
+Var| |Tasten]]>
+		</text-format>
+		<hidden-input>false</hidden-input>
+	</element>
 	<key-info-list/>
 	<variablelist>
-		<variable name="PLC_PRG.bVarToggeln">4,986,1,0</variable>
-		<variable name="PLC_PRG.bVarTasten">4,987,1,0</variable>
-		<variable name="PLC_PRG.bVarFalseTasten">4,1272,1,0</variable>
-		<variable name="PLC_PRG.strInputTest">4,3636,21,8</variable>
-		<variable name="PLC_PRG.dwInputTest">4,3660,4,5</variable>
+		<variable name="PLC_PRG.bVarToggeln">4,147,1,0</variable>
+		<variable name="PLC_PRG.bVarTasten">4,152,1,0</variable>
+		<variable name="PLC_PRG.bVarFalseTasten">4,153,1,0</variable>
+		<variable name="PLC_PRG.strInputTest">4,212,21,8</variable>
+		<variable name="PLC_PRG.dwInputTest">4,236,4,5</variable>
 	</variablelist>
 </visualisation>

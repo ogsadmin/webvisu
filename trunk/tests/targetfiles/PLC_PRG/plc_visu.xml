@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <visualisation>
-	<time-stamp>1507445230,3348089505</time-stamp>
+	<time-stamp>1528016046,3367870832</time-stamp>
 	<name>PLC_VISU</name>
 	<symplified-user-input>false</symplified-user-input>
 	<keyboard-usage-for-table>true</keyboard-usage-for-table>
@@ -1692,17 +1692,127 @@ tasten]]>
 		<hidden-input>false</hidden-input>
 		<rect>490,330,601,366</rect>
 	</element>
+	<element type="button">
+		<frame-type>anisotropic</frame-type>
+		<elem-id>55</elem-id>
+		<center>125,480</center>
+		<line-width>0</line-width>
+		<has-frame-color>true</has-frame-color>
+		<has-inside-color>true</has-inside-color>
+		<frame-color>0,0,0</frame-color>
+		<frame-color-alarm>0,0,0</frame-color-alarm>
+		<fill-color>200,200,200</fill-color>
+		<fill-color-alarm>220,220,220</fill-color-alarm>
+		<text-align-horz>center</text-align-horz>
+		<text-align-vert>center</text-align-vert>
+		<font-height>-12</font-height>
+		<font-height-point-size>9</font-height-point-size>
+		<font-weight>400</font-weight>
+		<font-italic>false</font-italic>
+		<font-underline>false</font-underline>
+		<font-strike-out>false</font-strike-out>
+		<font-char-set>0</font-char-set>
+		<text-id>73</text-id>
+		<font-color>0,0,0</font-color>
+		<tap-false>false</tap-false>
+		<expr-tap-var>
+			<expr>
+				<var>PLC_PRG.bVarTasten</var>
+			</expr>
+		</expr-tap-var>
+		<expr-toggle-var>
+			<expr>
+				<var>PLC_PRG.bVarToggeln</var>
+			</expr>
+		</expr-toggle-var>
+		<expr-zoom>
+			<expr>
+				<placeholder>PLC_VISU_2</placeholder>
+			</expr>
+		</expr-zoom>
+		<enable-text-input>false</enable-text-input>
+		<text-format><![CDATA[toggle| |+| |tasten| |+| |zoom]]></text-format>
+		<hidden-input>false</hidden-input>
+		<rect>10,460,241,501</rect>
+	</element>
+	<element type="simple">
+		<simple-shape>rectangle</simple-shape>
+		<elem-id>56</elem-id>
+		<center>700,410</center>
+		<line-width>0</line-width>
+		<has-frame-color>true</has-frame-color>
+		<has-inside-color>true</has-inside-color>
+		<frame-color>0,0,0</frame-color>
+		<frame-color-alarm>0,0,0</frame-color-alarm>
+		<fill-color>0,128,192</fill-color>
+		<fill-color-alarm>255,255,255</fill-color-alarm>
+		<tap-false>false</tap-false>
+		<expr-tap-var>
+			<expr>
+				<var>PLC_PRG.bVarOverlapTaster3</var>
+			</expr>
+		</expr-tap-var>
+		<enable-text-input>false</enable-text-input>
+		<expr-invisible>
+			<expr>
+				<var>PLC_PRG.timer1Toggle</var>
+			</expr>
+		</expr-invisible>
+		<expr-toggle-color>
+			<expr>
+				<var>PLC_PRG.bVarOverlapTaster3</var>
+			</expr>
+		</expr-toggle-color>
+		<hidden-input>false</hidden-input>
+		<rect>670,390,731,431</rect>
+	</element>
+	<element type="simple">
+		<simple-shape>rectangle</simple-shape>
+		<elem-id>57</elem-id>
+		<center>675,348</center>
+		<line-width>0</line-width>
+		<has-frame-color>true</has-frame-color>
+		<has-inside-color>true</has-inside-color>
+		<frame-color>0,0,0</frame-color>
+		<frame-color-alarm>0,0,0</frame-color-alarm>
+		<fill-color>255,255,255</fill-color>
+		<fill-color-alarm>255,255,255</fill-color-alarm>
+		<text-align-horz>center</text-align-horz>
+		<text-align-vert>center</text-align-vert>
+		<font-height>-12</font-height>
+		<font-height-point-size>9</font-height-point-size>
+		<font-weight>400</font-weight>
+		<font-italic>false</font-italic>
+		<font-underline>false</font-underline>
+		<font-strike-out>false</font-strike-out>
+		<font-char-set>0</font-char-set>
+		<text-id>75</text-id>
+		<font-color>0,0,0</font-color>
+		<enable-text-input>false</enable-text-input>
+		<text-display>
+			<expr>
+				<var>PLC_PRG.dwUpDown</var>
+				<const>2500</const>
+				<op>&gt;(2)</op>
+				<op>NOT</op>
+			</expr>
+		</text-display>
+		<text-format>NOT==%s</text-format>
+		<hidden-input>false</hidden-input>
+		<rect>620,330,731,366</rect>
+	</element>
 	<key-info-list/>
 	<variablelist>
-		<variable name="PLC_PRG.bAlarmFarbe">4,985,1,0</variable>
-		<variable name="PLC_PRG.bVarToggeln">4,986,1,0</variable>
-		<variable name="PLC_PRG.bVarTasten">4,987,1,0</variable>
-		<variable name="PLC_PRG.bVarFalseTasten">4,1272,1,0</variable>
-		<variable name="PLC_PRG.dwUpDown">4,1284,4,5</variable>
-		<variable name="PLC_PRG.dwCount">4,1276,4,5</variable>
-		<variable name="PLC_PRG.rCount">4,1280,4,6</variable>
-		<variable name="PLC_PRG.bVarOverlapTaster1">4,1273,1,0</variable>
-		<variable name="PLC_PRG.bVarOverlapTaster2">4,1274,1,0</variable>
-		<variable name="PLC_PRG.timer1Toggle">4,1312,1,0</variable>
+		<variable name="PLC_PRG.bAlarmFarbe">4,146,1,0</variable>
+		<variable name="PLC_PRG.bVarToggeln">4,147,1,0</variable>
+		<variable name="PLC_PRG.bVarTasten">4,152,1,0</variable>
+		<variable name="PLC_PRG.bVarFalseTasten">4,153,1,0</variable>
+		<variable name="PLC_PRG.dwUpDown">4,164,4,5</variable>
+		<variable name="PLC_PRG.dwCount">4,156,4,5</variable>
+		<variable name="PLC_PRG.rCount">4,160,4,6</variable>
+		<variable name="PLC_PRG.bVarOverlapTaster1">4,154,1,0</variable>
+		<variable name="PLC_PRG.bVarOverlapTaster2">4,155,1,0</variable>
+		<variable name="PLC_PRG.timer1Toggle">4,169,1,0</variable>
+		<variable name="PLC_PRG.bVarOverlapTaster3">4,693,1,0</variable>
 	</variablelist>
 </visualisation>
