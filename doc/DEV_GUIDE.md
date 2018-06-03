@@ -79,6 +79,7 @@ Hacks die Groß- und Kleinschreibung der zu ladenden Dateien ignoriert.
 Um diesen nutzen zu können muss man zunächst das PLC-Verzeichnis mit den Visu-
 Dateien von einer Steuerung in ein Unterverzeichnis kopieren.
 Beispiel: /trunk/tickets/bug0815/PLC
+Oder wie bereits vorhanden: /trunk/tests/targetfiles/PLC_PRG
 
 Danach kann man aus dem /trunk-Verzeichnis heraus den Webserver starten:
 cd /trunk
@@ -89,6 +90,8 @@ Der Webserver startet auf Port 8080.
 Beim Aufruf im Browser muss nun noch der PLC-Pfad gesetzt werden, da die 
 automatische Ermittlung fehlschlagen wird:
 http://localhost:8080/src/WebVisuDev.pp.html?plcDir=/tickets/bug0815/PLC/
+oder:
+http://localhost:8080/src/WebVisuDev.pp.html?plcDir=/tests/targetfiles/PLC_PRG/
 
 Der Webserver gibt nun die angefragten Dateien aus und antwortet auf GETVALUE-
 und SETVALUE-Anfragen der Visu.
@@ -97,3 +100,69 @@ Viel mehr tut er wirklich nicht.
 
 Bei Tests kann man z.B. die Firefox-Entwicklerkonsole aktivieren. Dort werden
 unter "Konsole" die Logausschriften aus den Sources ausgegeben.
+
+## Argumente in der URL
+Die WebVisu kann über Argumente in der URL beeinflusst werden.
+Wie Argumente in URLs kodiert werden sollte klar sein, hier noch mal ein 
+Beispiel als Gedankenstütze:
+
+http://localhost:8080/src/WebVisuDev.pp.html?firstArg=1&secondArg=2&thirdArg=3
+
+Das erste Argument wird also mit einem "?", jedes weitere Argument mit einem 
+"&" getrennt.
+
+startVisu=...
+  Stellt die Visualisierungsdatei ein, welche als Beginn geladen werden soll.
+  Default: "plc_visu"
+
+plcDir=...
+  Überschreibt die automatische Erkennung des PLC-Verzeichnisses mit dem 
+  angegebenen Wert.
+
+postUrl=...
+  Überschreibt die automatische Erkennung der Variablen-Anbindung an die 
+  Steuerung.
+
+logOverlayWriteout
+  Aktiviert ein Mini-Logfenster in der rechten oberen Ecke. Für Browser, welche
+  keine Konsole zur Verfügung stellen.
+
+perfWriteout
+  Aktiviert ein kleines Performance-Fenster in der linken oberen Ecke in 
+  welchem ständig die benötigten Zeiten für Laden und Aktualisierung der Visu
+  bzw. der Variablen angezeigt wird.
+
+useTouchEvents
+dontUseTouchEvents
+  Überschreibt die automatische Erkennung von Touch-Events und aktiviert bzw. 
+  deaktiviert diese.
+
+doPerfTest
+  Aktiviert einen kleinen Performance-Test.
+
+## Klick-Handling (ab r84)
+Mit Version r84 wurde das Handling von Maus-Klicks komplett überarbeitet. 
+Vorher war es so, dass Klick-Regionen ermittelt wurden, welche jeweils in den
+Handler-Funktionen abgearbeitet und deren Koordinaten mit dem Punkt des Maus-
+Eevents verglichen wurden.
+Seit r84 ist das Klick-Handling objektbezogen und arbeitet nicht mehr mit 
+Koordinaten, sondern mit einer unsichtbaren Bitmap. Auf dieser Bitmap wird 
+während der grafischen Ausgabe der Elemente (auf dem Browser) jedes Element 
+nochmals gezeichnet. Der Unterschied ist, dass auf der unsichtbaren Bitmap 
+jedes Element mit einer bestimmten Farbe gefüllt wird. Diese Farbe entspricht
+nicht der eingestellten Farbe, sondern repräsentiert die Objekt-ID.
+Bei einem Maus-Event wird nun auf der (unsichtbaren) Klick-Bitmap die Farbe des
+Punktes unter der Maus ermittelt und aus dieser Farbe die Objekt-ID 
+rückgerechnet. Der Klick-Handler weiß dann welches Element angeklickt wurde.
+Durch diesen Mechnismus werden drei Hauptprobleme erschlagen:
+- Unsichtbare Elemente werden nicht gezeichnet und entsprechend auch nicht
+  mehr als Klick-Bereich ausgewertet.
+- Klick-Regionen mussten immer rechteckig sein. Kreise oder Polygone werden
+  jetzt ausgewertet wie gezeichnet.
+- Bei mehreren Klich-Aktionen pro Element können diese jetzt schneller 
+  ausgewertet werden.
+
+Um die Objekt-ID in einer Farbe kodieren zu kodieren werden die 24 Bit des 
+Farbwertes als 24 Bit Integer verwendet. Die ersten 255 Elemente verwenden 
+entsprechend nur den Blau-Anteil, danach kommt Grün und danach Rot hinzu.
+Der Farbwert 0xFFFFFF ist dem Hintergrund zugeordnet. 
