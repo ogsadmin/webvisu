@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <visualisation>
-	<time-stamp>1506348444,3650498880</time-stamp>
+	<time-stamp>1518799820,483340016</time-stamp>
 	<name>PLC_VISU_3</name>
 	<symplified-user-input>false</symplified-user-input>
 	<keyboard-usage-for-table>true</keyboard-usage-for-table>
@@ -163,6 +163,11 @@
 		<text-id>27</text-id>
 		<font-color>0,0,0</font-color>
 		<enable-text-input>false</enable-text-input>
+		<text-display>
+			<expr>
+				<const>0</const>
+			</expr>
+		</text-display>
 		<text-format><![CDATA[%|<|DYNTEXT1|>|]]></text-format>
 		<hidden-input>false</hidden-input>
 		<rect>30,30,151,61</rect>
@@ -585,11 +590,44 @@
 		<hidden-input>false</hidden-input>
 		<rect>30,370,151,401</rect>
 	</element>
+	<element type="simple">
+		<simple-shape>rectangle</simple-shape>
+		<elem-id>19</elem-id>
+		<center>90,85</center>
+		<line-width>0</line-width>
+		<has-frame-color>true</has-frame-color>
+		<has-inside-color>true</has-inside-color>
+		<frame-color>0,0,0</frame-color>
+		<frame-color-alarm>0,0,0</frame-color-alarm>
+		<fill-color>255,255,255</fill-color>
+		<fill-color-alarm>255,255,255</fill-color-alarm>
+		<text-align-horz>center</text-align-horz>
+		<text-align-vert>center</text-align-vert>
+		<font-height>-12</font-height>
+		<font-height-point-size>9</font-height-point-size>
+		<font-weight>400</font-weight>
+		<font-italic>false</font-italic>
+		<font-underline>false</font-underline>
+		<font-strike-out>false</font-strike-out>
+		<font-char-set>0</font-char-set>
+		<text-id>45</text-id>
+		<font-color>0,0,0</font-color>
+		<enable-text-input>false</enable-text-input>
+		<text-display>
+			<expr>
+				<var>PLC_PRG.dwUpDownSmall</var>
+			</expr>
+		</text-display>
+		<text-format><![CDATA[%|<|DYNTEXT2|>|]]></text-format>
+		<hidden-input>false</hidden-input>
+		<rect>30,70,151,101</rect>
+	</element>
 	<key-info-list/>
 	<variablelist>
-		<variable name="PLC_PRG.dtTest">4,3620,4,20</variable>
-		<variable name="PLC_PRG.dTest">4,3624,4,18</variable>
-		<variable name="PLC_PRG.todTest">4,3628,4,19</variable>
-		<variable name="PLC_PRG.tTest">4,3632,4,7</variable>
+		<variable name="PLC_PRG.dtTest">4,196,4,20</variable>
+		<variable name="PLC_PRG.dTest">4,200,4,18</variable>
+		<variable name="PLC_PRG.todTest">4,204,4,19</variable>
+		<variable name="PLC_PRG.tTest">4,208,4,7</variable>
+		<variable name="PLC_PRG.dwUpDownSmall">4,704,4,5</variable>
 	</variablelist>
 </visualisation>

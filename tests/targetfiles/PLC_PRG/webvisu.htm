@@ -9,35 +9,15 @@
   		padding: 0;
 	}
    	</style>
-	<script>
-
-		function CookieHandling()
-		{
-			applet = document.getElementById("webvisuapplet")
-			stTodo = applet.databaseCookieInteraction();
-			if (stTodo=="write")			
-			{
-				var expire = new Date();
-				var oneyearLater = expire.getTime() + 365 * 24 * 3600 * 1000;
-				expire.setTime(oneyearLater);
-				document.cookie=applet.databaseCookieGetValue() + ";expires=" + expire.toGMTString();
-			}
-			else if (stTodo=="read")
-			{
-				applet.databaseCookieSetValue(document.cookie);	
-			}
-			setTimeout("CookieHandling()", 2000);
-		}	
-	</script>
 </HEAD>
-<BODY onload="CookieHandling()">
-<APPLET CODEBASE=. CODE=webvisu/WebVisu.class name="WebVisu" width="99%" height="99%" id="webvisuapplet">
+<BODY>
+<APPLET CODEBASE=. CODE=webvisu/WebVisu.class name="WebVisu" width="100%" height="100%" id="webvisuapplet">
 <param name="archive" value="webvisu.jar,minml.jar">
 <param name="STARTVISU" value="PLC_VISU">
-<param name="UPDATETIME" value="200">
+<param name="UPDATETIME" value="100">
 <param name="USECURRENTVISU" value="FALSE">
 <param name="USEFIXSOCKETCONNECTION" value="FALSE">
-<param name="USEURLCONNECTION" value="TRUE">
+<param name="USEURLCONNECTION" value="FALSE">
 <param name="COMPRESSEDFILES" value="TRUE">
 </APPLET> 
 </BODY>

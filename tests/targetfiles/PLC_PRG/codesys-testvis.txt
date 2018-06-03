@@ -1,0 +1,14 @@
+245607
+visu_ini.xml
+alm_ini.xml
+minml.jar
+webvisu.jar
+webvisu.htm
+dynamictexts.xml
+plc_visu.xml
+plc_visu_2.xml
+hintergrund.jpg
+button40blue.jpg
+plc_visu_3.xml
+plc_visu_wvp.xml
+codesys-testvis.txt

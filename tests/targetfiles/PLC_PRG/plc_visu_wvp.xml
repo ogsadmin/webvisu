@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <visualisation>
-	<time-stamp>1506242218,1606472993</time-stamp>
+	<time-stamp>1517648250,1000947651</time-stamp>
 	<name>PLC_VISU_WVP</name>
 	<symplified-user-input>false</symplified-user-input>
 	<keyboard-usage-for-table>true</keyboard-usage-for-table>
@@ -430,6 +430,6 @@ valueGradient: undefined
 	</element>
 	<key-info-list/>
 	<variablelist>
-		<variable name="PLC_PRG.dwUpDown">4,1284,4,5</variable>
+		<variable name="PLC_PRG.dwUpDown">4,164,4,5</variable>
 	</variablelist>
 </visualisation>

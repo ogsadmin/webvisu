@@ -5,28 +5,28 @@
 	<best-fit>true</best-fit>
 	<keypad-hide-special-chars>false</keypad-hide-special-chars>
 	<hide-min-max>false</hide-min-max>
-	<download-id>378879</download-id>
+	<download-id>245607</download-id>
 	<use-time-formats>false</use-time-formats>
 	<time-format>HH':'mm':'ss</time-format>
 	<date-format>dd'-'MM'-'yyyy</date-format>
 	<dt-format><![CDATA[dd'-'MM'-'yyyy HH':'mm':'ss]]></dt-format>
 	<variablelist>
-		<variable name="CurrentPasswords[0]">4,1602,21,8</variable>
-		<variable name="CurrentPasswords[1]">4,1623,21,8</variable>
-		<variable name="CurrentPasswords[2]">4,1644,21,8</variable>
-		<variable name="CurrentPasswords[3]">4,1665,21,8</variable>
-		<variable name="CurrentPasswords[4]">4,1686,21,8</variable>
-		<variable name="CurrentPasswords[5]">4,1707,21,8</variable>
-		<variable name="CurrentPasswords[6]">4,1728,21,8</variable>
-		<variable name="CurrentPasswords[7]">4,1749,21,8</variable>
-		<variable name=".CurrentUserLevel">4,1600,2,1</variable>
-		<variable name=".CurrentVisu">4,1352,41,8</variable>
-		<variable name=".CurrentCaller">4,1393,41,8</variable>
-		<variable name=".CurrentLanguage">4,1434,41,8</variable>
-		<variable name=".CurrentUsername">4,1516,41,8</variable>
-		<variable name=".CurrentPassword">4,1557,41,8</variable>
-		<variable name=".CurrentUserID">4,1598,2,1</variable>
-		<variable name=".CurrentWriteAccessClientId">4,1772,4,5</variable>
+		<variable name="CurrentPasswords[0]">4,524,21,8</variable>
+		<variable name="CurrentPasswords[1]">4,545,21,8</variable>
+		<variable name="CurrentPasswords[2]">4,566,21,8</variable>
+		<variable name="CurrentPasswords[3]">4,587,21,8</variable>
+		<variable name="CurrentPasswords[4]">4,608,21,8</variable>
+		<variable name="CurrentPasswords[5]">4,629,21,8</variable>
+		<variable name="CurrentPasswords[6]">4,650,21,8</variable>
+		<variable name="CurrentPasswords[7]">4,671,21,8</variable>
+		<variable name=".CurrentUserLevel">4,522,2,1</variable>
+		<variable name=".CurrentVisu">4,276,41,8</variable>
+		<variable name=".CurrentCaller">4,317,41,8</variable>
+		<variable name=".CurrentLanguage">4,358,41,8</variable>
+		<variable name=".CurrentUsername">4,440,41,8</variable>
+		<variable name=".CurrentPassword">4,481,41,8</variable>
+		<variable name=".CurrentUserID">4,234,2,1</variable>
+		<variable name=".CurrentWriteAccessClientId">4,696,4,5</variable>
 	</variablelist>
 	<receiptlist/>
 	<bitmap-list/>
