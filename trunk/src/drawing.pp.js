@@ -711,74 +711,78 @@ function evalExpression(expr) {
         } else if (expr[i].operation == 'const') {
             result.push(parseFloat(expr[i].value));
         } else if (expr[i].operation == 'op') {
-            for (c = 1; c < expr[i].count; c++) {
+            if(expr[i].count == 0) {
+                // expr ohne count
                 if (expr[i].value == 'NOT') {
-                    // eigentlich kein count
                     var v1 = result.pop();
                     result.push( !v1 );
                 } else if (expr[i].value == 'XOR') {
-                    // eigentlich kein count
                     var v1 = result.pop();
                     var v2 = result.pop();
                     result.push(v2 ^ v1);
-                } else if (expr[i].value == 'OR') {
-                    var v1 = result.pop();
-                    var v2 = result.pop();
-                    result.push(v2 || v1);
-                } else if (expr[i].value == 'AND') {
-                    var v1 = result.pop();
-                    var v2 = result.pop();
-                    result.push(v2 && v1);
-                } else if (expr[i].value == 'MOD') {
-                    var v1 = result.pop();
-                    var v2 = result.pop();
-                    result.push(v2 % v1);
-                } else if (expr[i].value == '/') {
-                    // TODO: kann das so stimmen?
-                    //       a / b ist nicht b / a
-                    var v1 = result.pop();
-                    var v2 = result.pop();
-                    result.push(v2 / v1);
-                } else if (expr[i].value == '*') {
-                    var v1 = result.pop();
-                    var v2 = result.pop();
-                    result.push(v2 * v1);
-                } else if (expr[i].value == '+') {
-                    var v1 = result.pop();
-                    var v2 = result.pop();
-                    result.push(v2 + v1);
-                } else if (expr[i].value == '-') {
-                    // TODO: kann das so stimmen?
-                    //       a - b ist nicht b - a
-                    var v1 = result.pop();
-                    var v2 = result.pop();
-                    result.push(v2 - v1);
-                } else if (expr[i].value == '>') {
-                    var v1 = result.pop();
-                    var v2 = result.pop();
-                    result.push(v2 > v1);
-                } else if (expr[i].value == '<') {
-                    var v1 = result.pop();
-                    var v2 = result.pop();
-                    result.push(v2 < v1);
-                } else if (expr[i].value == '<=') {
-                    var v1 = result.pop();
-                    var v2 = result.pop();
-                    result.push(v2 <= v1);
-                } else if (expr[i].value == '>=') {
-                    var v1 = result.pop();
-                    var v2 = result.pop();
-                    result.push(v2 >= v1);
-                } else if (expr[i].value == '=') {
-                    var v1 = result.pop();
-                    var v2 = result.pop();
-                    result.push(v2 == v1);
-                } else if (expr[i].value == '<>') {
-                    var v1 = result.pop();
-                    var v2 = result.pop();
-                    result.push(v2 != v1);
-                } else {
-                    Log("error: expression operation op < " + expr[i].value + " > unknown");
+                }
+            } else {
+                // expr mit count
+                for (c = 1; c < expr[i].count; c++) {
+                    if (expr[i].value == 'OR') {
+                        var v1 = result.pop();
+                        var v2 = result.pop();
+                        result.push(v2 || v1);
+                    } else if (expr[i].value == 'AND') {
+                        var v1 = result.pop();
+                        var v2 = result.pop();
+                        result.push(v2 && v1);
+                    } else if (expr[i].value == 'MOD') {
+                        var v1 = result.pop();
+                        var v2 = result.pop();
+                        result.push(v2 % v1);
+                    } else if (expr[i].value == '/') {
+                        // TODO: kann das so stimmen?
+                        //       a / b ist nicht b / a
+                        var v1 = result.pop();
+                        var v2 = result.pop();
+                        result.push(v2 / v1);
+                    } else if (expr[i].value == '*') {
+                        var v1 = result.pop();
+                        var v2 = result.pop();
+                        result.push(v2 * v1);
+                    } else if (expr[i].value == '+') {
+                        var v1 = result.pop();
+                        var v2 = result.pop();
+                        result.push(v2 + v1);
+                    } else if (expr[i].value == '-') {
+                        // TODO: kann das so stimmen?
+                        //       a - b ist nicht b - a
+                        var v1 = result.pop();
+                        var v2 = result.pop();
+                        result.push(v2 - v1);
+                    } else if (expr[i].value == '>') {
+                        var v1 = result.pop();
+                        var v2 = result.pop();
+                        result.push(v2 > v1);
+                    } else if (expr[i].value == '<') {
+                        var v1 = result.pop();
+                        var v2 = result.pop();
+                        result.push(v2 < v1);
+                    } else if (expr[i].value == '<=') {
+                        var v1 = result.pop();
+                        var v2 = result.pop();
+                        result.push(v2 <= v1);
+                    } else if (expr[i].value == '>=') {
+                        var v1 = result.pop();
+                        var v2 = result.pop();
+                        result.push(v2 >= v1);
+                    } else if (expr[i].value == '=') {
+                        var v1 = result.pop();
+                        var v2 = result.pop();
+                        result.push(v2 == v1);
+                    } else if (expr[i].value == '<>') {
+                        var v1 = result.pop();
+                        var v2 = result.pop();
+                        result.push(v2 != v1);
+                    } else {
+                        Log("error: expression operation < " + expr[i].operation + " > value < " + expr[i].value + " > unknown");
+                    }
                 }
             }
         } else {

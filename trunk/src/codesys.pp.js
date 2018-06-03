@@ -107,7 +107,12 @@ function parseExpression(parentTag) {
 		exprTag.children().each(function () {
 			var tagName = this.tagName;
 			var val = $(this).text();
-			var count = 1;
+			// Der count (Klammerausdruck) gibt bei OPs die Anzahl der 
+			// Variablen an, welche für die Operation herangezogen werden
+			// sollen.
+			// z.B. AND(3) oder MOD(2)
+			// Bei XOR und NOT gibt es diesen count aber nicht. 
+			var count = 0; 
 
 		    //Log("parseExpression <" + tagName + "> <" + val + ">");
 
