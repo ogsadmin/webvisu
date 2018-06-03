@@ -720,6 +720,8 @@ function evalExpression(expr) {
                     var v1 = result.pop();
                     var v2 = result.pop();
                     result.push(v2 ^ v1);
+                } else {
+                    Log("error: expression operation < " + expr[i].operation + " > value < " + expr[i].value + " > unknown");
                 }
             } else {
                 // expr mit count
