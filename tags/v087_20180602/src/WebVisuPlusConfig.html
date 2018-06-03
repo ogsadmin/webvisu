@@ -1,0 +1,555 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
+        <title>WebVisuPlusConfig</title>
+        <script src="steelseries-min.js"></script>
+    </head>
+<body onload="initConfig();" style="background-color:#84a5ed">
+    <table>
+        <tr>
+            <td>
+                <table>
+                    <tr>
+                        <td>object</td>
+                        <td>
+                            <select id="comboObject" onchange="setGaugeObject(this);">
+                                <option selected="selected" value="Radial">Radial</option>
+                                <option value="RadialBargraph">RadialBargraph</option>
+                                <option value="RadialVertical">RadialVertical</option>
+                                <option value="Linear">Linear</option>
+                                <option value="LinearBargraph">LinearBargraph</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>size</td>
+                        <td>
+                            <input id="inputSize" type="text" value="250" onchange="setGaugeSize(this)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>width</td>
+                        <td>
+                            <input id="inputWidth" type="text" value="500" onchange="setGaugeWidth(this)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>height</td>
+                        <td>
+                            <input id="inputHeight" type="text" value="150" onchange="setGaugeHeight(this)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>gaugeType</td>
+                        <td>
+                            <select id="comboGaugeType" onchange="setGaugeType(this);">
+                                <option selected="selected" value="TYPE1">Type1</option>
+                                <option value="TYPE2">Type2</option>
+                                <option value="TYPE3">Type3</option>
+                                <option value="TYPE4">Type4</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>title string</td>
+                        <td>
+                            <input id="inputTitleString" type="text" value="title" onchange="setGaugeTitleString(this)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>unit string</td>
+                        <td>
+                            <input id="inputUnitString" type="text" value="unit" onchange="setGaugeUnitString(this)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>min value</td>
+                        <td>
+                            <input id="inputMinValue" type="text" value="0" onchange="setGaugeMinValue(this)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>max value</td>
+                        <td>
+                            <input id="inputMaxValue" type="text" value="100" onchange="setGaugeMaxValue(this)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>LED visible</td>
+                        <td>
+                            <select id="comboLedVisible" onchange="setGaugeLedVisible(this);">
+                                <option selected="selected" value="true">true</option>
+                                <option value="false">false</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>LED color</td>
+                        <td>
+                            <select id="comboLedColor" onchange="setGaugeLedColor(this);">
+                                <option selected="selected" value="RED_LED">Red</option>
+                                <option value="GREEN_LED">Green</option>
+                                <option value="BLUE_LED">Blue</option>
+                                <option value="ORANGE_LED">Orange</option>
+                                <option value="YELLOW_LED">Yellow</option>
+                                <option value="CYAN_LED">Cyan</option>
+                                <option value="MAGENTA_LED">Magenta</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>threshold</td>
+                        <td>
+                            <input id="inputThreshold" type="text" value="50" onchange="setGaugeThreshold(this)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>LCD visible</td>
+                        <td>
+                            <select id="comboLcdVisible" onchange="setGaugeLcdVisible(this);">
+                                <option selected="selected" value="true">true</option>
+                                <option value="false">false</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>LCD color</td>
+                        <td>
+                            <select id="comboLcdColor" onchange="setGaugeLcdColor(this);">
+                                <option selected="selected" value="BEIGE">Beige</option>
+                                <option value="BLUE">Blue</option>
+                                <option value="ORANGE">Orange</option>
+                                <option value="RED">Red</option>
+                                <option value="YELLOW">Yellow</option>
+                                <option value="WHITE">White</option>
+                                <option value="GRAY">Gray</option>
+                                <option value="BLACK">Black</option>
+                                <option value="GREEN">Green</option>
+                                <option value="BLUE2">Blue2</option>
+                                <option value="BLUE_BLACK">BlueBlack</option>
+                                <option value="BLUE_DARKBLUE">BlueDarkBlue</option>
+                                <option value="BLUE_GRAY">BlueGray</option>
+                                <option value="STANDARD">Standard</option>
+                                <option value="STANDARD_GREEN">StandardGreen</option>
+                                <option value="BLUE_BLUE">BlueBlue</option>
+                                <option value="RED_DARKRED">RedDarkRed</option>
+                                <option value="DARKBLUE">DarkBlue</option>
+                                <option value="LILA">Lila</option>
+                                <option value="BLACKRED">BlackRed</option>
+                                <option value="DARKGREEN">DarkGreen</option>
+                                <option value="AMBER">Amber</option>
+                                <option value="LIGHTBLUE">LightBlue</option>
+                                <option value="SECTIONS">Sections</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>frame design</td>
+                        <td>
+                            <select id="comboFrame" onchange="setGaugeFrameDesign(this);">
+                                <option selected="selected" value="BLACK_METAL">BlackMetal</option>
+                                <option value="METAL">Metal</option>
+                                <option value="SHINY_METAL">ShinyMetal</option>
+                                <option value="BRASS">Brass</option>
+                                <option value="STEEL">Steel</option>
+                                <option value="CHROME">Chrome</option>
+                                <option value="GOLD">Gold</option>
+                                <option value="ANTHRACITE">Anthracite</option>
+                                <option value="TILTED_GRAY">TiltedGray</option>
+                                <option value="TILTED_BLACK">TiltedBlack</option>
+                                <option value="GLOSSY_METAL">GlossyMetal</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>background color</td>
+                        <td>
+                            <select id="comboBackground" onchange="setGaugeBackgroundColor(this);">
+                                <option selected="selected" value="DARK_GRAY">DarkGray</option>
+                                <option value="SATIN_GRAY">SatinGray</option>
+                                <option value="LIGHT_GRAY">LightGray</option>
+                                <option value="WHITE">White</option>
+                                <option value="BLACK">Black</option>
+                                <option value="BEIGE">Beige</option>
+                                <option value="BROWN">Brown</option>
+                                <option value="RED">Red</option>
+                                <option value="GREEN">Green</option>
+                                <option value="BLUE">Blue</option>
+                                <option value="ANTHRACITE">Anthracite</option>
+                                <option value="MUD">Mud</option>
+                                <option value="PUNCHED_SHEET">PunchedSheet</option>
+                                <option value="CARBON">Carbon</option>
+                                <option value="STAINLESS">Stainless</option>
+                                <option value="BRUSHED_METAL">BrushedMetal</option>
+                                <option value="BRUSHED_STAINLESS">BrushedStainless</option>
+                                <option value="TURNED">Turned</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>pointer color</td>
+                        <td>
+                            <select id="comboPointerColor" onchange="setGaugePointerColor(this);">
+                                <option selected="selected" value="RED">Red</option>
+                                <option value="GREEN">Green</option>
+                                <option value="BLUE">Blue</option>
+                                <option value="ORANGE">Orange</option>
+                                <option value="YELLOW">Yellow</option>
+                                <option value="CYAN">Cyan</option>
+                                <option value="MAGENTA">Magenta</option>
+                                <option value="WHITE">White</option>
+                                <option value="GRAY">Gray</option>
+                                <option value="BLACK">Black</option>
+                                <option value="RAITH">Raith</option>
+                                <option value="GREEN_LCD">Green LCD</option>
+                                <option value="JUG_GREEN">JUG Green</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>pointer type</td>
+                        <td>
+                            <select id="comboPointerType" onchange="setGaugePointerType(this);">
+                                <option selected="selected" value="TYPE1">Type1</option>
+                                <option value="TYPE2">Type2</option>
+                                <option value="TYPE3">Type3</option>
+                                <option value="TYPE4">Type4</option>
+                                <option value="TYPE5">Type5</option>
+                                <option value="TYPE6">Type6</option>
+                                <option value="TYPE7">Type7</option>
+                                <option value="TYPE8">Type8</option>
+                                <option value="TYPE9">Type9</option>
+                                <option value="TYPE10">Type10</option>
+                                <option value="TYPE11">Type11</option>
+                                <option value="TYPE12">Type12</option>
+                                <option value="TYPE13">Type13</option>
+                                <option value="TYPE14">Type14</option>
+                                <option value="TYPE15">Type15</option>
+                                <option value="TYPE16">Type16</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>foreground type</td>
+                        <td>
+                            <select id="comboForeground" onchange="setGaugeForegroundType(this);">
+                                <option selected="selected" value="TYPE1">Type1</option>
+                                <option value="TYPE2">Type2</option>
+                                <option value="TYPE3">Type3</option>
+                                <option value="TYPE4">Type4</option>
+                                <option value="TYPE5">Type5</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>use sections</td>
+                        <td>
+                            <select id="comboUseSectionColors" onchange="setGaugeUseSectionColors(this);">
+                                <option value="true">true</option>
+                                <option selected="selected" value="false">false</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>color sections</td>
+                        <td>
+                            <select id="comboSections" onchange="setGaugeSections(this);">
+                                <option selected="selected" value="undefined">none</option>
+                                <option value="[steelseries.Section(@0_3, @1_3, 'rgba(0, 0, 220, 0.3)'), steelseries.Section(@1_3, @2_3, 'rgba(0, 220, 0, 0.3)'), steelseries.Section(@2_3, @3_3, 'rgba(220, 220, 0, 0.3)')]">three colors BGY</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>color area</td>
+                        <td>
+                            <select id="comboArea" onchange="setGaugeArea(this);">
+                                <option selected="selected" value="undefined">none</option>
+                                <option value="[steelseries.Section(@2_3, @3_3, 'rgba(220, 0, 0, 0.3)')]">red for 2/3 - 3/3</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>use gradient</td>
+                        <td>
+                            <select id="comboUseValueGradient" onchange="setGaugeUseValueGradient(this);">
+                                <option value="true">true</option>
+                                <option selected="selected" value="false">false</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>color gradient</td>
+                        <td>
+                            <select id="comboGradient" onchange="setGaugeGradient(this);">
+                                <option selected="selected" value="undefined">none</option>
+                                <option value="new steelseries.gradientWrapper(  @0_3, @3_3, [ 0, 0.33, 0.66, 0.85, 1], [ new steelseries.rgbaColor(0, 0, 200, 1), new steelseries.rgbaColor(0, 200, 0, 1), new steelseries.rgbaColor(200, 200, 0, 1), new steelseries.rgbaColor(200, 0, 0, 1), new steelseries.rgbaColor(200, 0, 0, 1) ])">four colors BGYR</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <table>
+                    <tr>
+                        <td>
+                            <div id="contain">
+                                
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <textarea id="sourcecode" cols="80" rows="20"></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <script>
+        var gaugeLive = null;
+        var gaugeCanvas = null;
+
+        var gaugeObject = 'Radial';
+        var gaugeSize = 250;
+        var gaugeWidth = 500;
+        var gaugeHeight = 150;
+        var gaugeType = 'TYPE1';
+        var gaugeTitleString = "title";
+        var gaugeUnitString = "unit";
+        var gaugeThreshold = 50;
+        var gaugeMinValue = 0;
+        var gaugeMaxValue = 100;
+        var gaugeLcdVisible = 'true';
+        var gaugeLedVisible = 'true';
+        var gaugeFrameDesign = 'BLACK_METAL';
+        var gaugeBackgroundColor = 'DARK_GRAY';
+        var gaugePointerColor = 'RED';
+        var gaugePointerType = 'TYPE1';
+        var gaugeLcdColor = 'BEIGE';
+        var gaugeLedColor = 'RED_LED';
+        var gaugeForegroundType = 'TYPE1';
+        var gaugeUseSectionColors = 'false';
+        var gaugeSections = 'undefined';
+        var gaugeArea = 'undefined';
+        var gaugeUseValueGradient = 'false';
+        var gaugeGradient = 'undefined';
+
+
+        function generateLive() {
+            var v0_3 = gaugeMinValue;
+            var v1_3 = (gaugeMaxValue - gaugeMinValue) / 3 + gaugeMinValue;
+            var v2_3 = (gaugeMaxValue - gaugeMinValue) / 3 * 2 + gaugeMinValue;
+            var v3_3 = gaugeMaxValue;
+
+            var sections = gaugeSections.replace(new RegExp('\\@0_3', 'g'), v0_3);
+            sections = sections.replace(new RegExp('\\@1_3', 'g'), v1_3);
+            sections = sections.replace(new RegExp('\\@2_3', 'g'), v2_3);
+            sections = sections.replace(new RegExp('\\@3_3', 'g'), v3_3);
+
+            var area = gaugeArea.replace(new RegExp('\\@0_3', 'g'), v0_3);
+            area = area.replace(new RegExp('\\@1_3', 'g'), v1_3);
+            area = area.replace(new RegExp('\\@2_3', 'g'), v2_3);
+            area = area.replace(new RegExp('\\@3_3', 'g'), v3_3);
+
+            var gradient = gaugeGradient.replace(new RegExp('\\@0_3', 'g'), v0_3);
+            gradient = gradient.replace(new RegExp('\\@1_3', 'g'), v1_3);
+            gradient = gradient.replace(new RegExp('\\@2_3', 'g'), v2_3);
+            gradient = gradient.replace(new RegExp('\\@3_3', 'g'), v3_3);
+
+
+            var properties =
+                "gaugeType: steelseries.GaugeType." + gaugeType + "\n"
+                + "titleString: '" + gaugeTitleString + "'\n"
+                + "unitString: '" + gaugeUnitString + "'\n"
+                + "threshold: " + parseInt(gaugeThreshold) + "\n"
+                + "minValue: " + parseInt(gaugeMinValue) + "\n"
+                + "maxValue: " + parseInt(gaugeMaxValue) + "\n"
+                + "lcdVisible: " + gaugeLcdVisible + "\n"
+                + "ledVisible: " + gaugeLedVisible + "\n"
+                + "frameDesign: steelseries.FrameDesign." + gaugeFrameDesign + "\n"
+                + "backgroundColor: steelseries.BackgroundColor." + gaugeBackgroundColor + "\n"
+                + "pointerColor: steelseries.ColorDef." + gaugePointerColor + "\n"
+                + "pointerType: steelseries.PointerType." + gaugePointerType + "\n"
+                + "lcdColor: steelseries.LcdColor." + gaugeLcdColor + "\n"
+                + "ledColor: steelseries.LedColor." + gaugeLedColor + "\n"
+                + "foregroundType: steelseries.ForegroundType." + gaugeForegroundType + "\n"
+                + "useSectionColors: " + gaugeUseSectionColors + "\n"
+                + "section: " + sections + "\n"
+                + "area: " + area + "\n"
+                + "useValueGradient: " + gaugeUseValueGradient + "\n"
+                + "valueGradient: " + gradient + "\n"
+            ;
+
+            var src = document.getElementById("sourcecode");
+            src.value = "steelseries\n" + gaugeObject + "\n" + properties;
+
+            var fields = properties.split('\n');
+            properties = fields.join(',');
+
+            var contain = document.getElementById("contain");
+
+            if (gaugeLive != null) {
+                gaugeLive = null;
+            }
+            if (gaugeCanvas != null) {
+                contain.removeChild(gaugeCanvas);
+                gaugeCanvas = null;
+            }
+
+            gaugeCanvas = document.createElement("canvas");
+            gaugeCanvas.id = "sscanvas";
+            gaugeCanvas.style.zIndex = 1;
+            //gaugeCanvas.style.top = "0px";
+            //gaugeCanvas.style.left = "0px";
+            //gaugeCanvas.style.position = "absolute";
+            gaugeCanvas.style.border = "1px solid";
+
+            contain.appendChild(gaugeCanvas);
+
+            var evalStr =
+                'gaugeLive = new steelseries.'
+                + gaugeObject
+                + "('sscanvas', {"
+                + "size: " + parseInt(gaugeSize) + ","
+                + "width: " + parseInt(gaugeWidth) + ","
+                + "height: " + parseInt(gaugeHeight) + ","
+                + properties
+                + "});"
+
+            //src.value = evalStr;
+
+            eval(evalStr);
+        }
+
+        function initConfig() {
+            generateLive();
+            setInterval(function () { setSomeValue(); }, 1000);
+        }
+
+        var someValue = 0;
+        var someDirection = 1;
+        function setSomeValue() {
+            var delta = gaugeMaxValue - gaugeMinValue;
+            delta = delta / 10;
+
+            someValue = someValue + delta * someDirection;
+
+            if (someValue <= gaugeMinValue) {
+                someValue = gaugeMinValue;
+                someDirection = 1;
+            }
+
+            if (someValue >= gaugeMaxValue) {
+                someValue = gaugeMaxValue;
+                someDirection = -1;
+            }
+
+            if (gaugeLive != null) {
+                gaugeLive.setValue(parseInt(someValue));
+            }
+        }
+
+
+        function setGaugeObject(sel)
+        {
+            gaugeObject = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugeSize(inp) {
+            gaugeSize = parseInt(inp.value);
+            generateLive();
+        }
+        function setGaugeWidth(inp) {
+            gaugeWidth = parseInt(inp.value);
+            generateLive();
+        }
+        function setGaugeHeight(inp) {
+            gaugeHeight = parseInt(inp.value);
+            generateLive();
+        }
+        function setGaugeType(sel) {
+            gaugeType = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugeTitleString(inp) {
+            gaugeTitleString = inp.value;
+            generateLive();
+        }
+        function setGaugeUnitString(inp) {
+            gaugeUnitString = inp.value;
+            generateLive();
+        }
+        function setGaugeThreshold(inp) {
+            gaugeThreshold = parseInt(inp.value);
+            generateLive();
+        }
+        function setGaugeMinValue(inp) {
+            gaugeMinValue = parseInt(inp.value);
+            generateLive();
+        }
+        function setGaugeMaxValue(inp) {
+            gaugeMaxValue = parseInt(inp.value);
+            generateLive();
+        }
+        function setGaugeLcdVisible(sel) {
+            gaugeLcdVisible = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugeLedVisible(sel) {
+            gaugeLedVisible = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugeFrameDesign(sel) {
+            gaugeFrameDesign = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugeBackgroundColor(sel) {
+            gaugeBackgroundColor = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugePointerColor(sel) {
+            gaugePointerColor = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugePointerType(sel) {
+            gaugePointerType = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugeLcdColor(sel) {
+            gaugeLcdColor = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugeLedColor(sel) {
+            gaugeLedColor = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugeForegroundType(sel) {
+            gaugeForegroundType = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugeSections(sel) {
+            gaugeSections = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugeArea(sel) {
+            gaugeArea = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugeGradient(sel) {
+            gaugeGradient = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugeUseSectionColors(sel) {
+            gaugeUseSectionColors = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+        function setGaugeUseValueGradient(sel) {
+            gaugeUseValueGradient = sel.options[sel.selectedIndex].value;
+            generateLive();
+        }
+</script>
+</body></html>
