@@ -13,32 +13,40 @@ Unterstützung ist aber eher eine Sackgasse und wird über kurz oder lang
 wieder entfernt.
 
 Download der Sources als Snapshot:
-https://sourceforge.net/p/webvisu/code/HEAD/tree/
-Button "Download Snapshot"
+- https://sourceforge.net/p/webvisu/code/HEAD/tree/
+- Button "Download Snapshot"
 
 Wechsel in "trunk/src":
+```bash
 cd trunk/src
+```
 
 Aufruf des Release-Skript:
+```bash
 ./release.sh
+```
 
 Daraufhin werden im Verzeichnis /trunk/release die beiden Dateien 
 "WebVisu.html" und "WebVisuPlus.html" neu erzeugt.
 
 ### Ablauf des Releaseprozesses
 Der Releaseprozess läuft intern zwei mal ab. Für jede Ergebnisdatei ein mal.
-Während des Releaseprozess werden zunächst die Dateien mit der Endung *.pp.* 
+Während des Releaseprozess werden zunächst die Dateien mit der Endung "\*.pp.*"
 durch den Preprozessor geschickt. Hierbei wird die Unterstützung für 
 "steelseries" entweder aktiviert oder gelöscht.
 
 Die Ergebnisdateien werden daraufhin in jerweils eine einzige Datei 
-zusammengeführt. Zunächst werden alle *.js Dateien über einen Kompressor 
+zusammengeführt. Zunächst werden alle \*.js Dateien über einen Kompressor 
 (Obfuscator) komprimiert. Danach werden in der Datei "WebViduDev.pp.html"
 die Codestellen
-  "<script src="XXX.js"></script>" 
+```html
+  <script src="XXX.js"></script>
+```  
 mittels Textersetzung durch den Inhalt der im Kompressionsschritt erzeugten 
 Dateien ersetzt:
-  "<script>XXX</script>"
+```html
+  <script>XXX</script>
+```  
 Hierdurch entsteht (jeweils) eine einzige Datei, welche der Anwender ohne
 Abhängigkeiten auf sein Target spielen kann.
 
@@ -49,12 +57,12 @@ Aufwand testen zu können. Hierfür sind die Sources so aufgebaut, dass sie auch
 ohne vorheriges Release (Zusammenpacken) funktionieren.
 
 ### Test auf dem Target
-Man kann die Dateien *.js und die Datei WebVisuDev.pp.html direkt auf ein 
+Man kann die Dateien "\*.js" und die Datei "WebVisuDev.pp.html" direkt auf ein 
 Target spielen. Die Datei "WebVisuDev.pp.html" sollte dabei nach 
 "WebVisuDev.html" umbenannt werden, da der CoDeSys Webserver sie ansonsten als 
-*.pp interpretieren möchte - zumindest auf den mir bisher zur Verfügung 
+"\*.pp" interpretieren möchte - zumindest auf den mir bisher zur Verfügung 
 stehenden Steuerungen.
-Bei Dateien, zu denen es eine "*.min.js" Version gibt muss diese anstatt des 
+Bei Dateien, zu denen es eine "\*.min.js" Version gibt muss diese anstatt des 
 ungepackten Pendants aufgespielt werden.
 Also:
 - codesys.pp.js
@@ -69,7 +77,7 @@ Also:
 - zip.js
 
 Jetzt sollte man die WebVisu aufrufen können mittels:
-http://[IP meiner Steuerung]/webserv/WebVisuDev.html
+- http://[IP meiner Steuerung]/webserv/WebVisuDev.html
 
 ### Test unter Linux
 Unter /trunk/tools liegt ein minimalistischer Python2 Webserver. Der 
@@ -82,16 +90,19 @@ Beispiel: /trunk/tickets/bug0815/PLC
 Oder wie bereits vorhanden: /trunk/tests/targetfiles/PLC_PRG
 
 Danach kann man aus dem /trunk-Verzeichnis heraus den Webserver starten:
+```bash
 cd /trunk
 python tools/SimpleWebServer.py
+```
 
 Der Webserver startet auf Port 8080.
 
 Beim Aufruf im Browser muss nun noch der PLC-Pfad gesetzt werden, da die 
 automatische Ermittlung fehlschlagen wird:
-http://localhost:8080/src/WebVisuDev.pp.html?plcDir=/tickets/bug0815/PLC/
+- http://localhost:8080/src/WebVisuDev.pp.html?plcDir=/tickets/bug0815/PLC/
+
 oder:
-http://localhost:8080/src/WebVisuDev.pp.html?plcDir=/tests/targetfiles/PLC_PRG/
+- http://localhost:8080/src/WebVisuDev.pp.html?plcDir=/tests/targetfiles/PLC_PRG/
 
 Der Webserver gibt nun die angefragten Dateien aus und antwortet auf GETVALUE-
 und SETVALUE-Anfragen der Visu.
@@ -106,39 +117,46 @@ Die WebVisu kann über Argumente in der URL beeinflusst werden.
 Wie Argumente in URLs kodiert werden sollte klar sein, hier noch mal ein 
 Beispiel als Gedankenstütze:
 
-http://localhost:8080/src/WebVisuDev.pp.html?firstArg=1&secondArg=2&thirdArg=3
+- http://localhost:8080/src/WebVisuDev.pp.html?firstArg=1&secondArg=2&thirdArg=3
 
 Das erste Argument wird also mit einem "?", jedes weitere Argument mit einem 
 "&" getrennt.
 
-startVisu=...
+- startVisu=...
+
   Stellt die Visualisierungsdatei ein, welche als Beginn geladen werden soll.
   Default: "plc_visu"
 
-plcDir=...
+- plcDir=...
+
   Überschreibt die automatische Erkennung des PLC-Verzeichnisses mit dem 
   angegebenen Wert.
 
-postUrl=...
+- postUrl=...
+
   Überschreibt die automatische Erkennung der Variablen-Anbindung an die 
   Steuerung.
 
-logOverlayWriteout
+- logOverlayWriteout
+
   Aktiviert ein Mini-Logfenster in der rechten oberen Ecke. Für Browser, welche
   keine Konsole zur Verfügung stellen.
 
-perfWriteout
+- perfWriteout
+
   Aktiviert ein kleines Performance-Fenster in der linken oberen Ecke in 
   welchem ständig die benötigten Zeiten für Laden und Aktualisierung der Visu
   bzw. der Variablen angezeigt wird.
 
-useTouchEvents
-dontUseTouchEvents
+- useTouchEvents bzw. dontUseTouchEvents
+
   Überschreibt die automatische Erkennung von Touch-Events und aktiviert bzw. 
   deaktiviert diese.
 
-doPerfTest
-  Aktiviert einen kleinen Performance-Test.
+- doPerfTest
+
+  Aktiviert einen kleinen Performance-Test. Ist jedoch nur für die Entwicklung 
+  relevant.
 
 ## Klick-Handling (ab r84)
 Mit Version r84 wurde das Handling von Maus-Klicks komplett überarbeitet. 
