@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <visualisation>
-	<time-stamp>1517648250,1000947651</time-stamp>
+	<time-stamp>1528115418,1000947651</time-stamp>
 	<name>PLC_VISU_WVP</name>
 	<symplified-user-input>false</symplified-user-input>
 	<keyboard-usage-for-table>true</keyboard-usage-for-table>
@@ -303,6 +303,38 @@ valueGradient: undefined
 	<element type="simple">
 		<simple-shape>rectangle</simple-shape>
 		<elem-id>8</elem-id>
+		<center>438,575</center>
+		<line-width>0</line-width>
+		<has-frame-color>true</has-frame-color>
+		<has-inside-color>true</has-inside-color>
+		<frame-color>0,0,0</frame-color>
+		<frame-color-alarm>0,0,0</frame-color-alarm>
+		<fill-color>255,255,255</fill-color>
+		<fill-color-alarm>255,255,255</fill-color-alarm>
+		<text-align-horz>center</text-align-horz>
+		<text-align-vert>center</text-align-vert>
+		<font-height>-12</font-height>
+		<font-height-point-size>9</font-height-point-size>
+		<font-weight>400</font-weight>
+		<font-italic>false</font-italic>
+		<font-underline>false</font-underline>
+		<font-strike-out>false</font-strike-out>
+		<font-char-set>0</font-char-set>
+		<text-id>36</text-id>
+		<font-color>0,0,0</font-color>
+		<expr-zoom>
+			<expr>
+				<placeholder>PLC_VISU</placeholder>
+			</expr>
+		</expr-zoom>
+		<enable-text-input>false</enable-text-input>
+		<text-format><![CDATA[site| |1]]></text-format>
+		<hidden-input>false</hidden-input>
+		<rect>405,560,471,591</rect>
+	</element>
+	<element type="simple">
+		<simple-shape>rectangle</simple-shape>
+		<elem-id>9</elem-id>
 		<center>518,575</center>
 		<line-width>0</line-width>
 		<has-frame-color>true</has-frame-color>
@@ -320,21 +352,21 @@ valueGradient: undefined
 		<font-underline>false</font-underline>
 		<font-strike-out>false</font-strike-out>
 		<font-char-set>0</font-char-set>
-		<text-id>32</text-id>
+		<text-id>37</text-id>
 		<font-color>0,0,0</font-color>
 		<expr-zoom>
 			<expr>
-				<placeholder>PLC_VISU</placeholder>
+				<placeholder>PLC_VISU_2</placeholder>
 			</expr>
 		</expr-zoom>
 		<enable-text-input>false</enable-text-input>
-		<text-format><![CDATA[site| |1]]></text-format>
+		<text-format><![CDATA[site| |2]]></text-format>
 		<hidden-input>false</hidden-input>
 		<rect>485,560,551,591</rect>
 	</element>
 	<element type="simple">
 		<simple-shape>rectangle</simple-shape>
-		<elem-id>9</elem-id>
+		<elem-id>10</elem-id>
 		<center>598,575</center>
 		<line-width>0</line-width>
 		<has-frame-color>true</has-frame-color>
@@ -352,39 +384,7 @@ valueGradient: undefined
 		<font-underline>false</font-underline>
 		<font-strike-out>false</font-strike-out>
 		<font-char-set>0</font-char-set>
-		<text-id>33</text-id>
-		<font-color>0,0,0</font-color>
-		<expr-zoom>
-			<expr>
-				<placeholder>PLC_VISU_2</placeholder>
-			</expr>
-		</expr-zoom>
-		<enable-text-input>false</enable-text-input>
-		<text-format><![CDATA[site| |2]]></text-format>
-		<hidden-input>false</hidden-input>
-		<rect>565,560,631,591</rect>
-	</element>
-	<element type="simple">
-		<simple-shape>rectangle</simple-shape>
-		<elem-id>10</elem-id>
-		<center>678,575</center>
-		<line-width>0</line-width>
-		<has-frame-color>true</has-frame-color>
-		<has-inside-color>true</has-inside-color>
-		<frame-color>0,0,0</frame-color>
-		<frame-color-alarm>0,0,0</frame-color-alarm>
-		<fill-color>255,255,255</fill-color>
-		<fill-color-alarm>255,255,255</fill-color-alarm>
-		<text-align-horz>center</text-align-horz>
-		<text-align-vert>center</text-align-vert>
-		<font-height>-12</font-height>
-		<font-height-point-size>9</font-height-point-size>
-		<font-weight>400</font-weight>
-		<font-italic>false</font-italic>
-		<font-underline>false</font-underline>
-		<font-strike-out>false</font-strike-out>
-		<font-char-set>0</font-char-set>
-		<text-id>34</text-id>
+		<text-id>38</text-id>
 		<font-color>0,0,0</font-color>
 		<expr-zoom>
 			<expr>
@@ -394,7 +394,7 @@ valueGradient: undefined
 		<enable-text-input>false</enable-text-input>
 		<text-format><![CDATA[site| |3]]></text-format>
 		<hidden-input>false</hidden-input>
-		<rect>645,560,711,591</rect>
+		<rect>565,560,631,591</rect>
 	</element>
 	<element type="simple">
 		<simple-shape>rectangle</simple-shape>
@@ -416,7 +416,7 @@ valueGradient: undefined
 		<font-underline>false</font-underline>
 		<font-strike-out>false</font-strike-out>
 		<font-char-set>0</font-char-set>
-		<text-id>35</text-id>
+		<text-id>39</text-id>
 		<font-color>0,0,0</font-color>
 		<expr-zoom>
 			<expr>
@@ -427,6 +427,38 @@ valueGradient: undefined
 		<text-format><![CDATA[site| |WVP]]></text-format>
 		<hidden-input>false</hidden-input>
 		<rect>725,560,791,591</rect>
+	</element>
+	<element type="simple">
+		<simple-shape>rectangle</simple-shape>
+		<elem-id>12</elem-id>
+		<center>678,575</center>
+		<line-width>0</line-width>
+		<has-frame-color>true</has-frame-color>
+		<has-inside-color>true</has-inside-color>
+		<frame-color>0,0,0</frame-color>
+		<frame-color-alarm>0,0,0</frame-color-alarm>
+		<fill-color>255,255,255</fill-color>
+		<fill-color-alarm>255,255,255</fill-color-alarm>
+		<text-align-horz>center</text-align-horz>
+		<text-align-vert>center</text-align-vert>
+		<font-height>-12</font-height>
+		<font-height-point-size>9</font-height-point-size>
+		<font-weight>400</font-weight>
+		<font-italic>false</font-italic>
+		<font-underline>false</font-underline>
+		<font-strike-out>false</font-strike-out>
+		<font-char-set>0</font-char-set>
+		<text-id>40</text-id>
+		<font-color>0,0,0</font-color>
+		<expr-zoom>
+			<expr>
+				<placeholder>PLC_VISU_4</placeholder>
+			</expr>
+		</expr-zoom>
+		<enable-text-input>false</enable-text-input>
+		<text-format><![CDATA[site| |4]]></text-format>
+		<hidden-input>false</hidden-input>
+		<rect>645,560,711,591</rect>
 	</element>
 	<key-info-list/>
 	<variablelist>
