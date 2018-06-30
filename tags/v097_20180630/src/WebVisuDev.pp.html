@@ -1,0 +1,141 @@
+﻿<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>WebVisu (development)</title>
+		<script src="jquery-2.0.3.min.js"></script>
+        <script src="jquery-ajax-blob-arraybuffer.js"></script>
+		<script src="zip.js"></script>
+		<script src="inflate.js"></script>
+		<script src="sprintf.js"></script>
+<!--
+#ifdef USE_STEELSERIES
+-->
+        <script src="steelseries-min.js"></script>
+<!--
+#endif
+-->
+	</head>
+	<body>
+		<script src="utils.pp.js"></script>
+		<!-- Die eigentliche Groesse des Canvas setzen wir abhaengig von der Visu -->
+		<div id="contain" style="position:relative">
+			<canvas id="canvas" style="position:absolute;z-index:1" width="50" height="50"></canvas>
+		</div>
+		<!-- Bei Verbindungsproblemen wird dieses ERROR-Overlay eingeblendet -->
+		<div id="errorcontainer" style="display:none;left:0;top:0;width:100%;height:100%;z-index:999;overflow:hidden;position:absolute;">
+			<div style="background-color:black;filter:alpha(opacity=50);opacity:0.5;left:0;top:0;width:100%;height:100%;position:absolute;">&nbsp;</div>
+			<div style="background-color:lightcoral;border:0.2em solid red;border-radius:0.5em;left:50%;top:50%;position:absolute;padding:1em;transform:translate(-50%,-50%);">
+				<p align="center"><b>ERROR</b><br/>Connection to PLC lost!<br/>Please try to refresh your browser.<br/><br/>Automatic attempt to reconnect in <b id="errorcountdown">10</b> seconds...</p>
+			</div>
+		</div>
+				
+		<script src="drawing.pp.js"></script>
+		<script src="codesys.pp.js"></script>
+		<script>
+            // als erstes prüfen, ob wir URL-Parameter für LogOverlay haben...
+            if (getUrlParameter('logOverlayWriteout') != undefined) {
+                logOverlayWriteout = 1;
+                Log("logOverlayWriteout enabled");
+            }
+
+			Log("detected browser OS: " + getBrowserOS());
+
+/*
+#ifdef USE_STEELSERIES
+*/
+            // ist steelseries installiert?
+            if (typeof steelseries == 'undefined') {
+                steelseriesSupport = false;
+                Log("steelseriesSupport disabled");
+            } else {
+                steelseriesSupport = true;
+                Log("steelseriesSupport enabled");
+            }
+/*
+#endif
+*/
+
+            // sollen wir einen performance-test durchführen?
+            if (getUrlParameter('doPerfTest') != undefined) {
+                Log("doPerfTest: starting performance-test");
+                doPerfTest();
+            }
+
+
+            // finden wir mal heraus wo unsere Visu liegt
+			determineVisuLocation();
+
+			// Performance printouts einschalten?
+			if (getUrlParameter('perfWriteout') != undefined) {
+			    Log("perfWriteout enabled");
+				perfWriteout = 1;
+			}
+
+            // Sollen wir Touch-Events nutzen?
+            // die automatische Erkennung ist in "drawing.pp.js"
+            // manuell einschalten?
+			if (getUrlParameter('useTouchEvents') != undefined) {
+			    Log("useTouchEvents manually enabled");
+			    useTouchEvents = 1;
+			}
+			// manuell ausschalten?
+			if (getUrlParameter('dontUseTouchEvents') != undefined) {
+			    Log("useTouchEvents manually disabled");
+			    useTouchEvents = 0;
+			}
+			if (useTouchEvents > 0) {
+			    Log("useTouchEvents enabled");
+			} else {
+			    Log("useTouchEvents disabled");
+			}
+
+
+			// wo liegen die Visu-Dateien?
+			if (getUrlParameter('plcDir') != undefined) {
+				plcDir = getUrlParameter('plcDir');
+				Log("plcDir " + plcDir);
+				if (plcDir.endsWith('/')) {
+					plcDir = plcDir.substring(0, plcDir.length - 1);
+				}
+				Log("set plcDir to <" + plcDir + ">");
+			}
+
+			// welche URL sollen wir für die Variablen-Posts nehmen?
+			if (getUrlParameter('postUrl') != undefined) {
+				postUrl = getUrlParameter('postUrl');
+				Log("set postUrl to <" + postUrl + ">");
+			}
+
+			// mit welcher Visu sollen wir starten?
+			if (getUrlParameter('startVisu') != undefined) {
+				startVisu = getUrlParameter('startVisu');
+				Log("set startVisu to <" + startVisu + ">");
+			}
+
+			// Klick-Kontext erzeugen
+			// Die Variablen sind in "drawing.js" definiert.
+			clickCanvas = document.createElement('canvas');
+			clickContext = clickCanvas.getContext('2d');
+
+			switchToVisu(startVisu);
+
+			$('#canvas').on("click", onClick);
+			if (useTouchEvents > 0) {
+			    $('#canvas').on("touchstart", onMouseDown);
+			    $('#canvas').on("touchend", onMouseUp);
+                // würde mit jquery mobile gehen?
+			    //$('#canvas').on("tap", onClick);
+            } else {
+			    //$('#canvas').mousedown(onMouseDown);
+			    //$('#canvas').mouseup(onMouseUp);
+			    $('#canvas').on("mousedown", onMouseDown);
+			    $('#canvas').on("mouseup", onMouseUp);
+            }
+
+			// update wieder im Intervall aufrufen (definiert in drawings.js)
+			updateIntervalId = setInterval(update, updateInterval);
+		</script>
+</body>
+</html>
+

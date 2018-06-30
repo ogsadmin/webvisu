@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="ISO8859-1"?>
+<dynamic-text>
+
+  <header>
+    <default-language>english</default-language>
+    <default-font>
+       <language>deutsch</language>
+       <font-name>Arial</font-name>
+       <font-color>0,0,0</font-color>
+       <font-height>-13</font-height>
+       <font-weight>700</font-weight>
+       <font-italic>false</font-italic>
+       <font-underline>false</font-underline>
+       <font-strike-out>false</font-strike-out>
+       <font-char-set>0</font-char-set>
+    </default-font>
+    <default-font>
+       <language>english</language>
+       <font-name>Arial</font-name>
+       <font-color>0,0,0</font-color>
+       <font-height>-13</font-height>
+       <font-weight>700</font-weight>
+       <font-italic>false</font-italic>
+       <font-underline>false</font-underline>
+       <font-strike-out>false</font-strike-out>
+       <font-char-set>0</font-char-set>
+    </default-font>
+  </header>
+
+  <text-list>
+    <text prefix="DYNTEXT1" id="0">
+       <deutsch>Dynamischer Text 1</deutsch>
+       <english>dynamic text one</english>
+    </text>
+    <text prefix="DYNTEXTTOOLTIP1" id="0">
+       <deutsch>Tooltip f�r dynamischen Text 1</deutsch>
+       <english>Tooltip for dynamic text one</english>
+    </text>
+
+    <text prefix="DYNTEXT2" id="0">
+       <deutsch>NULL</deutsch>
+       <english>ZERO</english>
+    </text>
+    <text prefix="DYNTEXT2" id="1">
+       <deutsch>EINZ</deutsch>
+       <english>ONE</english>
+    </text>
+    <text prefix="DYNTEXT2" id="2">
+       <deutsch>ZWEI</deutsch>
+       <english>TWO</english>
+    </text>
+    <text prefix="DYNTEXT2" id="3">
+       <deutsch>DREI</deutsch>
+       <english>THREE</english>
+    </text>
+    <text prefix="DYNTEXT2" id="4">
+       <deutsch>VIER</deutsch>
+       <english>FOUR</english>
+    </text>
+    <text prefix="DYNTEXT2" id="5">
+       <deutsch>FÜNF</deutsch>
+       <english>FIVE</english>
+    </text>
+
+
+  </text-list>
+
+</dynamic-text>
+
