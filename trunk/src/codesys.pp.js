@@ -347,11 +347,8 @@ function parseClickInfo(myMedia, objId) {
 	var expr_zoom = myMedia.find('expr-zoom');
 	value = '';
 	if (expr_zoom.length) {
-		var expr_zoom_exp = expr_zoom.find('expr');
-		if (expr_zoom_exp.length) {
-			newvisu = expr_zoom_exp.find('placeholder').text();
-			registerClickObj_Zoom(objId, newvisu);
-		}
+		exprZoom = parseExpression(expr_zoom);
+		registerClickObj_Zoom(objId, exprZoom);
 	}
 }
 
@@ -449,6 +446,10 @@ function load_visu_success(content) {
 	perfLoadEnd = new Date().getTime();
 	perfLoad = perfLoadEnd - perfLoadStart;
 
+	// Die VISU wurde erfolgreich geladen, lass uns mal das ERROR-Overlay abschalten
+	var errorcontainer = document.getElementById("errorcontainer");
+    errorcontainer.style.display = "none";
+
 	var dynTextFile = '';
 
 	//Log("load_visu_success in " + perfLoad + "ms");
@@ -521,6 +522,9 @@ function load_visu_success(content) {
 	if (visuUseDynamicText) {
 		load_dyntextfile(plcDir + "/" + dynTextFile);
 	}
+
+	// Das einmalige Aufrufen der Update-Funktion startet den zyklischen Ablauf
+	update();
 }
 
 
@@ -992,6 +996,7 @@ function load_visu(filename) {
 			success: load_visu_compressed_success,
 			error: function (jqXHR, textStatus, errorThrown) {
 				Log("load_visu " + textStatus + " " + errorThrown);
+				errorStateEnable();
 			}
 		});
 	} else {
@@ -1003,6 +1008,7 @@ function load_visu(filename) {
 			success: load_visu_success,
 			error: function (jqXHR, textStatus, errorThrown) {
 				Log("load_visu " + textStatus + " " + errorThrown);
+				errorStateEnable();
 			}
 		});
 	}
@@ -1164,6 +1170,16 @@ function update_vars_std() {
 			perfUpdateEnd = new Date().getTime();
 			perfUpdate = perfUpdateEnd - perfUpdateStart;
 			//Log("update_vars finished in " + perfUpdate + "ms");
+		},
+		error: function (jqXHR, textStatus, errorThrown) {
+			Log("update vars failed " + textStatus + " " + errorThrown);
+
+			// Um die Reentrant-Sperre dieser Funktion aufzuheben:
+			perfUpdateStart = 0;
+			perfUpdateEnd = 0;
+			perfUpdate = 0;
+
+			errorStateEnable();
 		}
 	});
 }
@@ -1312,6 +1328,10 @@ function update_vars_soap() {
 
 			perfUpdateEnd = new Date().getTime();
 			perfUpdate = perfUpdateEnd - perfUpdateStart;
+		},
+		error: function (jqXHR, textStatus, errorThrown) {
+			Log("update vars failed " + textStatus + " " + errorThrown);
+			errorStateEnable();
 		}
 	});
 
@@ -1438,7 +1458,9 @@ function onClick( e ) {
 					update();
 				}
 			} else if (event.isA == 'Zoom') {
-				switchToVisu(event.visu);
+				// Wir hoffen mal, dass die Expression wirklich einen String ausspuckt
+				var newVisu = evalExpression(event.exprZoom);
+				switchToVisu(newVisu);
 				// Bei "ZOOM" müssen wir abbrechen, da eine neue Visu geladen wird...
 				return;
 			} else if (event.isA == 'Edit') {
