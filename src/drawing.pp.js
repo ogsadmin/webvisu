@@ -16,15 +16,20 @@ var clickContext = null;
 // Dict (objID -> "ARRAY von Actions")
 var clickObject = {};
 
+// Variablen, welche aus der Visu-XML gefüllt werden
 var visuName = "";
 var visuSizeX = 0;
 var visuSizeY = 0;
+
+var currentVisuLoaded = "";
+
 var visuCompressed = 0;
 var visuUseDynamicText = false;
 var visuDynTextDefaultLanguage = 'english';
 
 // globale variablen
 var updateInterval = 500;
+var updateIntervalId;
 var plcDir = "../PLC";
 var startVisu = "plc_visu";
 
@@ -38,7 +43,7 @@ var canvObjects = [];
 #endif
 */
 
-// performance-Z�hler
+// performance-Zaehler
 var perfWriteout = 0;
 var perfCount = 0;
 var perfLoadStart = 0;
@@ -58,9 +63,40 @@ var logOverlayText = "LogOverlay:\n";
 // use touch instead of mouse-down and -up
 var useTouchEvents = ('ontouchstart' in window);
 
+var errorCountdown = 0;
+
+function errorCountdownUpdate()
+{
+    var errorcountdown = document.getElementById("errorcountdown");
+    errorcountdown.innerHTML = errorCountdown;
+
+    if(errorCountdown<1) {
+        switchToVisu(currentVisuLoaded);
+        updateIntervalId = setInterval(update, updateInterval);
+    } else {
+        errorCountdown--;
+        setTimeout(errorCountdownUpdate, 1000);
+    }
+}
+
+function errorStateEnable()
+{
+    // ERROR-Overlay anzeigen
+	var errorcontainer = document.getElementById("errorcontainer");
+    errorcontainer.style.display = "block";
+
+    // zyklischen Update stoppen
+    // dürfte wegen der Zeitüberschreitung aber ohnehin schon vom Browser
+    // gestoppt sein.
+    clearInterval(updateIntervalId);
+
+    // wir versuchen automatisch alle 10 Sekunden wieder neu zu starten
+    errorCountdown = 10;
+    errorCountdownUpdate();
+}
 
 function switchToVisu(visu) {
-    // alle Arrays und Variablenzuordnungen l�schen
+    // alle Arrays und Variablenzuordnungen löschen
     visuVariables = {};
     drawObjects = [];
     clickObject = {};
@@ -84,10 +120,11 @@ function switchToVisu(visu) {
 #endif
 */
 
-
     visuName = "";
     visuSizeX = 0;
     visuSizeY = 0;
+
+    currentVisuLoaded = visu;
 
     // INIs neu laden
     load_ini(plcDir + "/visu_ini.xml");
@@ -527,16 +564,16 @@ function registerClickObj_Tap(objId, variable, newval) {
 // ClickZoom
 
 // constructor
-function clickObj_Zoom(visu) {
+function clickObj_Zoom(exprZoom) {
     this.isA = 'Zoom';
-    this.visu = visu;
+    this.exprZoom = exprZoom;
 }
 
-function registerClickObj_Zoom(objId, visu) {
+function registerClickObj_Zoom(objId, exprZoom) {
     if(!(objId in clickObject)) {
         clickObject[objId] = []; // Array von Klick-Info
     }
-    clickObject[objId].push(new clickObj_Zoom(visu));
+    clickObject[objId].push(new clickObj_Zoom(exprZoom));
 }
 
 // ****************************************************************************
@@ -787,6 +824,12 @@ function evalExpression(expr) {
                     }
                 }
             }
+        } else if (expr[i].operation == 'placeholder') {
+            //Log("evalExpression: placeholder: " + expr[i].value)
+            // TODO: eigentlich sind "placeholder" Strings mit Dollar-Syntax: 
+            //   <placeholder>$FUB$.farbwechsel</placeholder>
+            //   entsprechend müssten wir hier noch eine Textersetzung durchführen.
+            result.push(expr[i].value);
         } else {
             Log("error: expression operation < " + expr[i].operation + " > unknown");
         }
