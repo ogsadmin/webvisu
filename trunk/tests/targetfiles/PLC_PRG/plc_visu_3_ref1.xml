@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<visualisation>
+	<time-stamp>1528115778,3452816845</time-stamp>
+	<name>PLC_VISU_3_ref1</name>
+	<symplified-user-input>false</symplified-user-input>
+	<keyboard-usage-for-table>true</keyboard-usage-for-table>
+	<size>171,56</size>
+	<usage-type>0</usage-type>
+	<use-language-file>false</use-language-file>
+	<use-dynamic-text>true</use-dynamic-text>
+	<hide-elements>false</hide-elements>
+	<language>ENGLISH</language>
+	<dynamic-text-file>DYNAMICTEXTS.XML</dynamic-text-file>
+	<element type="simple">
+		<simple-shape>rectangle</simple-shape>
+		<elem-id>0</elem-id>
+		<center>85,28</center>
+		<line-width>0</line-width>
+		<has-frame-color>true</has-frame-color>
+		<has-inside-color>true</has-inside-color>
+		<frame-color>0,0,0</frame-color>
+		<frame-color-alarm>0,0,0</frame-color-alarm>
+		<fill-color>255,255,128</fill-color>
+		<fill-color-alarm>255,0,0</fill-color-alarm>
+		<text-align-horz>center</text-align-horz>
+		<text-align-vert>center</text-align-vert>
+		<font-height>-12</font-height>
+		<font-height-point-size>9</font-height-point-size>
+		<font-weight>400</font-weight>
+		<font-italic>false</font-italic>
+		<font-underline>false</font-underline>
+		<font-strike-out>false</font-strike-out>
+		<font-char-set>0</font-char-set>
+		<text-id>0</text-id>
+		<font-color>0,0,0</font-color>
+		<tap-false>false</tap-false>
+		<expr-tap-var>
+			<expr>
+				<placeholder>$FUB$.farbwechsel</placeholder>
+			</expr>
+		</expr-tap-var>
+		<enable-text-input>false</enable-text-input>
+		<expr-toggle-color>
+			<expr>
+				<placeholder>$fub$.farbwechsel</placeholder>
+			</expr>
+		</expr-toggle-color>
+		<text-format><![CDATA[Test| |Color| |Change]]></text-format>
+		<hidden-input>false</hidden-input>
+		<rect>0,0,171,56</rect>
+	</element>
+	<key-info-list/>
+	<variablelist/>
+</visualisation>
