@@ -15,7 +15,7 @@ TARGET3 = ../release/WebVisuPlusConfig.html
 
 PPFLAGS =
 
-HTMLTITLE := "WebVisu (!svnversion!)"
+HTMLTITLE := WebVisu (r!svnversion!)
 
 .PHONY: clean
 
