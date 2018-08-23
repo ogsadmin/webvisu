@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<alarmconfig>
+	<alarmconfig-dateformat>dd'-'MM'-'yyyy</alarmconfig-dateformat>
+	<alarmconfig-timeformat>HH':'mm':'ss</alarmconfig-timeformat>
+	<alarmconfig-next-text-id>10002</alarmconfig-next-text-id>
+	<alarmconfig-replacemsg-placeholders>false</alarmconfig-replacemsg-placeholders>
+	<alarmconfig-storealarmid>false</alarmconfig-storealarmid>
+	<alarmconfig-usealarmidfordynamictext>false</alarmconfig-usealarmidfordynamictext>
+	<alarmconfig-generatealarmaccessinterface>false</alarmconfig-generatealarmaccessinterface>
+	<alarmconfig-globaldatabase>
+		<database type="filesystem">
+			<database-id>0</database-id>
+			<name><![CDATA[]]></name>
+			<file><![CDATA[]]></file>
+			<path><![CDATA[]]></path>
+			<file-change-type>0</file-change-type>
+			<file-delete-hours>0</file-delete-hours>
+			<extension>0</extension>
+		</database>
+	</alarmconfig-globaldatabase>
+	<variablelist/>
+</alarmconfig>
