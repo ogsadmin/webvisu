@@ -29,6 +29,16 @@ Aufruf des Release-Skript:
 Daraufhin werden im Verzeichnis /trunk/release die beiden Dateien 
 "WebVisu.html" und "WebVisuPlus.html" neu erzeugt.
 
+Dem Skript "release.sh" kann optional der Parameter "HTMLTITLE=" mitgegeben
+werden. Dieser setzt den Titel des erzeugten HTML-Files auf den übergebenen
+Wert.
+
+Beispiel:
+```bash
+./release.sh HTMLTITLE=WebVisu5
+```
+
+
 ### Ablauf des Releaseprozesses
 Der Releaseprozess läuft intern zwei mal ab. Für jede Ergebnisdatei ein mal.
 Während des Releaseprozess werden zunächst die Dateien mit der Endung "\*.pp.*"
@@ -177,10 +187,10 @@ Durch diesen Mechnismus werden drei Hauptprobleme erschlagen:
   mehr als Klick-Bereich ausgewertet.
 - Klick-Regionen mussten immer rechteckig sein. Kreise oder Polygone werden
   jetzt ausgewertet wie gezeichnet.
-- Bei mehreren Klich-Aktionen pro Element können diese jetzt schneller 
+- Bei mehreren Klick-Aktionen pro Element können diese jetzt schneller 
   ausgewertet werden.
 
-Um die Objekt-ID in einer Farbe kodieren zu kodieren werden die 24 Bit des 
-Farbwertes als 24 Bit Integer verwendet. Die ersten 255 Elemente verwenden 
-entsprechend nur den Blau-Anteil, danach kommt Grün und danach Rot hinzu.
+Um die Objekt-ID in einer Farbe zu kodieren werden die 24 Bit des Farbwertes
+als 24 Bit Integer verwendet. Die ersten 255 Elemente verwenden entsprechend
+nur den Blau-Anteil, danach kommt Grün und danach Rot hinzu.
 Der Farbwert 0xFFFFFF ist dem Hintergrund zugeordnet. 
