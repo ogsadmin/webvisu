@@ -26,6 +26,7 @@ var currentVisuLoaded = "";
 var visuCompressed = 0;
 var visuUseDynamicText = false;
 var visuDynTextDefaultLanguage = 'english';
+var visuBestFit = false;
 
 // globale variablen
 var updateInterval = 500;
@@ -130,16 +131,7 @@ function switchToVisu(visu) {
     load_ini(plcDir + "/visu_ini.xml");
 
     // neue Visu laden
-    if (filenamesLowercase == true) {
-        visu = visu.toLowerCase();
-    }
-
-    var filename = plcDir + "/" + visu;
-    if (visuCompressed == 1) {
-        filename += "_xml.zip";
-    } else {
-        filename += ".xml";
-    }
+    var filename = getVisuFileName(visu);
     load_visu(filename);
 }
 
@@ -260,12 +252,7 @@ function newButton(
     this.img = null;
     if (bitmapFilename.length) {
         this.img = new Image();
-
-        if (filenamesLowercase == true) {
-            bitmapFilename = bitmapFilename.toLowerCase();
-        }
-
-        this.img.src = plcDir + '/' + bitmapFilename;
+        this.img.src = getFileName(plcDir + '/' + bitmapFilename);
     }
 }
 
@@ -335,12 +322,7 @@ function newBitmap(
     this.h = parseInt(h);
     this.fileName = fileName;
     this.img = new Image();
-
-    if (filenamesLowercase == true) {
-        fileName = fileName.toLowerCase();
-    }
-
-    this.img.src = plcDir + '/' + fileName;
+    this.img.src = getFileName(plcDir + '/' + fileName);
 
     this.hasInsideColor = hasInsideColor;
     this.fillStyle = fillStyle;

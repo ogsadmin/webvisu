@@ -9,13 +9,13 @@ PPOBJ = codesys.oo.js drawing.oo.js utils.oo.js WebVisuDev.oo.html
 # steelseries
 SSSRC = steelseries-min.js
 
-# steelseries.js codesys_ss.js drawing_ss.js   
-
 TARGET1 = ../release/WebVisu.html
 TARGET2 = ../release/WebVisuPlus.html
 TARGET3 = ../release/WebVisuPlusConfig.html
 
 PPFLAGS =
+
+HTMLTITLE := "WebVisu (!svnversion!)"
 
 .PHONY: clean
 
@@ -23,11 +23,11 @@ all: $(TARGET1)
 
 $(TARGET1): PPFLAGS =
 $(TARGET1): $(SRC) $(PPOBJ) release.pl
-	perl release.pl WebVisuDev.oo.html > $(TARGET1)
+	perl release.pl WebVisuDev.oo.html "$(HTMLTITLE)" > $(TARGET1)
 
 $(TARGET2): PPFLAGS = -DUSE_STEELSERIES=1
 $(TARGET2): $(SRC) $(PPOBJ) $(SSSRC) release.pl
-	perl release.pl WebVisuDev.oo.html > $(TARGET2)
+	perl release.pl WebVisuDev.oo.html "$(HTMLTITLE)" > $(TARGET2)
 
 $(TARGET3): PPFLAGS =
 $(TARGET3): $(SRC) $(PPOBJ) release.pl
