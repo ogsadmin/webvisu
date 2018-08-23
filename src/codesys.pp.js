@@ -39,15 +39,21 @@ const POST_FORMAT_SOAP = 1
 var postFormat = POST_FORMAT_STANDARD;
 
 /**
-Diese variable steuert ob Dateinamen (vor dem Laden vom Server) in 
-Kleinbuchstaben umgewandelt werden sollen.
+Diese variable steuert ob Dateinamen (vor dem Laden vom Server) bezüglich
+Groß- und Kleinschreibung umgewandelt werden.
 
-Hintergrund ist, dass einige Steuerungen Case-Sensitive sind; die User jedoch 
-frei in der Eingabe. Es scheint so, als ob auf diesen Steuerungen die Dateien
-beim Hochladen in Kleinschreibung umgewandelt werden; die Namen in den Visu-
-Files bleiben jedoch CamelCase.
+Einige Steuerungen sind Case-Sensitive, andere nicht.
+Das Authoring-Tool scheint die Dateinamen jedoch nicht so zu vergeben wie es
+die jeweilige Steuerung erwartet.
+
+Als Standardeinstellung wird jetzt FC_TOLOWER verwendet, was die meisten der
+Case-Sensitive Steuerungen erschlagen sollte und bei Case-Insensitive keine 
+Rolle spielt.
 */ 
-var filenamesLowercase = false;
+const FC_ORIGINAL = 0;
+const FC_TOLOWER = 1;
+const FC_TOUPPER = 2;
+var filenameCase = FC_TOLOWER;
 
 var PendingMouseUpObjects = [];
 
@@ -56,6 +62,25 @@ var parsedGroups = [];
 /* wenn ein Input-Feld aktiv ist zeigt das diese Variable an. */
 var inputFieldActive = false;
 
+
+function getFileName(fileName) {
+	if(filenameCase==FC_TOLOWER) {
+		return fileName.toLowerCase();
+	} else	if(filenameCase==FC_TOUPPER) {
+		return fileName.toUpperCase();
+	}
+	return fileName;
+}
+
+function getVisuFileName(visuName) {
+    var fileName = plcDir + "/" + visuName;
+    if (visuCompressed == 1) {
+        fileName += "_xml.zip";
+    } else {
+        fileName += ".xml";
+    }
+	return getFileName(fileName);
+}
 
 // constructor
 function expression(operation, count, value) {
@@ -86,6 +111,8 @@ function load_ini_success(content) {
 		var $myMedia = $(this);
 
 		visuCompressed = $myMedia.find('compression').text() == "true" ? 1 : 0;
+		// Option "Rahmen"->"Online automatisch anpassen"
+		visuBestFit = $myMedia.find('best-fit').text() == "true" ? true : false;
 
 		extract_var_addr($myMedia);
 	});
@@ -485,12 +512,16 @@ function load_visu_success(content) {
 		// optional kann der Hintergrund auch aus einem Bitmap-File bestehen
 		var bitmap = $myMedia.find('bitmap').text();
 		if (bitmap.length) {
+			// der Filename enthält evtl. Pfadangaben
+			var bitmapFields = bitmap.split('\\');
+			bitmap = bitmapFields[bitmapFields.length - 1];
 			registerBitmap(
 				0, 0, visuSizeX, visuSizeY,
 				bitmap,
 				'false', '0,0,0', '0,0,0',
 				'false', '0,0,0', '0,0,0',
-				0
+				0,
+				[]
 				);
 		}
 
@@ -505,9 +536,9 @@ function load_visu_success(content) {
 			 * Die Datei auf unserer Steuerung heist: "dynamictexts_xml.zip" (alles klein?).
 			 */
 			dynTextFile = dynTextFile.replace(new RegExp('^.*[\\\\\\/]'), '');
-			dynTextFile = dynTextFile.toLowerCase();
 			if (visuCompressed == 1) {
 				dynTextFile = dynTextFile.replace('.xml', '_xml.zip');
+				dynTextFile = dynTextFile.replace('.XML', '_XML.ZIP');
 			}
 			visuUseDynamicText = true;
 		} else {
@@ -520,7 +551,7 @@ function load_visu_success(content) {
 	});
 
 	if (visuUseDynamicText) {
-		load_dyntextfile(plcDir + "/" + dynTextFile);
+		load_dyntextfile(getFileName(plcDir + "/" + dynTextFile));
 	}
 
 	// Das einmalige Aufrufen der Update-Funktion startet den zyklischen Ablauf

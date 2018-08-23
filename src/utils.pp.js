@@ -81,10 +81,10 @@ function fileExists(url) {
 function determineVisuLocation() {
     // finden wir mal heraus wo unsere Visu liegt
     Log('determine visu location - searching visu_ini.xml');
-    if (fileExists('/PLC/visu_ini.xml')) {
+    if (fileExists('/plc/visu_ini.xml')) {
         // scheint eine Wago zu sein
-        Log('found in /PLC');
-        plcDir = "/PLC";
+        Log('found in /plc');
+        plcDir = "/plc";
         postUrl = '/plc/webvisu.htm';
         postFormat = POST_FORMAT_STANDARD;
     } else if (fileExists('/webvisu/visu_ini.xml')) {
@@ -93,14 +93,16 @@ function determineVisuLocation() {
         plcDir = "/webvisu";
         postUrl = '/webvisu/webvisu.htm';
         postFormat = POST_FORMAT_STANDARD;
-        // es handelt sich um eine CaseSensitive Linux-Steuerung
-        filenamesLowercase = true;
     } else if (fileExists('/visu_ini.xml')) {
-        // könnte eine Beck sein
+        // könnte eine Beck oder Sabo sein
         Log('found in /');
         plcDir = "";
         postUrl = '/webvisu.htm';
         postFormat = POST_FORMAT_STANDARD;
+        if (fileExists('/WebVisu5.cfg')) {
+            // ist eine Sabo mit Webserver ab V2180730
+            Log('Detected Sabo PLC');
+        }
     } else if (fileExists('/TcWebVisu/visu_ini.xml')) {
         // müsste ein TwinCat (Beckhoff) sein
         Log('found in /TcWebVisu');
@@ -116,7 +118,7 @@ function doPerfTest() {
     perfTestStart = new Date().getTime();
     for (a = 0; a < 10000; a++) {
         text = "dies ist ein | | kleiner |<|Test|>| um RegExp | | gegen |<|normalen|>| String-Replace zu vergleichen";
-        // wegen des PreProcessors k�nnen wir leider keine /-Syntax f�r die RegEx nehmen
+        // wegen des PreProcessors können wir leider keine /-Syntax für die RegEx nehmen
         text = text.replace(new RegExp('\\| \\|', 'g'), ' ');
         text = text.replace(new RegExp('\\|>\\|', 'g'), '>');
         text = text.replace(new RegExp('\\|<\\|', 'g'), '<');
