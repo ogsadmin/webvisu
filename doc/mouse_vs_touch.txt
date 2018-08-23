@@ -1,10 +1,10 @@
 Mouse vs. Touch
 ----------------
 
-Wie im Blockbeitrag [1] sehr schön ausgeführt gibt es einen großen Unterschied 
+Wie im Blockbeitrag [1] sehr schÃ¶n ausgefÃ¼hrt gibt es einen groÃŸen Unterschied 
 zwischen Mouse-Events und Touch-Events.
 
-Die "natürliche" Reihenfolge der Events ist
+Die "natÃ¼rliche" Reihenfolge der Events ist
 1. touchstart
 2. touchmove
 3. touchend

@@ -2,16 +2,16 @@ Kommunikation mit dem CoDeSys Webserver
 =======================================
 
 Der CoDeSys Webserver auf der Steuerung lauscht auf POST-Requests auf der URL 
-"/plc/webvisu.htm" und beantwortet diese jeweils abhängig von der Anfrage.
+"/plc/webvisu.htm" und beantwortet diese jeweils abhaengig von der Anfrage.
 
 Die POST-Daten werden dabei als Zahlenkolonne, getrennt mit einem Pipe "|" 
-übertragen. Die Antwort besteht ebenfalls aus Zahlen mit Pipe getrennt.
+uebertragen. Die Antwort besteht ebenfalls aus Zahlen mit Pipe getrennt.
 
 Eine Anfrage zum Lesen besteht aus
 	- Befehl (0)
 	- Anzahl Werte
 	und Anzahl Werte mal
-		- Zähler (0-based)
+		- Zaehler (0-based)
 		- Adresse
 
 Antworten auf Leseanfragen
@@ -22,7 +22,7 @@ Antworten auf Leseanfragen
 Schreibende Anfragen
 	- Befehl (1)
 	- Anzahl Werte
-		- Zähler (0-based)
+		- Zaehler (0-based)
 		- Adresse
 		- Wert
 
@@ -47,10 +47,10 @@ die Laufzeit-Interne Adressierung ab. Die Bedeutung ist (glaube ich)
 	RefId, Offset, Size, [unbekannt]
 und ist nur vom Compiler zuordenbar. Es gibt auch Symboldatenbanken,
 jedoch habe ich damit noch nichts gemacht.
-RefId und Offset interessieren uns nicht - die müssen wir nur immer 
+RefId und Offset interessieren uns nicht - die muessen wir nur immer 
 dem Webserver geben. Die Size (in Bytes) ist interessanter, da daran die 
-zurückgelieferten Werte richtig einkategorisiert werden können.
-Den letzten Wert beachte ich aktuell nicht; er könnte aber den Datentyp
+zurueckgelieferten Werte richtig einkategorisiert werden koennen.
+Den letzten Wert beachte ich aktuell nicht; er koennte aber den Datentyp
 angeben (siehe 3S-Doku Symbolic CDG.pdf, enum TypeClass):
 	0 = TYPE_BOOL
 	1 = TYPE_INT
@@ -84,7 +84,7 @@ Variablen abfragen
 Um Variablenwerte zu erfragen muss man dem Server folgenden Befehl
 senden:
 
-	|0| [Anzahl Werte] | [Zähler] | [Adresse] | [Zähler] | [Adresse]
+	|0| [Anzahl Werte] | [Zaehler] | [Adresse] | [Zaehler] | [Adresse]
 
 Beispiel
 
@@ -109,7 +109,7 @@ Will man mehrere Variablen abfragen sieht das z.B. so aus:
 	|5|4|146|2|1	// plc_visu.xml PLC_PRG.counter
 	|
 
-	natürlich ohne Kommentare und ohne Zeilenumbrüche:
+	natuerlich ohne Kommentare und ohne Zeilenumbrueche:
 
 	|0|6|0|4|572|4|5|1|4|398|2|1|2|4|272|41|8|3|4|231|41|8...
 
@@ -119,7 +119,7 @@ Variablen setzen
 
 Zum Setzen der Variablen sendet man den Befehl "1":
 
-	|1| [Anzahl Werte] | [Zähler] | [Adresse] | [Wert] |...
+	|1| [Anzahl Werte] | [Zaehler] | [Adresse] | [Wert] |...
 
 Beispiel
 
