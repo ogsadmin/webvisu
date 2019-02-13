@@ -558,6 +558,33 @@ function load_visu_success(content) {
 	update();
 }
 
+function calculatePolygonRect(points) {
+	let rectFields = [];
+	
+	$(points).each(function(i, point) {
+		point = point.split(',').map(Number);
+		if (i === 0) {
+			rectFields[0] = point[0];
+			rectFields[1] = point[1];
+			rectFields[2] = point[0];
+			rectFields[3] = point[1];
+		}	else {
+			if(point[0] < rectFields[0]) {
+				rectFields[0] = point[0];
+			}
+			if(point[1] < rectFields[1]) {
+				rectFields[1] = point[1];
+			}
+			if(point[0] > rectFields[2]) {
+				rectFields[2] = point[0];
+			}
+			if(point[1] > rectFields[3]) {
+				rectFields[3] = point[1];
+			}
+		}
+	});
+	return rectFields;
+}
 
 function parse_visu_elements(content) {
 
@@ -885,7 +912,31 @@ function parse_visu_elements(content) {
 				// TODO:
 				//parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
 				//parseEditInfo($myMedia, rectFields, objId);
-			} else {
+			} else if (polyShape == 'bezier') {
+
+				var objId = registerPolygon(
+					polyShape,
+					points,
+					has_frame_color,
+					"rgb(" + frame_color + ")",
+					"rgb(" + frame_color_alarm + ")",
+					line_width,
+					has_inside_color,
+					"rgb(" + fill_color + ")",
+					"rgb(" + fill_color_alarm + ")",
+					exprToggleColor,
+					exprLeft, exprTop,
+					exprInvisible
+				);
+
+				var center = $myMedia.find('center').text();
+				var centerFields = center.split(',').map(Number);
+
+				let rectFields = calculatePolygonRect(points);
+
+				parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
+				parseEditInfo($myMedia, rectFields, objId);
+			}	else {
 				Log("unknown poly-shape: " + polyShape);
 			}
 		} else if (type == 'group') {

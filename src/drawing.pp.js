@@ -1031,31 +1031,101 @@ function drawAllObjects(ctx, clickContext, objects) {
             var top = 0;
             if (obj.topExpr.length > 0) { top = evalExpression(obj.topExpr); }
 
-            var first = true;
-            var firstPointFields = [];
-            for (var ptId in obj.points) {
-                point = obj.points[ptId];
-                var pointFields = point.split(',');
-                x = parseInt(pointFields[0]);
-                y = parseInt(pointFields[1]);
+            if (obj.polyShape == 'polyline' || obj.polyShape == 'polygon')
+            {
+                var first = true;
+                var firstPointFields = [];
+                for (var ptId in obj.points) {
+                    point = obj.points[ptId];
+                    var pointFields = point.split(',');
+                    x = parseInt(pointFields[0]);
+                    y = parseInt(pointFields[1]);
 
-                if (first) {
-                    firstPointFields = pointFields;
-                    ctx.moveTo(x + left, y + top);
-                    clickContext.moveTo(x + left, y + top);
-                    first = false;
-                } else {
+                    if (first) {
+                        firstPointFields = pointFields;
+                        ctx.moveTo(x + left, y + top);
+                        clickContext.moveTo(x + left, y + top);
+                        first = false;
+                    } else {
+                        ctx.lineTo(x + left, y + top);
+                        clickContext.lineTo(x + left, y + top);
+                    }
+                }
+
+                // ein polygon ist geschlossen, eine polyline nicht...
+                if (obj.polyShape == 'polygon') {
+                    x = parseInt(firstPointFields[0]);
+                    y = parseInt(firstPointFields[1]);
                     ctx.lineTo(x + left, y + top);
                     clickContext.lineTo(x + left, y + top);
                 }
-            }
 
-            // ein polygon ist geschlossen, eine polyline nicht...
-            if (obj.polyShape == 'polygon') {
-                x = parseInt(firstPointFields[0]);
-                y = parseInt(firstPointFields[1]);
-                ctx.lineTo(x + left, y + top);
-                clickContext.lineTo(x + left, y + top);
+            } else if (obj.polyShape == 'bezier') {
+                var countControlPoint = 0;
+                var first = true;
+                var ctrlPointx = [];
+                var ctrlPointy = [];
+
+                for (var ptId in obj.points) {
+                    point = obj.points[ptId];
+                    var pointFields = point.split(',');
+                    x = parseInt(pointFields[0]);
+                    y = parseInt(pointFields[1]);
+
+                    if (first) {
+                        firstPointFields = pointFields;
+                        ctx.moveTo(x + left, y + top);
+                        clickContext.moveTo(x + left, y + top);
+                        first = false;
+                        countControlPoint++;
+                        continue;
+                    }
+
+                    if (countControlPoint) {
+                        // write control points to buffer
+                        ctrlPointx[countControlPoint] = x;
+                        ctrlPointy[countControlPoint] = y;
+                        if (countControlPoint >= 2){
+                            countControlPoint = 0;
+                        } else {
+                            countControlPoint++;
+                        }
+                    } else {
+                        // draw bezier kurve between Point P[n-3] and P[n] with control points P[n-2] and P[n-1] 
+                        ctx.bezierCurveTo(
+                                ctrlPointx[1] + left, 
+                                ctrlPointy[1] + top, 
+                                ctrlPointx[2] + left, 
+                                ctrlPointy[2] + top, 
+                                x + left, 
+                                y + top);
+                        clickContext.bezierCurveTo(
+                                ctrlPointx[1] + left, 
+                                ctrlPointy[1] + top, 
+                                ctrlPointx[2] + left, 
+                                ctrlPointy[2] + top, 
+                                x + left, 
+                                y + top); 
+                        countControlPoint++;
+                    }
+                }
+                // draw last part if line or quadratic curve
+                if (countControlPoint == 2) {
+                    //Log(ctrlPointx[1] + " " + ctrlPointy[1]);
+                    ctx.lineTo(ctrlPointx[1] + left, ctrlPointy[1] + top);
+                    clickContext.lineTo(ctrlPointx[1] + left, ctrlPointy[1] + top);
+                } else if (countControlPoint == 0) {
+                    ctx.quadraticCurveTo(
+                            ctrlPointx[1] + left, 
+                            ctrlPointy[1] + top, 
+                            ctrlPointx[2] + left, 
+                            ctrlPointy[2] + top);
+                    clickContext.quadraticCurveTo(
+                            ctrlPointx[1] + left, 
+                            ctrlPointy[1] + top, 
+                            ctrlPointx[2] + left, 
+                            ctrlPointy[2] + top);
+                }
             }
 
             fillStyle = obj.fillStyle;
