@@ -909,9 +909,11 @@ function parse_visu_elements(content) {
 				if (polyShape == 'polygon') {
 					parseClickInfo($myMedia, objId);
 				}
-				// TODO:
-				//parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
-				//parseEditInfo($myMedia, rectFields, objId);
+				
+				let rectFields = calculatePolygonRect(points);
+
+				parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
+				parseEditInfo($myMedia, rectFields, objId);
 			} else if (polyShape == 'bezier') {
 
 				var objId = registerPolygon(
