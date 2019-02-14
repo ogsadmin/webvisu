@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html>
 	<head>
 		<meta charset="utf-8" />
@@ -35,7 +35,8 @@
 				<p align="center"><b>ERROR</b><br/>Connection to PLC lost!<br/>Please try to refresh your browser.<br/><br/>Automatic attempt to reconnect in <b id="errorcountdown">10</b> seconds...</p>
 			</div>
 		</div>
-				
+
+		
 		<script src="drawing.pp.js"></script>
 		<script src="codesys.pp.js"></script>
 		<script>
@@ -136,11 +137,13 @@
 			    //$('#canvas').mousedown(onMouseDown);
 			    //$('#canvas').mouseup(onMouseUp);
 			    $('#canvas').on("mousedown", onMouseDown);
-			    $('#canvas').on("mouseup", onMouseUp);
+				$('#canvas').on("mouseup", onMouseUp);
+				$('#canvas').on("mousemove", onMouseMove);
             }
 
 			// update wieder im Intervall aufrufen (definiert in drawings.js)
 			updateIntervalId = setInterval(update, updateInterval);
+			Log("Loading Time: " + parseInt(performance.now()) + "ms");
 		</script>
 </body>
 </html>

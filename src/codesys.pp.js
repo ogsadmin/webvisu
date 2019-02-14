@@ -30,6 +30,7 @@ const VAR_TYPE_NONE = 24;
 
 // globale variablen
 var postUrl = '/plc/webvisu.htm';
+var moveSlider = false;
 
 // In welchem Format findet der Variablen-Datenaustausch statt?
 // 0 = Standard
@@ -233,7 +234,7 @@ function parseTextInfo(myMedia, centerFields, rectFields, exprInvisible) {
 		);
 }
 
-function parseClickInfo(myMedia, objId) {
+function parseClickInfo(myMedia, objId, additionalInfo) {
 	/* Die Reihenfolge der Registrierung ist ausschlaggebend für die Funktion 
 	   von Mehrfach-Aktionen.
 	   Die zoom-to-visu muss als letztes ausgeführt werden, da sie den 
@@ -253,8 +254,24 @@ function parseClickInfo(myMedia, objId) {
 		var expr_tap_var_exp = expr_tap_var.find('expr');
 		if (expr_tap_var_exp.length) {
 			value = expr_tap_var_exp.find('var').text();
-			var tap_false = myMedia.find('tap-false').text();
-			registerClickObj_Tap(objId, value, (tap_false == 'true' ? 0 : 1));
+			if (myMedia.attr("type") == "scrollbar") {
+				if (additionalInfo.isA == "increaseValue") {
+					registerClickObj_IncDec(objId, value, true, additionalInfo.minValExpr, additionalInfo.maxValExpr);
+				} else if (additionalInfo.isA == "decreaseValue") {
+					registerClickObj_IncDec(objId, value, false, additionalInfo.minValExpr, additionalInfo.maxValExpr);
+				} else if (additionalInfo.isA == "slider") {
+					registerClickObj_Slider(
+						objId, 
+						value, 
+						additionalInfo.horizontal, 
+						additionalInfo.sliderLength,
+						additionalInfo.minValExpr, 
+						additionalInfo.maxValExpr)
+				}
+			} else {
+				var tap_false = myMedia.find('tap-false').text();
+				registerClickObj_Tap(objId, value, (tap_false == 'true' ? 0 : 1));
+			}
 		}
 	}
 
@@ -1091,8 +1108,141 @@ function parse_visu_elements(content) {
 
 			registerEndGroup();
 			parsedGroups.pop();
-		}
-		else {
+		} else if (type == 'scrollbar') {
+			var rect = $myMedia.find('rect').text();
+			var rectFields = rect.split(',').map(Number);
+			var center = $myMedia.find('center').text();
+			var centerFields = center.split(',').map(Number);
+
+			var has_frame_color = "false";
+			var frame_color = "0,0,0";
+			var frame_color_alarm = "0,0,0";
+			var line_width = "0";
+			var has_inside_color = "true";
+			var fill_color = "220,220,220";
+			var fill_color_alarm = "0,0,0";
+			var exprToggleColor = [];
+			var exprXPos = [];
+			var exprYPos = [];
+			var exprLeft = [];
+			var exprTop = [];
+			var exprRight = [];
+			var exprBottom = [];
+			var exprInvisible = [];
+			var exprFrameFlags = [];
+			var exprFrameColor = [];
+
+			var objId = registerSimpleShape(
+				"rectangle",
+				rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+				has_frame_color,
+				"rgb(" + frame_color + ")",
+				"rgb(" + frame_color_alarm + ")",
+				line_width,
+				has_inside_color,
+				"rgb(" + fill_color + ")",
+				"rgb(" + fill_color_alarm + ")",
+				exprToggleColor,
+				exprXPos, exprYPos,
+				exprLeft, exprTop, exprRight, exprBottom,
+				exprInvisible,
+				exprFrameFlags,
+				exprFrameColor
+			);
+
+			
+			var exprLowerBound = [];
+			var expr_lower_bound = $myMedia.find('expr-lower-bound');
+			if (expr_lower_bound.length) {
+				exprLowerBound = parseExpression(expr_lower_bound);
+			}
+
+			var exprUpperBound = [];
+			var expr_upper_bound = $myMedia.find('expr-upper-bound');
+			if (expr_upper_bound.length) {
+				exprUpperBound = parseExpression(expr_upper_bound);
+			}
+
+			var exprTapVar = [];
+			var expr_tap_var = $myMedia.find('expr-tap-var');
+			if (expr_tap_var.length) {
+				exprTapVar = parseExpression(expr_tap_var);
+			}
+
+			var x1 = rectFields[0];
+			var y1 = rectFields[1];
+			var x2 = rectFields[2];
+			var y2 = rectFields[3];
+
+			
+
+			var isHorizontal = ( (x2-x1) > (y2-y1) );
+
+			var arrowboxDimensions = calcArrowboxDimensions(x2-x1, y2-y1);
+
+			if (isHorizontal) {
+				var sliderWidth = arrowboxDimensions[0] / 2;
+				var xSliderArea = x1 + arrowboxDimensions[0];
+				var ySliderArea = y1;
+				var sliderAreaWidth = x2 - x1 - 2 * arrowboxDimensions[0] - sliderWidth;
+				var sliderAreaHeight = y2 - y1;
+			} else {
+				var sliderWidth = arrowboxDimensions[1] / 2;
+				var xSliderArea = x1;
+				var ySliderArea = y1 + arrowboxDimensions[1];
+				var sliderAreaWidth = y2 - y1 - 2 * arrowboxDimensions[1] - sliderWidth;
+				var sliderAreaHeight = x2 - x1;
+			}
+
+			objId = registerScrollbarSlider(
+				xSliderArea, ySliderArea,
+				sliderWidth,
+				sliderAreaWidth, sliderAreaHeight,
+				isHorizontal,
+				exprLowerBound, exprUpperBound,
+				exprTapVar
+			);
+			
+			var additionalInfo = {};
+			additionalInfo.isA = "slider";
+			additionalInfo.horizontal = isHorizontal;
+			additionalInfo.sliderLength = sliderAreaWidth;
+			additionalInfo.minValExpr = exprLowerBound;
+			additionalInfo.maxValExpr = exprUpperBound;
+			parseClickInfo($myMedia, objId, additionalInfo);
+			
+
+			objId = registerScrollbarArrow(
+				x1, y1, 
+				arrowboxDimensions[0], arrowboxDimensions[1],
+				(isHorizontal)?"left":"up"
+			);
+			additionalInfo = {};
+			additionalInfo.isA = (isHorizontal)?"decreaseValue":"increaseValue";
+			additionalInfo.minValExpr = exprLowerBound;
+			additionalInfo.maxValExpr = exprUpperBound;
+			parseClickInfo($myMedia, objId, additionalInfo);
+
+			var x1Arrow, y1Arrow;
+			if (isHorizontal) {
+				x1Arrow = x2 - arrowboxDimensions[0];
+				y1Arrow = y1;
+			} else {
+				x1Arrow = x1;
+				y1Arrow = y2 - arrowboxDimensions[1];
+			}
+
+			objId = registerScrollbarArrow(
+				x1Arrow, y1Arrow,
+				arrowboxDimensions[0], arrowboxDimensions[1],
+				(isHorizontal)?"right":"down"
+			);
+			additionalInfo = {};
+			additionalInfo.isA = (isHorizontal)?"increaseValue":"decreaseValue";
+			additionalInfo.minValExpr = exprLowerBound;
+			additionalInfo.maxValExpr = exprUpperBound;
+			parseClickInfo($myMedia, objId, additionalInfo);
+		}	else {
 			var exprInvisible = [];
 			var expr_invisible = $myMedia.find('expr-invisible');
 			if (expr_invisible.length) {
@@ -1755,6 +1905,49 @@ function onClick( e ) {
 					visuVariables[event.variable].value = newval;
 					update();
 				}
+			} else if (event.isA == 'IncDec') {
+				if (event.variable != '') {
+					var maxVal = 10;
+					var minVal = 0;
+					if (event.maxValExpr.length > 0) {maxVal = evalExpression(event.maxValExpr);}
+					if (event.minValExpr.length > 0) {minVal = evalExpression(event.minValExpr);}
+					
+					var increase = true;
+					if (maxVal > minVal) {
+						increase = event.increase;
+					} else {
+						// not so pretty: if a slider is inverted the increase-arrow actually
+						// has to decrease the value (same with decrease-arrow) 
+						increase = !event.increase;
+						// since the maxVal is lower than the minVal
+						var buffer = maxVal;
+						maxVal = minVal;
+						minVal = buffer;
+					}					
+					var newval = visuVariables[event.variable].value + ((increase)?1:-1);
+					
+					if (newval > maxVal) {
+						newval = maxVal;
+					}
+					if (newval < minVal) {
+						newval = minVal;
+					}
+
+					var req = '|1|1|0|' + visuVariables[event.variable].addrP + '|' + newval + '|';
+
+					$.ajax({
+						type: 'POST',
+						async: false,
+						url: postUrl,
+						data: req,
+						//success: function( data ) {
+						//	Log("success: " + data);
+						//}
+					});
+
+					visuVariables[event.variable].value = newval;
+					update();
+				}
 			} else if (event.isA == 'Tap') {
 				// 'Tap' wird in onMouseDown gehandelt
 				// tue nichts
@@ -1765,8 +1958,76 @@ function onClick( e ) {
 	}
 }
 
+function calcVariableChange(sliderParams, newCoordinates) {
+	var maxVal = 10;
+	var minVal = 0;
+
+	if (sliderParams.maxValExpr.length > 0) {maxVal = evalExpression(sliderParams.maxValExpr);}
+	if (sliderParams.minValExpr.length > 0) {minVal = evalExpression(sliderParams.minValExpr);}
+
+	var valueRange = Math.abs(maxVal - minVal);
+	var range = sliderParams.sliderLen;
+	
+	if (sliderParams.horizontal) {
+		var distance = newCoordinates[0] - sliderParams.startPos[0];
+	} else {
+		var distance = newCoordinates[1] - sliderParams.startPos[1];
+	}
+
+	var direction = 1;
+	direction *= ((sliderParams.horizontal)?1:-1);
+	direction *= ((maxVal > minVal)?1:-1);
+	return direction * (distance/range) * valueRange;
+}
+
+// der MouseMove-Handler
+function onMouseMove(e) {
+	if (!moveSlider) {
+		return;
+	}
+	if (moveSlider.reset) {
+		moveSlider.startVal = visuVariables[moveSlider.variable].value;
+		moveSlider.reset = false;
+	}
+	if (moveSlider) {
+		//console.log(calcVariableChange(moveSlider, [e.offsetX, e.offsetY]));
+		// 0.5 is needed because parseInt() cuts off decimal places
+		var newval = parseInt(moveSlider.startVal + calcVariableChange(moveSlider, [e.offsetX, e.offsetY]) + 0.5); 
+		if (moveSlider.maxValExpr.length > 0) {maxVal = evalExpression(moveSlider.maxValExpr);}
+		if (moveSlider.minValExpr.length > 0) {minVal = evalExpression(moveSlider.minValExpr);}
+		if (minVal > maxVal) {
+			var valBuffer;
+			valBuffer = maxVal;
+			maxVal = minVal;
+			minVal = valBuffer;
+		}
+		if (newval < minVal) {
+			newval = minVal;
+		}
+		if (newval > maxVal) {
+			newval = maxVal;
+		}
+
+		var req = '|1|1|0|' + visuVariables[event.variable].addrP + '|' + newval + '|';
+
+					$.ajax({
+						type: 'POST',
+						async: false,
+						url: postUrl,
+						data: req,
+						//success: function( data ) {
+						//	Log("success: " + data);
+						//}
+					});
+
+					visuVariables[moveSlider.variable].value = newval;
+					update();
+	}
+}
+
 // der MouseDown-Handler
 function onMouseDown(e) {
+	isMouseDown = true;
 	var pos = pointerEventToXY(e);
 	var x = pos.x;
 	var y = pos.y;
@@ -1775,8 +2036,8 @@ function onMouseDown(e) {
 	//Log("X " + x + " Y " + y);
 
 	if (inputFieldActive == true) {
-	    // wir akzeptieren keine Klicks solange ein Inputfeld aktiv ist
-	    Log("inputFieldActive - exiting");
+			//Log("inputFieldActive - exiting");
+
 	    return;
 	}
 
@@ -1821,6 +2082,11 @@ function onMouseDown(e) {
 					update();
 				}
 			}
+			if (event.isA == 'Slider') {
+				moveSlider = event;
+				moveSlider.startPos = [ e.offsetX, e.offsetY ];
+				moveSlider.reset = true;
+			}
 		}
 	}
 }
@@ -1828,6 +2094,7 @@ function onMouseDown(e) {
 // Ein MouseDown registriert die betroffenen Objekte in der PendingMouseUp Liste.
 // Diese wird bei einem echten MouseUp, aber auch vor einem erneuten MouseDown abgearbeitet.
 function HandlePendingMouseUps() {
+	moveSlider = false;
 	for (var i in PendingMouseUpObjects) {
 		obj = PendingMouseUpObjects[i];
 		if (obj.variable != '') {
