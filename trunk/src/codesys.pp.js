@@ -586,6 +586,27 @@ function calculatePolygonRect(points) {
 	return rectFields;
 }
 
+function calculatePiechartRect(points) {
+	pointCenter = points[0];
+	pointCenter = pointCenter.split(',');
+	pointBottomRight = points[1];
+	pointBottomRight = pointBottomRight.split(',');
+
+	distCenterBorder = [
+		pointBottomRight[0] - pointCenter[0],
+		pointBottomRight[1] - pointCenter[1]
+	];
+
+	rectFields = [
+		+pointCenter[0] - +distCenterBorder[0],
+		+pointCenter[1] - +distCenterBorder[1],
+		+pointCenter[0] + +distCenterBorder[0],
+		+pointCenter[1] + +distCenterBorder[1],
+	];
+
+	return rectFields;
+}
+
 function parse_visu_elements(content) {
 
 	$(content).find(">element").each(function () {
@@ -941,6 +962,105 @@ function parse_visu_elements(content) {
 			}	else {
 				Log("unknown poly-shape: " + polyShape);
 			}
+		} else if (type == 'piechart') {
+			var polyCount = parseInt($myMedia.find('poly-count').text());
+			var polyShape = "";
+			var points = [];
+			$myMedia.find('point').each(function () {
+				var val = $(this).text();
+				points.push(val);
+			})
+
+			var center = $myMedia.find('center').text();
+			var centerFields = center.split(',').map(Number);;
+
+			// parse fill attributes
+			var fill_color = '255,255,255';
+			var fill_color_alarm = '255,255,255';
+			var has_inside_color = $myMedia.find('has-inside-color').text();
+			if (has_inside_color === 'true') {
+				fill_color = $myMedia.find('fill-color').text();
+				fill_color_alarm = $myMedia.find('fill-color-alarm').text();
+			}
+
+			// parse frame-attributes
+			var frame_color = '0,0,0';
+			var frame_color_alarm = '0,0,0';
+			var has_frame_color = $myMedia.find('has-frame-color').text();
+			if (has_frame_color == 'true') {
+				frame_color = $myMedia.find('frame-color').text();
+				frame_color_alarm = $myMedia.find('frame-color-alarm').text();
+			}
+			var line_width = $myMedia.find('line-width').text();
+			var enable_arc = $myMedia.find('enable-arc').text();
+
+			// parse expression
+			var exprToggleColor = [];
+			var expr_toggle_color = $myMedia.find('expr-toggle-color');
+			if (expr_toggle_color.length) {
+				exprToggleColor = parseExpression(expr_toggle_color);
+			}
+
+			var exprLeft = [];
+			var expr_left = $myMedia.find('expr-left');
+			if (expr_left.length) {
+				exprLeft = parseExpression(expr_left);
+			}
+
+			var exprTop = [];
+			var expr_top = $myMedia.find('expr-top');
+			if (expr_top.length) {
+				exprTop = parseExpression(expr_top);
+			}
+
+			var exprInvisible = [];
+			var expr_invisible = $myMedia.find('expr-invisible');
+			if (expr_invisible.length) {
+				exprInvisible = parseExpression(expr_invisible);
+			}
+
+			var exprFrameFlags = [];
+			var expr_frameFlags = $myMedia.find('expr-frame-flags');
+			if (expr_frameFlags.length) {
+				exprFrameFlags = parseExpression(expr_frameFlags);
+			}
+
+			var exprAngle1 = [];
+			var expr_angle1 = $myMedia.find('expr-angle1');
+			if (expr_angle1.length) {
+				exprAngle1 = parseExpression(expr_angle1);
+			}
+
+			var exprAngle2 = [];
+			var expr_angle2 = $myMedia.find('expr-angle2');
+			if (expr_angle2.length) {
+				exprAngle2 = parseExpression(expr_angle2);
+			}
+
+			var objId = registerPiechart(
+				polyShape,
+				points,
+				has_frame_color,
+				"rgb(" + frame_color + ")",
+				"rgb(" + frame_color_alarm + ")",
+				line_width,
+				has_inside_color,
+				"rgb(" + fill_color + ")",
+				"rgb(" + fill_color_alarm + ")",
+				enable_arc,
+				exprToggleColor,
+				exprLeft, exprTop,
+				exprInvisible,
+				exprFrameFlags,
+				exprAngle1, exprAngle2
+			);
+
+			let rectFields = calculatePiechartRect(points);
+
+			parseClickInfo($myMedia, objId);
+			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
+			parseEditInfo($myMedia, rectFields, objId);
+
 		} else if (type == 'group') {
 			//console.debug("register group");
 			var rect = $myMedia.find('rect').text();

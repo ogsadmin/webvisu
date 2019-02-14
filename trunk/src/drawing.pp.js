@@ -405,6 +405,79 @@ function registerPolygon(
 }
 
 // ****************************************************************************
+// Piechart
+
+// constructor
+function newPiechart(
+    polyShape,
+    points,
+    hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
+    hasInsideColor, fillStyle, fillStyleAlarm,
+    onlyShowArc,
+    alarmExpr,
+    leftExpr, topExpr,
+    invisibleExpr,
+    frameFlagsExpr,
+    angle1Expr, angle2Expr
+    ) {
+    this.isA = 'Piechart';
+    this.polyShape = polyShape;
+
+    this.points = points;
+
+    this.hasInsideColor = hasInsideColor;
+    this.fillStyle = fillStyle;
+    this.fillStyleAlarm = fillStyleAlarm;
+
+    this.hasFrameColor = hasFrameColor;
+    this.strokeStyle = strokeStyle;
+    this.strokeStyleAlarm = strokeStyleAlarm;
+    this.lineWidth = lineWidth == 0 ? 1 : lineWidth;
+
+    this.onlyShowArc = onlyShowArc;
+
+    this.alarmExpr = alarmExpr;
+
+    this.leftExpr = leftExpr;
+    this.topExpr = topExpr;
+    this.invisibleExpr = invisibleExpr;
+
+    this.frameFlagsExpr = frameFlagsExpr;
+
+    this.angle1Expr = angle1Expr;
+    this.angle2Expr = angle2Expr;
+}
+
+function registerPiechart(
+    polyShape,
+    points,
+    hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
+    hasInsideColor, fillStyle, fillStyleAlarm,
+    onlyShowArc,
+    alarmExpr,
+    leftExpr, topExpr, 
+    invisibleExpr, 
+    frameFlagsExpr,
+    angle1Expr, angle2Expr
+    ) {
+    drawObjects.push(new newPiechart(
+            polyShape,
+            points,
+            hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
+            hasInsideColor, fillStyle, fillStyleAlarm,
+            onlyShowArc,
+            alarmExpr,
+            leftExpr, topExpr,
+            invisibleExpr,
+            frameFlagsExpr,
+            angle1Expr, angle2Expr
+        ));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerPiechart return "+(drawObjects.length-1))
+    return drawObjects.length-1;
+}
+
+// ****************************************************************************
 // Placeholder
 
 // constructor
@@ -723,6 +796,36 @@ CanvasRenderingContext2D.prototype.ellipseByCenter = function (cx, cy, w, h) {
     return this;
 }
 
+CanvasRenderingContext2D.prototype.ellipseArc = function (x, y, radiusx, radiusy, startAngle, endAngle, anticlockwise) {
+    var yScaleFactor = radiusy/radiusx;
+
+    this.beginPath();
+
+    this.save();
+    this.scale(1, yScaleFactor);
+    this.arc(x, y * 1/yScaleFactor, radiusx, startAngle, endAngle, anticlockwise);
+    this.restore(); 
+    return this;
+}
+
+CanvasRenderingContext2D.prototype.ellipseSector = function (x, y, radiusx, radiusy, startAngle, endAngle, anticlockwise) {
+    var yScaleFactor = radiusy/radiusx,
+        yAbsolute = y * 1 / yScaleFactor;
+
+    this.beginPath();
+    this.moveTo(x,y);
+
+    this.save();
+
+    this.scale(1, yScaleFactor);
+    this.arc(x, yAbsolute, radiusx, startAngle, endAngle, anticlockwise);
+    this.lineTo(x,yAbsolute);
+
+    this.restore(); 
+
+    return this;
+}
+
 // Klick-Kontext Helper
 
 /* Achtung: 
@@ -844,6 +947,67 @@ function evalExpression(expr) {
         }
     }
     return result[0];
+}
+
+function getAngleToXAxis(xCenter, xArc, yCenter, yArc, rx, ry) {
+    yStretch = rx / ry;
+    
+    var deltaX = xArc - xCenter;
+    var deltaY = (yArc - yCenter) * yStretch ;
+    
+    if (xArc > xCenter) {
+        if (yArc == yCenter) {
+            return 0;
+        } else if (yArc > yCenter) {
+            // 0 < angle < pi/2
+            return Math.atan( deltaY / deltaX );
+        } else if (yArc < yCenter) {
+            // 3pi/2 < angle < 2pi
+            return 2*Math.PI + Math.atan( deltaY / deltaX );
+        }
+    } else if (xArc < xCenter) {
+        if (yArc == yCenter) {
+            return Math.PI;
+        } else if (yArc > yCenter) {
+            // pi/2 < angle < pi
+            return Math.PI + Math.atan( deltaY / deltaX );
+        } else if (yArc < yCenter) {
+            // pi < angle < 3pi/2 
+            return Math.PI + Math.atan( deltaY / deltaX );
+        }
+    } else if (xArc == xCenter) {
+        if (yArc > yCenter) {
+            return Math.PI/2;
+        } else if (yArc < yCenter) {
+            return 3*Math.PI/2;
+        } else {
+            // not sure what to do here
+            // we have a Piechart with both radii =0
+            return;
+        }
+    }				
+}
+
+function setLineDash(dashStyle, ctx) {
+    switch(parseInt(dashStyle)) {
+        case 1:
+            ctx.setLineDash([]);
+        case 2: 
+            ctx.setLineDash([3,3]);
+            break;
+        case 3:
+            ctx.setLineDash([8,5,3,5]);
+            break;
+        case 4:
+            ctx.setLineDash([8,3,3,3,3,3]);
+            break;
+        default:
+            // pass
+    }
+}
+
+function resetLineDash(ctx) {
+    ctx.setLineDash([]);
 }
 
 function drawAllObjects(ctx, clickContext, objects) {
@@ -1186,6 +1350,112 @@ function drawAllObjects(ctx, clickContext, objects) {
 
             ctx.closePath();
             clickContext.closePath();
+        } else if (obj.isA == "Piechart") {
+            // is invisible?
+            if (obj.invisibleExpr.length > 0) {
+                if (evalExpression(obj.invisibleExpr) > 0) {
+                    continue;
+                }
+            }
+
+            var frameStyle = 0;
+            if (obj.frameFlagsExpr.length > 0) { frameStyle = evalExpression(obj.frameFlagsExpr); }
+                                 
+            //ctx.beginPath();
+            //clickContext.beginPath();
+            clickContext.fillStyle = decimalToColorString(objId);
+            clickContext.strokeStyle = decimalToColorString(objId);
+
+            var pBuffer;
+            
+            // get characteristic points
+
+            pBuffer = obj.points[0].split(',');
+            var pCenter = [
+                parseInt(pBuffer[0]),
+                parseInt(pBuffer[1])
+            ];
+
+            pBuffer = obj.points[1].split(',');
+            var pBottomLeft = [
+                parseInt(pBuffer[0]),
+                parseInt(pBuffer[1])
+            ];
+
+            pBuffer = obj.points[2].split(',');
+            var pStart = [
+                parseInt(pBuffer[0]),
+                parseInt(pBuffer[1])
+            ];
+
+            pBuffer = obj.points[3].split(',');
+            var pEnd = [
+                parseInt(pBuffer[0]),
+                parseInt(pBuffer[1])
+            ];
+
+            var x = 0;
+            var y = 1;
+
+            var radiusx = pBottomLeft[x] - pCenter[x];  
+            var radiusy = pBottomLeft[y] - pCenter[y];
+
+            var startAngle, endAngle;
+
+            // you can either specify the angles by moving the points in codesys or by 
+            // setting the values in the element parameters
+            if(obj.angle1Expr.length > 0) {
+                startAngle = convertAngle(deg2rad(evalExpression(obj.angle1Expr)));
+            } else {
+                startAngle = getAngleToXAxis(pCenter[x], pStart[x], pCenter[y], pStart[y], radiusx, radiusy);
+            }
+
+            if(obj.angle2Expr.length > 0) {
+                endAngle = convertAngle(deg2rad(evalExpression(obj.angle2Expr)));
+            } else {
+                endAngle = getAngleToXAxis(pCenter[x], pEnd[x], pCenter[y], pEnd[y], radiusx, radiusy);
+            }
+
+            if (obj.onlyShowArc == 'true') {
+                ctx.ellipseArc(pCenter[x], pCenter[y], radiusx, radiusy, startAngle, endAngle, false);
+                clickContext.ellipseArc(pCenter[x], pCenter[y], radiusx, radiusy, startAngle, endAngle, false);
+            } else {
+                ctx.ellipseSector(pCenter[x], pCenter[y], radiusx, radiusy, startAngle, endAngle, false);
+                clickContext.ellipseSector(pCenter[x], pCenter[y], radiusx, radiusy, startAngle, endAngle, false);
+            }
+
+            fillStyle = obj.fillStyle;
+            strokeStyle = obj.strokeStyle;
+
+            // determine alarm
+            if (obj.alarmExpr.length > 0) {
+                if (evalExpression(obj.alarmExpr) > 0) {
+                    fillStyle = obj.fillStyleAlarm;
+                    strokeStyle = obj.strokeStyleAlarm;
+                }
+            }
+
+            // draw fill
+            if (obj.onlyShowArc == 'false') {
+                if (obj.hasInsideColor == 'true') {
+                    ctx.fillStyle = fillStyle;
+                    ctx.fill();
+                }
+                clickContext.fill();
+            }
+
+             // draw border
+             if (obj.hasFrameColor == 'true') {
+                ctx.lineWidth = obj.lineWidth;
+                ctx.strokeStyle = strokeStyle;
+                setLineDash(frameStyle, ctx);
+                ctx.stroke();
+                clickContext.stroke();
+                resetLineDash(ctx);
+            }
+
+            ctx.closePath();
+            clickContext.closePath();
         } else if (obj.isA == "Text") {
             // is invisible?
             if (obj.invisibleExpr.length > 0) {
@@ -1277,7 +1547,7 @@ function drawAllObjects(ctx, clickContext, objects) {
             }
 
             ctx.closePath();
-            
+
         } else if (obj.isA == "NotImplemented") {
             // is invisible?
             if (obj.invisibleExpr.length > 0) {

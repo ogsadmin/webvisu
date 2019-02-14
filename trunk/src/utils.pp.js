@@ -197,3 +197,14 @@ function getBrowserOS() {
     
 	return os;
 }
+
+function deg2rad(degree) {
+    // converts degree to radians
+    var radian = Math.PI * degree / 180; 
+    return radian;
+}
+
+function convertAngle(angle) {
+    // converts a clockwise counted angle to a counterclockwise counted and vice versa
+    return 2*Math.PI - angle;
+}
