@@ -164,7 +164,8 @@ function newSimpleShape(
     hasInsideColor, fillStyle, fillStyleAlarm,
     alarmExpr,
     leftExpr, topExpr, rightExpr, bottomExpr,
-    invisibleExpr
+    invisibleExpr,
+    frameFlagsExpr
     )
 {
     this.isA = 'SimpleShape';
@@ -191,6 +192,7 @@ function newSimpleShape(
     this.rightExpr = rightExpr;
     this.bottomExpr = bottomExpr;
     this.invisibleExpr = invisibleExpr;
+    this.frameFlagsExpr = frameFlagsExpr;
 }
 
 function registerSimpleShape(
@@ -200,7 +202,8 @@ function registerSimpleShape(
     hasInsideColor, fillStyle, fillStyleAlarm,
     alarmExpr,
     leftExpr, topExpr, rightExpr, bottomExpr,
-    invisibleExpr
+    invisibleExpr,
+    frameFlagsExpr
     )
 {
     drawObjects.push(new newSimpleShape(
@@ -210,7 +213,8 @@ function registerSimpleShape(
             hasInsideColor, fillStyle, fillStyleAlarm,
             alarmExpr,
             leftExpr, topExpr, rightExpr, bottomExpr,
-            invisibleExpr
+            invisibleExpr,
+            frameFlagsExpr
         ));
     // Gib die ID (den Index) des eben registrierten Objekts zurück
     //Log("registerSimpleShape return "+(drawObjects.length-1))
@@ -358,7 +362,8 @@ function newPolygon(
     hasInsideColor, fillStyle, fillStyleAlarm,
     alarmExpr,
     leftExpr, topExpr,
-    invisibleExpr
+    invisibleExpr,
+    frameFlagsExpr
     ) {
     this.isA = 'Polygon';
     this.polyShape = polyShape;
@@ -379,6 +384,7 @@ function newPolygon(
     this.leftExpr = leftExpr;
     this.topExpr = topExpr;
     this.invisibleExpr = invisibleExpr;
+    this.frameFlagsExpr = frameFlagsExpr;
 }
 
 function registerPolygon(
@@ -388,7 +394,8 @@ function registerPolygon(
     hasInsideColor, fillStyle, fillStyleAlarm,
     alarmExpr,
     leftExpr, topExpr, 
-    invisibleExpr
+    invisibleExpr,
+    frameFlagsExpr
     ) {
     drawObjects.push(new newPolygon(
             polyShape,
@@ -397,7 +404,8 @@ function registerPolygon(
             hasInsideColor, fillStyle, fillStyleAlarm,
             alarmExpr,
             leftExpr, topExpr,
-            invisibleExpr
+            invisibleExpr,
+            frameFlagsExpr
         ));
     // Gib die ID (den Index) des eben registrierten Objekts zurück
     //Log("registerPolygon return "+(drawObjects.length-1))
@@ -1034,6 +1042,8 @@ function drawAllObjects(ctx, clickContext, objects) {
             if (obj.rightExpr.length > 0) { right = evalExpression(obj.rightExpr); }
             var bottom = 0;
             if (obj.bottomExpr.length > 0) { bottom = evalExpression(obj.bottomExpr); }
+            var frameStyle = 0;
+            if (obj.frameFlagsExpr.length > 0) { frameStyle = evalExpression(obj.frameFlagsExpr); }
 
             switch (obj.shape) {
                 case 'rectangle':
@@ -1079,8 +1089,10 @@ function drawAllObjects(ctx, clickContext, objects) {
             if (obj.hasFrameColor == 'true') {
                 ctx.lineWidth = obj.lineWidth;
                 ctx.strokeStyle = strokeStyle;
+                setLineDash(frameStyle, ctx);
                 ctx.stroke();
                 clickContext.stroke();
+                resetLineDash(ctx);
             }
 
             ctx.closePath();
@@ -1221,6 +1233,8 @@ function drawAllObjects(ctx, clickContext, objects) {
             if (obj.leftExpr.length > 0) { left = evalExpression(obj.leftExpr); }
             var top = 0;
             if (obj.topExpr.length > 0) { top = evalExpression(obj.topExpr); }
+            var lineStyle = 0;
+            if (obj.frameFlagsExpr.length > 0) { lineStyle = evalExpression(obj.frameFlagsExpr); }
 
             if (obj.polyShape == 'polyline' || obj.polyShape == 'polygon')
             {
@@ -1344,8 +1358,10 @@ function drawAllObjects(ctx, clickContext, objects) {
             if (obj.hasFrameColor == 'true') {
                 ctx.lineWidth = obj.lineWidth;
                 ctx.strokeStyle = strokeStyle;
+                setLineDash(lineStyle, ctx);
                 ctx.stroke();
                 clickContext.stroke();
+                resetLineDash(ctx);
             }
 
             ctx.closePath();
