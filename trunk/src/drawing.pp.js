@@ -405,6 +405,33 @@ function registerPolygon(
 }
 
 // ****************************************************************************
+// Placeholder
+
+// constructor
+function newNotImplemented(
+    rectFields,
+    invisibleExpr
+    ) {
+    this.isA = 'NotImplemented';
+
+    this.rectFields = rectFields;
+    this.invisibleExpr = invisibleExpr;
+}
+
+function registerNotImplemented(
+    rectFields,
+    invisibleExpr
+    ) {
+    drawObjects.push(new newNotImplemented(
+        rectFields,
+        invisibleExpr
+        ));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerGroup return "+(drawObjects.length-1))
+    return drawObjects.length-1;
+}
+
+// ****************************************************************************
 // Group
 
 // constructor
@@ -1250,6 +1277,41 @@ function drawAllObjects(ctx, clickContext, objects) {
             }
 
             ctx.closePath();
+            
+        } else if (obj.isA == "NotImplemented") {
+            // is invisible?
+            if (obj.invisibleExpr.length > 0) {
+                if (evalExpression(obj.invisibleExpr) > 0) {
+                    continue;
+                }
+            }
+
+            var rectFields = obj.rectFields;
+
+            ctx.strokeStyle = "rgb(0,0,0)";
+
+            ctx.beginPath();
+            ctx.rect(rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1]);
+            ctx.stroke();
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.moveTo(rectFields[0], rectFields[1]);
+            ctx.lineTo(rectFields[2], rectFields[3]);
+            ctx.stroke();
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.moveTo(rectFields[2], rectFields[1]);
+            ctx.lineTo(rectFields[0], rectFields[3]);
+            ctx.stroke();
+            ctx.closePath();
+
+            /*
+            ctx.font = '10px Arial';
+            ctx.fillText("not implemented yet", rectFields[0], rectFields[1]+10);
+            */
+
         } else if (obj.isA == "Group") {
             ctx.save();
             ctx.translate(obj.x, obj.y);
