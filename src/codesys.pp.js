@@ -909,7 +909,7 @@ function parse_visu_elements(content) {
 				if (polyShape == 'polygon') {
 					parseClickInfo($myMedia, objId);
 				}
-				
+
 				let rectFields = calculatePolygonRect(points);
 
 				parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
@@ -958,6 +958,26 @@ function parse_visu_elements(content) {
 			parsedGroups.pop();
 		}
 		else {
+			var exprInvisible = [];
+			var expr_invisible = $myMedia.find('expr-invisible');
+			if (expr_invisible.length) {
+				exprInvisible = parseExpression(expr_invisible);
+			}
+
+			var rectFields = [];
+			var centerFields = [];
+			var rect = $myMedia.find('rect').text();
+
+			if (rect) {
+				rectFields = rect.split(',').map(Number);
+				registerNotImplemented(
+					rectFields,
+					exprInvisible
+				);
+			} else {
+				Log("could not draw placeholder, neither rect nor center parameters found")
+			}
+			
 			Log("unknown type: " + type);
 		}
 	});
