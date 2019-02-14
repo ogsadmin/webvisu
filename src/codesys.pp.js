@@ -716,6 +716,12 @@ function parse_visu_elements(content) {
 						exprInvisible = parseExpression(expr_invisible);
 					}
 
+					var exprFrameFlags = [];
+					var expr_frameFlags = $myMedia.find('expr-frame-flags');
+					if (expr_frameFlags.length) {
+						exprFrameFlags = parseExpression(expr_frameFlags);
+					}
+
 					var objId = registerSimpleShape(
 							shape,
 							rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
@@ -728,7 +734,8 @@ function parse_visu_elements(content) {
 							"rgb(" + fill_color_alarm + ")",
 							exprToggleColor,
 							exprLeft, exprTop, exprRight, exprBottom,
-							exprInvisible
+							exprInvisible,
+							exprFrameFlags
 						);
 
 					parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
@@ -911,6 +918,12 @@ function parse_visu_elements(content) {
 				exprInvisible = parseExpression(expr_invisible);
 			}
 
+			var exprFrameFlags = [];
+			var expr_frame_flags = $myMedia.find('expr-frame-flags');
+			if (expr_frame_flags.length) {
+				exprFrameFlags = parseExpression(expr_frame_flags);
+			}
+
 			if ((polyShape == 'polygon') || (polyShape == 'polyline')) {
 				var objId = registerPolygon(
 						polyShape,
@@ -924,7 +937,8 @@ function parse_visu_elements(content) {
 						"rgb(" + fill_color_alarm + ")",
 						exprToggleColor,
 						exprLeft, exprTop,
-						exprInvisible
+						exprInvisible,
+						exprFrameFlags
 					);
 
 				if (polyShape == 'polygon') {
@@ -949,7 +963,8 @@ function parse_visu_elements(content) {
 					"rgb(" + fill_color_alarm + ")",
 					exprToggleColor,
 					exprLeft, exprTop,
-					exprInvisible
+					exprInvisible,
+					exprFrameFlags
 				);
 
 				var center = $myMedia.find('center').text();
