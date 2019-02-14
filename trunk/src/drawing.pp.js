@@ -486,6 +486,82 @@ function registerPiechart(
 }
 
 // ****************************************************************************
+// Scrollbar Slider
+
+// constructor
+function newScrollbarSlider(
+    x, y, w,
+    sliderAreaWidth, sliderAreaHeight,
+    isHorizontal,
+    lowerBoundExpr, upperBoundExpr,
+    tapVarExpr
+    ) {
+    this.isA = 'ScrollbarSlider';
+
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.sliderAreaWidth = sliderAreaWidth;
+    this.sliderAreaHeight = sliderAreaHeight;
+    this.isHorizontal = isHorizontal;
+    this.lowerBoundExpr = lowerBoundExpr;
+    this.upperBoundExpr = upperBoundExpr;
+    this.tapVarExpr = tapVarExpr;
+}
+
+function registerScrollbarSlider(
+    x, y, w,
+    sliderAreaWidth, sliderAreaHeight,
+    isHorizontal,
+    lowerBoundExpr, upperBoundExpr,
+    tapVarExpr
+    ) {
+    drawObjects.push(new newScrollbarSlider(
+        x, y, w,
+        sliderAreaWidth, sliderAreaHeight,
+        isHorizontal,
+        lowerBoundExpr, upperBoundExpr,
+        tapVarExpr
+        ));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerGroup return "+(drawObjects.length-1))
+    return drawObjects.length-1;
+}
+
+// ****************************************************************************
+// Scrollbar Arrow
+
+// constructor
+function newScrollbarArrow(
+    x, y, 
+    width, height,
+    direction
+    ) {
+    this.isA = 'ScrollbarArrow';
+
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.direction = direction;
+}
+
+function registerScrollbarArrow(
+    x, y, 
+    width, height,
+    direction
+    ) {
+    drawObjects.push(new newScrollbarArrow(
+        x, y,
+        width, height,
+        direction
+        ));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerGroup return "+(drawObjects.length-1))
+    return drawObjects.length-1;
+}
+
+// ****************************************************************************
 // Placeholder
 
 // constructor
@@ -706,6 +782,48 @@ function registerClickObj_Action(objId, variable, newvalExpr) {
 }
 
 // ****************************************************************************
+// Click Increase/Decrease
+
+// constructor
+function clickObj_IncDec(variable, increase, minValExpr, maxValExpr) {
+    this.isA = 'IncDec';
+    this.variable = variable;
+    this.increase = increase;
+
+    this.minValExpr = minValExpr;
+    this.maxValExpr = maxValExpr;
+}
+
+function registerClickObj_IncDec(objId, variable, increase, minValExpr, maxValExpr) {
+    if(!(objId in clickObject)) {
+        clickObject[objId] = []; // Array von Klick-Info
+    }
+    clickObject[objId].push(new clickObj_IncDec(variable, increase, minValExpr, maxValExpr));
+}
+
+// ****************************************************************************
+// Click Slider
+
+// constructor
+function clickObj_Slider(variable, horizontal, sliderLen, minValExpr, maxValExpr) {
+    this.isA = 'Slider';
+    this.variable = variable;
+    this.horizontal = horizontal
+
+    this.sliderLen = sliderLen;
+
+    this.minValExpr = minValExpr;
+    this.maxValExpr = maxValExpr;
+}
+
+function registerClickObj_Slider(objId, variable, horizontal, sliderLen, minValExpr, maxValExpr) {
+    if(!(objId in clickObject)) {
+        clickObject[objId] = []; // Array von Klick-Info
+    }
+    clickObject[objId].push(new clickObj_Slider(variable, horizontal, sliderLen, minValExpr, maxValExpr));
+}
+
+// ****************************************************************************
 
 /* entfernt die Pipe-Zeichen, welche ein Leerzeichen oder Sonderzeichen einschließen
 
@@ -765,6 +883,31 @@ function strformat(format, val) {
     return format;
 }
 
+/* scrollbar helper function, calculates width and height of the arrow boxes at the ends */
+function calcArrowboxDimensions(scrollbarWidth, scrollbarHeight) {    
+    var arrowBoxDimensions = [];
+    var isHorizontalScrollbar = (scrollbarWidth > scrollbarHeight);
+    if (isHorizontalScrollbar) {
+        arrowBoxDimensions[1] = scrollbarHeight;
+
+        if (scrollbarWidth >= 4 * scrollbarHeight) {
+            // in this case the arrowBox is quadratic
+            arrowBoxDimensions[0] = arrowBoxDimensions[1];
+        } else {
+            arrowBoxDimensions[0] = scrollbarWidth/4;
+        }
+
+    } else {
+        arrowBoxDimensions[0] = scrollbarWidth;
+
+        if (scrollbarHeight >= 4 * scrollbarWidth) {
+            arrowBoxDimensions[1] = arrowBoxDimensions[0];
+        } else {
+            arrowBoxDimensions[1] = scrollbarHeight/4;
+        }
+    }
+    return arrowBoxDimensions;
+}
 
 CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
     if (w < 2 * r) r = w / 2;
@@ -832,6 +975,64 @@ CanvasRenderingContext2D.prototype.ellipseSector = function (x, y, radiusx, radi
     this.restore(); 
 
     return this;
+}
+CanvasRenderingContext2D.prototype.isoscelesFilledTriangle = function(rectX1, rectY1, rectX2, rectY2, direction, color) {
+    // draws an isosceles triangle from the minimal bounding rectangle and 
+    // the direction in which the arrow should point
+    var width = rectX2 - rectX1;
+    var height = rectY2 - rectY1;
+    var x1, y1, x2, y2, x3, y3;
+    switch (direction) {
+        case "up":
+            x1 = rectX1;
+            y1 = rectY2;
+            x2 = rectX1 + width/2;
+            y2 = rectY1;
+            x3 = rectX2;
+            y3 = rectY2;
+            break;
+        case "down":
+            x1 = rectX1;
+            y1 = rectY1;
+            x2 = rectX2;
+            y2 = rectY1;
+            x3 = rectX1 + width/2;
+            y3 = rectY2;
+            break;
+        case "left":
+            x1 = rectX2;
+            y1 = rectY1;
+            x2 = rectX2;
+            y2 = rectY2;
+            x3 = rectX1;
+            y3 = rectY1 + height/2;
+            break;
+        case "right":
+            x1 = rectX1;
+            y1 = rectY1;
+            x2 = rectX2;
+            y2 = rectY1 + height/2;
+            x3 = rectX1;
+            y3 = rectY2;
+            break;
+        default:
+            x1 = 0;
+            y1 = 0;
+            x2 = 0;
+            y2 = 0;
+            x3 = 0;
+            y3 = 0;
+            break;
+    }
+    
+    this.beginPath();
+    this.moveTo(x1, y1);
+    this.lineTo(x2, y2);
+    this.lineTo(x3, y3);
+    this.lineTo(x1, y1);
+    this.fillStyle = color;
+    this.fill();
+    this.closePath();
 }
 
 // Klick-Kontext Helper
@@ -1563,7 +1764,150 @@ function drawAllObjects(ctx, clickContext, objects) {
             }
 
             ctx.closePath();
+        } else if (obj.isA == "ScrollbarSlider") {
+            const SCROLLBAR_COLOR_SLIDER_BG = "rgb(150,150,150)";
+            const SCROLLBAR_COLOR_SLIDER = "rgb(200,200,200)"
 
+            var x = obj.x;
+            var y = obj.y;
+            var sliderWidth = obj.w;
+            var width = obj.sliderAreaWidth;    // longer side
+            var height = obj.sliderAreaHeight;  // shorter side
+            var isHorizontal = obj.isHorizontal;
+
+            var lowerBound = 0;
+            if (obj.lowerBoundExpr.length > 0) {
+                lowerBound = evalExpression(obj.lowerBoundExpr);
+            }
+            var upperBound = 10;
+            if (obj.upperBoundExpr.length > 0) {
+                upperBound = evalExpression(obj.upperBoundExpr);
+            }
+            var tapVar = 5;
+            if (obj.tapVarExpr.length > 0) {
+                tapVar = evalExpression(obj.tapVarExpr);
+            }
+
+            var sliderDistance = Math.abs(upperBound - lowerBound);
+
+            var isInverted = (upperBound < lowerBound);
+            if(isInverted) {
+                var buffer;
+                buffer = upperBound;
+                upperBound = lowerBound;
+                lowerBound = buffer;
+            }
+
+            ctx.beginPath();
+            var sliderPosRelative;
+            var sliderPos;
+            if (isHorizontal) {
+                if (isInverted) {
+                    if (tapVar < lowerBound) {
+                        sliderPos = x + width;
+                    } else if (tapVar > upperBound) {
+                        sliderPos = x;
+                    } else {
+                        sliderPosRelative = (tapVar - lowerBound) / sliderDistance;
+                        sliderPos = x + width - sliderPosRelative * width;
+                    }
+                } else {
+                    if (tapVar < lowerBound) {
+                        sliderPos = x;
+                    } else if (tapVar > upperBound) {
+                        sliderPos = x + width;
+                    } else {
+                        sliderPosRelative = (tapVar - lowerBound) / sliderDistance;
+                        sliderPos = x + sliderPosRelative * width;
+                    }
+                }
+                ctx.rect(sliderPos, y, sliderWidth, height);
+            } else {
+                if (isInverted) {
+                    if (tapVar < lowerBound) {
+                        sliderPos = y;
+                    } else if (tapVar > upperBound) {
+                        sliderPos = y + width;
+                    } else {
+                        sliderPosRelative = (tapVar - lowerBound) / sliderDistance;
+                        sliderPos = y + sliderPosRelative * width;
+                    }
+                } else {
+                    if (tapVar < lowerBound) {
+                        sliderPos = y + width;
+                    } else if (tapVar > upperBound) {
+                        sliderPos = y;
+                    } else {
+                        sliderPosRelative = (tapVar - lowerBound) / sliderDistance;
+                        sliderPos = y + width - sliderPosRelative * width;
+                    }
+                }
+                ctx.rect(x, sliderPos, height, sliderWidth);                
+            }
+            ctx.fillStyle = SCROLLBAR_COLOR_SLIDER_BG;
+            ctx.fill();
+            ctx.closePath;
+
+            ctx.beginPath();
+            /* pseudocode, TO DO 
+            if (click) {
+                ctx.save();
+                ctx.translate(1,1);
+            } */
+            if (isHorizontal) {
+                ctx.rect(sliderPos, y, sliderWidth-2, height-2);
+            } else {
+                ctx.rect(x, sliderPos, height-2, sliderWidth-2)
+            }
+            ctx.fillStyle = SCROLLBAR_COLOR_SLIDER;
+            ctx.fill();
+            /* pseudocode, TO DO
+            if (click) {
+                ctx.recall();
+            } */
+            ctx.closePath();
+
+            clickContext.beginPath();
+            clickContext.fillStyle = decimalToColorString(objId);
+            if (isHorizontal) {
+                clickContext.rect(sliderPos, y, sliderWidth, height);
+            } else {
+                clickContext.rect(x, sliderPos, height, sliderWidth);
+            }
+            clickContext.fill();
+            clickContext.closePath();
+            //ctx.scrollbar(obj.x1, obj.y1, obj.x2, obj.y2, lowerBound, upperBound, tapVar);
+        } else if (obj.isA == "ScrollbarArrow") {
+            const SCROLLBAR_COLOR_ARROW = "rgb(0,0,0)";
+            const SCROLLBAR_COLOR_ARROWBOX_BG = "rgb(150,150,150)";
+            const SCROLLBAR_COLOR_ARROWBOX = "rgb(200,200,200)";
+
+            var x = obj.x;
+            var y = obj.y;
+            var width = obj.width;
+            var height = obj.height;
+            var direction = obj.direction;
+
+            ctx.beginPath();
+            ctx.rect(x, y, width, height);
+            ctx.fillStyle = SCROLLBAR_COLOR_ARROWBOX_BG;
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.rect(x, y, width-2, height-2);
+            ctx.fillStyle = SCROLLBAR_COLOR_ARROWBOX;
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.isoscelesFilledTriangle(x + width/4, y + height/4, x+width*3/4, y+height*3/4, direction, SCROLLBAR_COLOR_ARROW);
+
+            clickContext.beginPath();
+            clickContext.rect(x, y, width, height);
+            clickContext.fillStyle = decimalToColorString(objId);
+            clickContext.fill();
+            clickContext.closePath();
+            
         } else if (obj.isA == "NotImplemented") {
             // is invisible?
             if (obj.invisibleExpr.length > 0) {
