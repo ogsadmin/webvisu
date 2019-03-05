@@ -1,0 +1,21 @@
+Mouse vs. Touch
+----------------
+
+Wie im Blockbeitrag [1] sehr schön ausgeführt gibt es einen großen Unterschied 
+zwischen Mouse-Events und Touch-Events.
+
+Die "natürliche" Reihenfolge der Events ist
+1. touchstart
+2. touchmove
+3. touchend
+4. mouseover
+5. mousemove
+6. mousedown
+7. mouseup
+8. click 
+
+Man darf "touchstart" und "mousedown" bzw. "touchend" und "mouseup" nicht
+gleichzeitig verarbeiten, da sie jeweils beide gesendet werden.
+
+
+[1] http://www.html5rocks.com/en/mobile/touchandmouse/?redirect_from_locale=de
