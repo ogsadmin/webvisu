@@ -31,6 +31,7 @@ const VAR_TYPE_NONE = 24;
 // globale variablen
 var postUrl = '/plc/webvisu.htm';
 var moveSlider = false;
+var subvisuParams = {};
 
 // In welchem Format findet der Variablen-Datenaustausch statt?
 // 0 = Standard
@@ -485,6 +486,10 @@ function load_visu_compressed_success(content) {
 	});
 }
 
+function load_subvisu_compressed_success(content) {
+	// TO DO
+}
+
 
 function load_visu_success(content) {
 	perfLoadEnd = new Date().getTime();
@@ -573,6 +578,34 @@ function load_visu_success(content) {
 
 	// Das einmalige Aufrufen der Update-Funktion startet den zyklischen Ablauf
 	update();
+}
+
+function load_subvisu_success(content) {
+	$(content).find(">visualisation").each(function () {
+		// gefundenen abschnitt in variable zwischenspeichern (cachen)
+		var $myMedia = $(this);
+
+		visuName = $myMedia.find('name').text();
+
+		var size = $myMedia.find('size').text();
+		var sizeFields = size.split(',').map(Number);
+
+		//$('#canvas').WIDTH = visuSizeX+1;
+		//$('#canvas').HEIGHT = visuSizeY+1;
+
+		// TO DO: Klick-Kontext konfigurieren
+		//clickCanvas.width = visuSizeX + 1;
+		//clickCanvas.height = visuSizeY + 1;
+
+		// TO DO: bitmaps, dynamic text
+
+		//parsedGroups = [];
+		//parsedGroups.push(new newGroup(0, 0, visuSizeX, visuSizeY));
+		//parse_visu_elements($myMedia);
+		subvisuParams.sizeFields = sizeFields;
+		subvisuParams.$myMedia = $myMedia;
+	});
+	console.log("subvisu loaded");
 }
 
 function calculatePolygonRect(points) {
@@ -694,7 +727,7 @@ function parse_visu_elements(content) {
 					var line_width = $myMedia.find('line-width').text();
 
 					var center = $myMedia.find('center').text();
-					var centerFields = center.split(',').map(Number);;
+					var centerFields = center.split(',').map(Number);
 
 					// parse expression
 					var exprToggleColor = [];
@@ -1242,7 +1275,39 @@ function parse_visu_elements(content) {
 			additionalInfo.minValExpr = exprLowerBound;
 			additionalInfo.maxValExpr = exprUpperBound;
 			parseClickInfo($myMedia, objId, additionalInfo);
-		}	else {
+		}	else if (type == 'reference') {
+			var exprInvisible = [];
+			var expr_invisible = $myMedia.find('expr-invisible');
+			if (expr_invisible.length) {
+				exprInvisible = parseExpression(expr_invisible);
+			}
+			var center = $myMedia.find('center').text();
+			var centerFields = center.split(',').map(Number);
+			
+			var subvisu = $myMedia.find('name').text();
+
+			var rect = $myMedia.find('rect').text();
+			rectFields = rect.split(',').map(Number);	// dimensionen div
+
+			// neue Visu laden
+			var subvisuFilename = getVisuFileName(subvisu);
+			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
+			load_visu(subvisuFilename, true);
+
+			registerSubvisuStart(
+				rectFields,
+				subvisuParams.sizeFields
+			)
+
+			parse_visu_elements(subvisuParams.$myMedia);
+
+			registerSubvisuEnd(
+
+			);
+
+			
+
+		} else {
 			var exprInvisible = [];
 			var expr_invisible = $myMedia.find('expr-invisible');
 			if (expr_invisible.length) {
@@ -1260,7 +1325,7 @@ function parse_visu_elements(content) {
 					exprInvisible
 				);
 			} else {
-				Log("could not draw placeholder, neither rect nor center parameters found")
+				Log("could not draw placeholder, rect parameters not found")
 			}
 			
 			Log("unknown type: " + type);
@@ -1367,7 +1432,7 @@ function load_dyntextfile(filename) {
 	}
 }
 
-function load_visu(filename) {
+function load_visu(filename, isSubvisu) {
 	console.debug("load " + filename);
 
 	perfLoadStart = new Date().getTime();
@@ -1382,7 +1447,7 @@ function load_visu(filename) {
 			dataType: 'blob', // mit zip.js und inflate.js
 			//dataType: 'application/zip',
 			//dataType: 'text/plain',
-			success: load_visu_compressed_success,
+			success: (isSubvisu)?load_subvisu_compressed_success:load_visu_compressed_success,
 			error: function (jqXHR, textStatus, errorThrown) {
 				Log("load_visu " + textStatus + " " + errorThrown);
 				errorStateEnable();
@@ -1394,7 +1459,7 @@ function load_visu(filename) {
 			async: false,
 			cache: false,
 			url: filename,
-			success: load_visu_success,
+			success: (isSubvisu)?load_subvisu_success:load_visu_success,
 			error: function (jqXHR, textStatus, errorThrown) {
 				Log("load_visu " + textStatus + " " + errorThrown);
 				errorStateEnable();
