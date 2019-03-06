@@ -33,6 +33,8 @@ var updateInterval = 500;
 var updateIntervalId;
 var plcDir = "../PLC";
 var startVisu = "plc_visu";
+var ctxStack = [];
+var clickContextStack = [];
 
 /*
 #ifdef USE_STEELSERIES
@@ -582,6 +584,56 @@ function registerNotImplemented(
     drawObjects.push(new newNotImplemented(
         rectFields,
         invisibleExpr
+        ));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerGroup return "+(drawObjects.length-1))
+    return drawObjects.length-1;
+}
+
+
+// ****************************************************************************
+// Subvisu Start
+
+// constructor
+function newSubvisuStart(
+    divFields,
+    canvasDimensions
+    ) {
+    this.isA = 'SubvisuStart';
+
+    this.divFields = divFields;
+    this.canvasDimensions = canvasDimensions;
+}
+
+function registerSubvisuStart(
+    divFields,
+    canvasDimensions
+    ) {
+    drawObjects.push(new newSubvisuStart(
+        divFields,
+        canvasDimensions
+        ));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerGroup return "+(drawObjects.length-1))
+    return drawObjects.length-1;
+}
+
+
+// ****************************************************************************
+// Subvisu End
+
+// constructor
+function newSubvisuEnd(
+    //
+    ) {
+    this.isA = 'SubvisuEnd';
+}
+
+function registerSubvisuEnd(
+    //
+    ) {
+    drawObjects.push(new newSubvisuEnd(
+        //
         ));
     // Gib die ID (den Index) des eben registrierten Objekts zurück
     //Log("registerGroup return "+(drawObjects.length-1))
@@ -1908,6 +1960,55 @@ function drawAllObjects(ctx, clickContext, objects) {
             clickContext.fill();
             clickContext.closePath();
             
+        } else if (obj.isA == "SubvisuStart") {
+            ctxStack.push(ctx);
+            clickContextStack.push(clickContext);
+
+            if(obj.canvas == undefined) {
+                // div configuration, all parameters except size and position fixed for now
+                // means every subvisu is interpreted as "fixed, scrollable"
+                divConfig = {};
+                divConfig.height = obj.divFields[3] - obj.divFields[1];
+                divConfig.width = obj.divFields[2] - obj.divFields[0];
+                divConfig.xOffset = obj.divFields[0];
+                divConfig.yOffset = obj.divFields[1];
+                divConfig.style = "";
+                divConfig.style += "position: absolute; ";
+                divConfig.style += "max-height: " + divConfig.height + "px; ";
+                divConfig.style += "max-width: " + divConfig.width + "px; ";
+                divConfig.style += "z-index: 10; ";                            // je höher der z-index desto weiter im Vordergrund ist das Element
+                divConfig.style += "margin-left: " + divConfig.xOffset + "px; ";
+                divConfig.style += "margin-top: " + divConfig.yOffset + "px; ";
+                divConfig.style += "overflow: auto; ";
+
+                canvasConfig = {};
+                canvasConfig.style = "";
+                canvasConfig.width = obj.canvasDimensions[0];
+                canvasConfig.height = obj.canvasDimensions[1];
+
+                divString = "<div ";
+                divString += "id='div" + objId + "' ";
+                divString += "class='subvisu' ";
+                divString += "style='" + divConfig.style + "' ";
+                divString += "></div>";
+                newDiv = $(divString);
+                $(newDiv).appendTo("body");
+
+                canvasString = "<canvas ";
+                canvasString += "id='canvas" + objId + "' ";
+                canvasString += "width='" + canvasConfig.width + "px' ";
+                canvasString += "height='" + canvasConfig.height + "px' ";
+                canvasString += "style='" + canvasConfig.style + "' ";
+                canvasString += "></canvas>";
+                newCanvas = $(canvasString);
+                $(newCanvas).appendTo("#div" + objId);
+
+                obj.canvas = document.getElementById("canvas" + objId);
+            }
+            ctx = obj.canvas.getContext("2d");
+        } else if (obj.isA == "SubvisuEnd") {
+            ctx = ctxStack.pop();
+            clickContext = clickContextStack.pop();
         } else if (obj.isA == "NotImplemented") {
             // is invisible?
             if (obj.invisibleExpr.length > 0) {
