@@ -31,7 +31,6 @@ const VAR_TYPE_NONE = 24;
 // globale variablen
 var postUrl = '/plc/webvisu.htm';
 var moveSlider = false;
-var subvisuParams = {};
 
 // In welchem Format findet der Variablen-Datenaustausch statt?
 // 0 = Standard
@@ -585,10 +584,12 @@ function load_subvisu_success(content) {
 		// gefundenen abschnitt in variable zwischenspeichern (cachen)
 		var $myMedia = $(this);
 
+		/*
 		visuName = $myMedia.find('name').text();
 
 		var size = $myMedia.find('size').text();
 		var sizeFields = size.split(',').map(Number);
+		*/
 
 		//$('#canvas').WIDTH = visuSizeX+1;
 		//$('#canvas').HEIGHT = visuSizeY+1;
@@ -602,8 +603,8 @@ function load_subvisu_success(content) {
 		//parsedGroups = [];
 		//parsedGroups.push(new newGroup(0, 0, visuSizeX, visuSizeY));
 		//parse_visu_elements($myMedia);
-		subvisuParams.sizeFields = sizeFields;
-		subvisuParams.$myMedia = $myMedia;
+		extract_var_addr($myMedia);
+		parse_visu_elements($myMedia);
 	});
 	console.log("subvisu loaded");
 }
@@ -1276,34 +1277,42 @@ function parse_visu_elements(content) {
 			additionalInfo.maxValExpr = exprUpperBound;
 			parseClickInfo($myMedia, objId, additionalInfo);
 		}	else if (type == 'reference') {
+
+			console.log("found visu, visuVariables: ", visuVariables);
 			var exprInvisible = [];
 			var expr_invisible = $myMedia.find('expr-invisible');
 			if (expr_invisible.length) {
 				exprInvisible = parseExpression(expr_invisible);
 			}
-			var center = $myMedia.find('center').text();
-			var centerFields = center.split(',').map(Number);
-			
-			var subvisu = $myMedia.find('name').text();
 
+			//var center = $myMedia.find('center').text();
+			//var centerFields = center.split(',').map(Number);
+			
 			var rect = $myMedia.find('rect').text();
-			rectFields = rect.split(',').map(Number);	// dimensionen div
+			var rectFields = rect.split(',').map(Number);	
+
+			var clipFrame = $myMedia.find('clip-frame').text();
+			var showFrame = $myMedia.find('show-frame').text();
+			var frameColor = $myMedia.find('frame-color').text();
+
+			var newVisu = registerSubvisuStart(
+				rectFields,
+				clipFrame,
+				showFrame, frameColor,
+				exprInvisible
+			);
+			console.log(drawObjects[newVisu]);
 
 			// neue Visu laden
+			var subvisu = $myMedia.find('name').text();
 			var subvisuFilename = getVisuFileName(subvisu);
-			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
 			load_visu(subvisuFilename, true);
-
-			registerSubvisuStart(
-				rectFields,
-				subvisuParams.sizeFields
-			)
-
-			parse_visu_elements(subvisuParams.$myMedia);
 
 			registerSubvisuEnd(
 
 			);
+
+			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
 
 			
 
