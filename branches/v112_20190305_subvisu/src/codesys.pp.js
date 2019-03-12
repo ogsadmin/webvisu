@@ -609,6 +609,13 @@ function load_subvisu_success(content) {
 		// gefundenen abschnitt in variable zwischenspeichern (cachen)
 		var $myMedia = $(this);
 
+		var size = $myMedia.find('size').text();
+		var sizeFields = size.split(',').map(Number);
+
+		addSubvisuParams(
+			sizeFields
+		);
+
 		/*
 		visuName = $myMedia.find('name').text();
 
@@ -631,7 +638,7 @@ function load_subvisu_success(content) {
 		extract_var_addr($myMedia);
 		parse_visu_elements($myMedia);
 	});
-	console.log("subvisu loaded");
+	Log("subvisu loaded");
 }
 
 function calculatePolygonRect(points) {
@@ -1303,7 +1310,6 @@ function parse_visu_elements(content) {
 			parseClickInfo($myMedia, objId, additionalInfo);
 		}	else if (type == 'reference') {
 
-			console.log("found visu, visuVariables: ", visuVariables);
 			var exprInvisible = [];
 			var expr_invisible = $myMedia.find('expr-invisible');
 			if (expr_invisible.length) {
@@ -1317,16 +1323,22 @@ function parse_visu_elements(content) {
 			var rectFields = rect.split(',').map(Number);	
 
 			var clipFrame = $myMedia.find('clip-frame').text();
+			var fixedFrame = $myMedia.find('original-frame').text();
+			var fixedFrameScrollable = $myMedia.find('original-scrollable-frame').text();
+			var scaleIsotropic = $myMedia.find('iso-frame').text();
+
 			var showFrame = $myMedia.find('show-frame').text();
 			var frameColor = $myMedia.find('frame-color').text();
+			var lineWidth = $myMedia.find('line-width').text();
+
+			
 
 			var newVisu = registerSubvisuStart(
 				rectFields,
 				clipFrame,
-				showFrame, frameColor,
+				fixedFrame, fixedFrameScrollable, scaleIsotropic,
 				exprInvisible
 			);
-			console.log(drawObjects[newVisu]);
 
 			// neue Visu laden
 			var subvisu = $myMedia.find('name').text();
@@ -1334,6 +1346,9 @@ function parse_visu_elements(content) {
 			load_visu(subvisuFilename, true);
 
 			registerSubvisuEnd(
+				rectFields,
+				showFrame, frameColor,
+				lineWidth
 			);
 
 			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
@@ -2105,7 +2120,6 @@ function onMouseMove(e) {
 			maxVal = minVal;
 			minVal = valBuffer;
 		}
-		console.log("min: " + minVal + ", max: " + maxVal + ", cur: " + newval);
 		if (newval < minVal) {
 			newval = minVal;
 		}
