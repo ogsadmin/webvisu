@@ -1975,7 +1975,7 @@ function drawAllObjects(ctx, clickContext, objects) {
             
             if(obj.showFrame == "true") {
                 ctx.strokeStyle = "rgb(" + obj.frameColor + ")";
-                ctx.lineWidth = 1;
+                ctx.lineWidth = 10;
                 ctx.beginPath();
                 ctx.rect(xOffset, yOffset, width, height);
                 ctx.stroke();
@@ -1988,8 +1988,17 @@ function drawAllObjects(ctx, clickContext, objects) {
             ctx.clip();
             ctx.translate(xOffset, yOffset);
             ctx.closePath();
+
+            clickContext.save();
+            clickContext.beginPath();
+            clickContext.rect(xOffset, yOffset, width, height);
+            clickContext.clip();
+            clickContext.translate(xOffset,yOffset);
+            clickContext.closePath();
+
         } else if (obj.isA == "SubvisuEnd") {
             ctx.restore();
+            clickContext.restore();
         } else if (obj.isA == "NotImplemented") {
             // is invisible?
             if (obj.invisibleExpr.length > 0) {

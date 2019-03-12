@@ -462,6 +462,31 @@ function CheckStr8(str) {
 	}
 }
 
+function toSignedInt(unsignedInt, varType)
+{
+	switch (varType) {
+		case VAR_TYPE_SINT:
+			if (unsignedInt & 0x80) { 
+				unsignedInt = -(0xFF - unsignedInt + 1);
+			}
+			break;
+		case VAR_TYPE_INT:
+			if (unsignedInt & 0x8000) {
+				unsignedInt = -(0xFFFF - unsignedInt + 1);
+			}
+			break;
+		case VAR_TYPE_DINT:
+			if (unsignedInt & 0x80000000) {
+				unsignedInt = -(0xFFFFFFFF - unsignedInt + 1);
+			}
+			break;
+		default:
+			// we cannot convert the input
+			break;
+	}
+	return unsignedInt
+}
+
 // mit zip.js und inflate.js
 function load_visu_compressed_success(content) {
 	Log("visu is compressed - try to inflate");
@@ -1309,10 +1334,10 @@ function parse_visu_elements(content) {
 			load_visu(subvisuFilename, true);
 
 			registerSubvisuEnd(
-
 			);
 
 			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
+			
 
 			
 
@@ -1601,11 +1626,13 @@ function update_vars_std() {
 					//case VAR_TYPE_NONE:
 					default:
 						if (obj.numBytes == 1) {
-							obj.value = fields[count] & 0xFF;
+							// (fields[count] & 0xFF) unfortunately always returns an unsigned integer
+							// so we have to convert it back to signed manually
+							obj.value = toSignedInt(fields[count] & 0xFF, obj.varType);
 						} else if (obj.numBytes == 2) {
-							obj.value = fields[count] & 0xFFFF;
+							obj.value = toSignedInt(fields[count] & 0xFFFF, obj.varType);
 						} else if (obj.numBytes == 4) {
-							obj.value = fields[count] & 0xFFFFFFFF;
+							obj.value = toSignedInt(fields[count] & 0xFFFFFFFF, obj.varType);
 						} else {
 							obj.value = fields[count];
 						}
@@ -2025,6 +2052,9 @@ function onClick( e ) {
 			} else if (event.isA == 'Tap') {
 				// 'Tap' wird in onMouseDown gehandelt
 				// tue nichts
+			} else if (event.isA == 'Slider') {
+				// 'Slider' wird in onMouseDown gehandelt
+				// tue nichts
 			} else {
 				Log("onClick: found unknown event: " + event.isA);
 			}
@@ -2075,6 +2105,7 @@ function onMouseMove(e) {
 			maxVal = minVal;
 			minVal = valBuffer;
 		}
+		console.log("min: " + minVal + ", max: " + maxVal + ", cur: " + newval);
 		if (newval < minVal) {
 			newval = minVal;
 		}
