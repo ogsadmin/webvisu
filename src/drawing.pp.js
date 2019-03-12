@@ -568,15 +568,16 @@ function registerScrollbarArrow(
 function newSubvisuStart(
     rectFields,
     clipFrame, 
-    showFrame, frameColor,
+    fixedFrame, fixedFrameScrollable, scaleIsotropic,
     invisibleExpr
     ) {
     this.isA = 'SubvisuStart';
 
     this.rectFields = rectFields;
     this.clipFrame = clipFrame;
-    this.showFrame = showFrame;
-    this.frameColor = frameColor;
+    this.fixedFrame = fixedFrame;
+    this.fixedFrameScrollable = fixedFrameScrollable;
+    this.scaleIsotropic = scaleIsotropic;
 
     this.invisibleExpr = invisibleExpr;
 }
@@ -584,13 +585,13 @@ function newSubvisuStart(
 function registerSubvisuStart(
     rectFields,
     clipFrame,
-    showFrame, frameColor,
+    fixedFrame, fixedFrameScrollable, scaleIsotropic,
     invisibleExpr
     ) {
     drawObjects.push(new newSubvisuStart(
         rectFields,
         clipFrame,
-        showFrame, frameColor,
+        fixedFrame, fixedFrameScrollable, scaleIsotropic,
         invisibleExpr
         ));
     // Gib die ID (den Index) des eben registrierten Objekts zurück
@@ -598,21 +599,46 @@ function registerSubvisuStart(
     return drawObjects.length-1;
 }
 
+function addSubvisuParams(
+        subvisuSize
+    ) {
+        lastElement = drawObjects.pop(); 
+        console.log(lastElement.isA);
+        if (!(lastElement.isA == "SubvisuStart")) {
+            drawObjects.push(lastElement);
+            Log("wrong use of 'addSubvisuParams'-Function, must be after 'registerSubvisuStart'");
+            return;
+        }
+        lastElement.subvisuSize = subvisuSize;
+        drawObjects.push(lastElement);
+}
+
 // ****************************************************************************
 // subvisuEnd
 
 // constructor
 function newSubvisuEnd(
-
+    rectFields,
+    showFrame, frameColor,
+    lineWidth
     ) {
     this.isA = 'SubvisuEnd';
+
+    this.rectFields = rectFields;
+    this.showFrame = showFrame;
+    this.frameColor = frameColor;
+    this.lineWidth = lineWidth;
 }
 
 function registerSubvisuEnd(
-
+    rectFields,
+    showFrame, frameColor,
+    lineWidth
     ) {
     drawObjects.push(new newSubvisuEnd(
-
+        rectFields,
+        showFrame, frameColor,
+        lineWidth
         ));
     // Gib die ID (den Index) des eben registrierten Objekts zurück
     //Log("registerGroup return "+(drawObjects.length-1))
@@ -1972,33 +1998,62 @@ function drawAllObjects(ctx, clickContext, objects) {
             var width = obj.rectFields[2] - obj.rectFields[0];
             var height = obj.rectFields[3] - obj.rectFields[1];
 
+            ctx.save();
+            clickContext.save();
+
+            if (obj.clipFrame == "true") {
+                ctx.beginPath();
+                ctx.rect(xOffset, yOffset, width, height);
+                ctx.clip();
+                ctx.closePath();
+
+                clickContext.beginPath();
+                clickContext.rect(xOffset, yOffset, width, height);
+                clickContext.clip();
+                clickContext.closePath();
+            }
+
+            ctx.translate(xOffset, yOffset);
+            clickContext.translate(xOffset,yOffset);
+
+            if (obj.fixedFrame == "false" && obj.fixedFrameScrollable == "false") {
+                var scaleFactorX = width / obj.subvisuSize[0];
+                var scaleFactorY = height / obj.subvisuSize[1];
+
+                if (obj.scaleIsotropic == "true")
+                {
+                    if (scaleFactorX < scaleFactorY) {
+                        ctx.scale(scaleFactorX, scaleFactorX);
+                        clickContext.scale(scaleFactorX, scaleFactorX);
+                    } else {
+                        ctx.scale(scaleFactorY, scaleFactorY);
+                        clickContext.scale(scaleFactorY, scaleFactorY);
+                    }
+                } else {
+                    ctx.scale(scaleFactorX, scaleFactorY);
+                    clickContext.scale(scaleFactorX, scaleFactorY);
+                }
+            }
+
+        } else if (obj.isA == "SubvisuEnd") {
+            ctx.restore();
+            clickContext.restore();
+
+            var xOffset = obj.rectFields[0];
+            var yOffset = obj.rectFields[1];
+            var width = obj.rectFields[2] - obj.rectFields[0];
+            var height = obj.rectFields[3] - obj.rectFields[1];
+
             
             if(obj.showFrame == "true") {
                 ctx.strokeStyle = "rgb(" + obj.frameColor + ")";
-                ctx.lineWidth = 10;
+                ctx.lineWidth = parseInt(obj.lineWidth) || 1;
                 ctx.beginPath();
                 ctx.rect(xOffset, yOffset, width, height);
                 ctx.stroke();
                 ctx.closePath();
             }
 
-            ctx.save();
-            ctx.beginPath();
-            ctx.rect(xOffset, yOffset, width, height);
-            ctx.clip();
-            ctx.translate(xOffset, yOffset);
-            ctx.closePath();
-
-            clickContext.save();
-            clickContext.beginPath();
-            clickContext.rect(xOffset, yOffset, width, height);
-            clickContext.clip();
-            clickContext.translate(xOffset,yOffset);
-            clickContext.closePath();
-
-        } else if (obj.isA == "SubvisuEnd") {
-            ctx.restore();
-            clickContext.restore();
         } else if (obj.isA == "NotImplemented") {
             // is invisible?
             if (obj.invisibleExpr.length > 0) {
