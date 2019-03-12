@@ -27,6 +27,8 @@ const VAR_TYPE_LREAL = 22;
 const VAR_TYPE_REF = 23;
 const VAR_TYPE_NONE = 24;
 
+const SUBVISU_SCROLLBAR_WIDTH = 20;
+
 
 // globale variablen
 var postUrl = '/plc/webvisu.htm';
@@ -1333,7 +1335,7 @@ function parse_visu_elements(content) {
 
 			
 
-			var newVisu = registerSubvisuStart(
+			var newVisuId = registerSubvisuStart(
 				rectFields,
 				clipFrame,
 				fixedFrame, fixedFrameScrollable, scaleIsotropic,
@@ -1350,6 +1352,10 @@ function parse_visu_elements(content) {
 				showFrame, frameColor,
 				lineWidth
 			);
+
+			if (fixedFrameScrollable == "true") {
+				registerSubvisuScrollbar(newVisuId);
+			}
 
 			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
 			
@@ -1380,6 +1386,148 @@ function parse_visu_elements(content) {
 			Log("unknown type: " + type);
 		}
 	});
+}
+
+function registerSubvisuScrollbar(subvisuStartId)
+{
+	var rectFields = drawObjects[subvisuStartId].rectFields;
+	var scrollbarsToDraw = ["corner", "horizontal", "vertical"];
+
+	scrollbarsToDraw.forEach(function(orientation) {
+		if(orientation == "corner") {
+			var rectFieldsScrollbar = [
+				rectFields[2] - SUBVISU_SCROLLBAR_WIDTH,
+				rectFields[3] - SUBVISU_SCROLLBAR_WIDTH,
+				rectFields[2],
+				rectFields[3]
+			];
+			registerScrollbarRect(rectFieldsScrollbar);
+			return;
+		} else if(orientation == "horizontal") {
+			var rectFieldsScrollbar = [
+				rectFields[0],
+				rectFields[3] - SUBVISU_SCROLLBAR_WIDTH,
+				rectFields[2] - SUBVISU_SCROLLBAR_WIDTH,
+				rectFields[3]
+			];
+		} else {
+			var rectFieldsScrollbar = [
+				rectFields[2] - SUBVISU_SCROLLBAR_WIDTH,
+				rectFields[1],
+				rectFields[2],
+				rectFields[3] - SUBVISU_SCROLLBAR_WIDTH
+			];
+		}
+		registerScrollbarRect(rectFieldsScrollbar);
+		
+		var x1 = rectFieldsScrollbar[0];
+		var y1 = rectFieldsScrollbar[1];
+		var x2 = rectFieldsScrollbar[2];
+		var y2 = rectFieldsScrollbar[3];
+
+		var isHorizontal = ( orientation == "horizontal" );
+
+		var arrowboxDimensions = calcArrowboxDimensions(x2-x1, y2-y1);
+		
+		var lowerBound = 0;
+		var subvisuStartObj = drawObjects[subvisuStartId];
+		if (isHorizontal) {
+			var sliderWidth = arrowboxDimensions[0] / 2;
+			var xSliderArea = x1 + arrowboxDimensions[0];
+			var ySliderArea = y1;
+			var sliderAreaWidth = x2 - x1 - 2 * arrowboxDimensions[0] - sliderWidth;
+			var sliderAreaHeight = y2 - y1;
+			var upperBound = subvisuStartObj.subvisuSize[0] - (rectFields[2] - rectFields[0]) + SUBVISU_SCROLLBAR_WIDTH;
+		} else {
+			var sliderWidth = arrowboxDimensions[1] / 2;
+			var xSliderArea = x1;
+			var ySliderArea = y1 + arrowboxDimensions[1];
+			var sliderAreaWidth = y2 - y1 - 2 * arrowboxDimensions[1] - sliderWidth;
+			var sliderAreaHeight = x2 - x1;
+			var upperBound = subvisuStartObj.subvisuSize[1] - (rectFields[3] - rectFields[1]) + SUBVISU_SCROLLBAR_WIDTH;
+		}
+
+		if (!isHorizontal) {
+			var buffer = lowerBound;
+			lowerBound = upperBound;
+			upperBound = buffer;
+		}		
+
+		objId = registerScrollbarSlider(
+			xSliderArea, ySliderArea,
+			sliderWidth,
+			sliderAreaWidth, sliderAreaHeight,
+			isHorizontal,
+			lowerBound, upperBound,
+			0
+		);
+
+		registerClickObj_Slider(
+			objId, 
+			0, 
+			isHorizontal, 
+			sliderAreaWidth,
+			lowerBound, 
+			upperBound
+		);
+
+		console.log("x ", drawObjects[subvisuStartId]);
+		if (!drawObjects[subvisuStartId].scrollbarSliderIds)
+		{
+			drawObjects[subvisuStartId].scrollbarSliderIds = [];
+		}
+		drawObjects[subvisuStartId].scrollbarSliderIds[(isHorizontal)?"horizontal":"vertical"] = objId;
+
+		/*
+		registerScrollbarSlider(
+
+		);
+		registerScrollbarArrow(
+
+		);
+		registerScrollbarArrow(
+
+		);*/
+	});
+				
+}
+
+function registerScrollbarRect(rectFields) {
+	var has_frame_color = "false";
+	var frame_color = "0,0,0";
+	var frame_color_alarm = "0,0,0";
+	var line_width = "0";
+	var has_inside_color = "true";
+	var fill_color = "220,220,220";
+	var fill_color_alarm = "0,0,0";
+	var exprToggleColor = [];
+	var exprXPos = [];
+	var exprYPos = [];
+	var exprLeft = [];
+	var exprTop = [];
+	var exprRight = [];
+	var exprBottom = [];
+	var exprInvisible = [];
+	var exprFrameFlags = [];
+	var exprFrameColor = [];
+
+	var objId = registerSimpleShape(
+		"rectangle",
+		rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+		has_frame_color,
+		"rgb(" + frame_color + ")",
+		"rgb(" + frame_color_alarm + ")",
+		line_width,
+		has_inside_color,
+		"rgb(" + fill_color + ")",
+		"rgb(" + fill_color_alarm + ")",
+		exprToggleColor,
+		exprXPos, exprYPos,
+		exprLeft, exprTop, exprRight, exprBottom,
+		exprInvisible,
+		exprFrameFlags,
+		exprFrameColor
+		);
 }
 
 function load_dyntextfile_success(content) {
@@ -2081,8 +2229,13 @@ function calcVariableChange(sliderParams, newCoordinates) {
 	var maxVal = 10;
 	var minVal = 0;
 
-	if (sliderParams.maxValExpr.length > 0) {maxVal = evalExpression(sliderParams.maxValExpr);}
-	if (sliderParams.minValExpr.length > 0) {minVal = evalExpression(sliderParams.minValExpr);}
+	if (typeof(sliderParams.variable) == "number") {
+		maxVal = sliderParams.maxValExpr;
+		minVal = sliderParams.minValExpr;
+	} else {
+		if (sliderParams.maxValExpr.length > 0) {maxVal = evalExpression(sliderParams.maxValExpr);}
+		if (sliderParams.minValExpr.length > 0) {minVal = evalExpression(sliderParams.minValExpr);}
+	}
 
 	var valueRange = Math.abs(maxVal - minVal);
 	var range = sliderParams.sliderLen;
@@ -2105,15 +2258,28 @@ function onMouseMove(e) {
 		return;
 	}
 	if (moveSlider.reset) {
-		moveSlider.startVal = visuVariables[moveSlider.variable].value;
+		if (typeof(moveSlider.variable) == "number") {
+			//moveSlider.startVal = drawObjects[moveSlider.objId].tapVarExpr;
+			moveSlider.startVal = moveSlider.variable;
+		} else {
+			moveSlider.startVal = visuVariables[moveSlider.variable].value;
+		}
 		moveSlider.reset = false;
 	}
 	if (moveSlider) {
 		//console.log(calcVariableChange(moveSlider, [e.offsetX, e.offsetY]));
 		// 0.5 is needed because parseInt() cuts off decimal places
 		var newval = parseInt(moveSlider.startVal + calcVariableChange(moveSlider, [e.offsetX, e.offsetY]) + 0.5); 
-		if (moveSlider.maxValExpr.length > 0) {maxVal = evalExpression(moveSlider.maxValExpr);}
-		if (moveSlider.minValExpr.length > 0) {minVal = evalExpression(moveSlider.minValExpr);}
+		//console.log(calcVariableChange(moveSlider, [e.offsetX, e.offsetY]));
+		if(typeof(moveSlider.variable) == "number") {
+			maxVal = moveSlider.maxValExpr;
+			minVal = moveSlider.minValExpr;
+		} else {
+			if (moveSlider.maxValExpr.length > 0) {maxVal = evalExpression(moveSlider.maxValExpr);}
+			if (moveSlider.minValExpr.length > 0) {minVal = evalExpression(moveSlider.minValExpr);}
+		}
+
+		//console.log(newval);
 		if (minVal > maxVal) {
 			var valBuffer;
 			valBuffer = maxVal;
@@ -2127,20 +2293,24 @@ function onMouseMove(e) {
 			newval = maxVal;
 		}
 
-		var req = '|1|1|0|' + visuVariables[event.variable].addrP + '|' + newval + '|';
+		if(typeof(moveSlider.variable) == "number") {
+			drawObjects[moveSlider.objId].tapVarExpr = newval;
+		} else {
+			var req = '|1|1|0|' + visuVariables[event.variable].addrP + '|' + newval + '|';
 
-					$.ajax({
-						type: 'POST',
-						async: false,
-						url: postUrl,
-						data: req,
-						//success: function( data ) {
-						//	Log("success: " + data);
-						//}
-					});
+			$.ajax({
+				type: 'POST',
+				async: false,
+				url: postUrl,
+				data: req,
+				//success: function( data ) {
+				//	Log("success: " + data);
+				//}
+			});
 
-					visuVariables[moveSlider.variable].value = newval;
-					update();
+			visuVariables[moveSlider.variable].value = newval;
+		}
+		update();
 	}
 }
 
@@ -2205,6 +2375,10 @@ function onMouseDown(e) {
 				moveSlider = event;
 				moveSlider.startPos = [ e.offsetX, e.offsetY ];
 				moveSlider.reset = true;
+				if(typeof(event.variable) == "number") {
+					// subvisu-scrollbar
+					moveSlider.variable = drawObjects[event.objId].tapVarExpr;
+				}
 			}
 		}
 	}
