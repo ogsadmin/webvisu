@@ -494,7 +494,8 @@ function newScrollbarSlider(
     sliderAreaWidth, sliderAreaHeight,
     isHorizontal,
     lowerBoundExpr, upperBoundExpr,
-    tapVarExpr
+    tapVarExpr,
+    usedForSubvisu
     ) {
     this.isA = 'ScrollbarSlider';
 
@@ -507,6 +508,7 @@ function newScrollbarSlider(
     this.lowerBoundExpr = lowerBoundExpr;
     this.upperBoundExpr = upperBoundExpr;
     this.tapVarExpr = tapVarExpr;
+    this.usedForSubvisu = usedForSubvisu;
 }
 
 function registerScrollbarSlider(
@@ -514,14 +516,16 @@ function registerScrollbarSlider(
     sliderAreaWidth, sliderAreaHeight,
     isHorizontal,
     lowerBoundExpr, upperBoundExpr,
-    tapVarExpr
+    tapVarExpr,
+    usedForSubvisu = false  // if used for subvisu, there are values in lower- upper- and tapVarExpr
     ) {
     drawObjects.push(new newScrollbarSlider(
         x, y, w,
         sliderAreaWidth, sliderAreaHeight,
         isHorizontal,
         lowerBoundExpr, upperBoundExpr,
-        tapVarExpr
+        tapVarExpr,
+        usedForSubvisu
         ));
     // Gib die ID (den Index) des eben registrierten Objekts zurück
     //Log("registerGroup return "+(drawObjects.length-1))
@@ -889,7 +893,7 @@ function registerClickObj_IncDec(objId, variable, increase, minValExpr, maxValEx
 // Click Slider
 
 // constructor
-function clickObj_Slider(variable, horizontal, sliderLen, minValExpr, maxValExpr) {
+function clickObj_Slider(variable, horizontal, sliderLen, minValExpr, maxValExpr, objId) {
     this.isA = 'Slider';
     this.variable = variable;
     this.horizontal = horizontal
@@ -898,13 +902,15 @@ function clickObj_Slider(variable, horizontal, sliderLen, minValExpr, maxValExpr
 
     this.minValExpr = minValExpr;
     this.maxValExpr = maxValExpr;
+
+    this.objId = objId;
 }
 
 function registerClickObj_Slider(objId, variable, horizontal, sliderLen, minValExpr, maxValExpr) {
     if(!(objId in clickObject)) {
         clickObject[objId] = []; // Array von Klick-Info
     }
-    clickObject[objId].push(new clickObj_Slider(variable, horizontal, sliderLen, minValExpr, maxValExpr));
+    clickObject[objId].push(new clickObj_Slider(variable, horizontal, sliderLen, minValExpr, maxValExpr, objId));
 }
 
 // ****************************************************************************
@@ -1859,19 +1865,27 @@ function drawAllObjects(ctx, clickContext, objects) {
             var height = obj.sliderAreaHeight;  // shorter side
             var isHorizontal = obj.isHorizontal;
 
-            var lowerBound = 0;
-            if (obj.lowerBoundExpr.length > 0) {
-                lowerBound = evalExpression(obj.lowerBoundExpr);
-            }
-            var upperBound = 10;
-            if (obj.upperBoundExpr.length > 0) {
-                upperBound = evalExpression(obj.upperBoundExpr);
-            }
-            var tapVar = 5;
-            if (obj.tapVarExpr.length > 0) {
-                tapVar = evalExpression(obj.tapVarExpr);
-            }
 
+            var lowerBound = 0;
+            var upperBound = 10;
+            var tapVar = 5;
+
+            if (typeof(obj.tapVarExpr) == "number") {
+                lowerBound = obj.lowerBoundExpr;
+                upperBound = obj.upperBoundExpr;
+                tapVar = obj.tapVarExpr;
+            } else {
+                if (obj.lowerBoundExpr.length > 0) {
+                    lowerBound = evalExpression(obj.lowerBoundExpr);
+                }
+                if (obj.upperBoundExpr.length > 0) {
+                    upperBound = evalExpression(obj.upperBoundExpr);
+                }
+                if (obj.tapVarExpr.length > 0) {
+                    tapVar = evalExpression(obj.tapVarExpr);
+                }
+            }
+            
             var sliderDistance = Math.abs(upperBound - lowerBound);
 
             var isInverted = (upperBound < lowerBound);
@@ -1998,6 +2012,11 @@ function drawAllObjects(ctx, clickContext, objects) {
             var width = obj.rectFields[2] - obj.rectFields[0];
             var height = obj.rectFields[3] - obj.rectFields[1];
 
+            if (obj.fixedFrameScrollable == "true") {
+                width -= SUBVISU_SCROLLBAR_WIDTH;
+                height -= SUBVISU_SCROLLBAR_WIDTH;
+            }
+
             ctx.save();
             clickContext.save();
 
@@ -2016,6 +2035,15 @@ function drawAllObjects(ctx, clickContext, objects) {
             ctx.translate(xOffset, yOffset);
             clickContext.translate(xOffset,yOffset);
 
+            if (obj.fixedFrameScrollable == "true") {
+                var sliderIds = obj.scrollbarSliderIds;
+                sliders = [
+                    drawObjects[sliderIds["horizontal"]],
+                    drawObjects[sliderIds["vertical"]]
+                ];
+                ctx.translate(-sliders[0].tapVarExpr, -sliders[1].tapVarExpr);
+                clickContext.translate(-sliders[0].tapVarExpr, -sliders[1].tapVarExpr);
+            }
             if (obj.fixedFrame == "false" && obj.fixedFrameScrollable == "false") {
                 var scaleFactorX = width / obj.subvisuSize[0];
                 var scaleFactorY = height / obj.subvisuSize[1];
