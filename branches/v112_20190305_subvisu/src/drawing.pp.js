@@ -495,6 +495,7 @@ function newScrollbarSlider(
     isHorizontal,
     lowerBoundExpr, upperBoundExpr,
     tapVarExpr,
+    invisibleExpr,
     usedForSubvisu
     ) {
     this.isA = 'ScrollbarSlider';
@@ -508,6 +509,7 @@ function newScrollbarSlider(
     this.lowerBoundExpr = lowerBoundExpr;
     this.upperBoundExpr = upperBoundExpr;
     this.tapVarExpr = tapVarExpr;
+    this.invisibleExpr = invisibleExpr;
     this.usedForSubvisu = usedForSubvisu;
 }
 
@@ -517,6 +519,7 @@ function registerScrollbarSlider(
     isHorizontal,
     lowerBoundExpr, upperBoundExpr,
     tapVarExpr,
+    invisibleExpr = [],
     usedForSubvisu = false  // if used for subvisu, there are values in lower- upper- and tapVarExpr
     ) {
     drawObjects.push(new newScrollbarSlider(
@@ -525,6 +528,7 @@ function registerScrollbarSlider(
         isHorizontal,
         lowerBoundExpr, upperBoundExpr,
         tapVarExpr,
+        invisibleExpr,
         usedForSubvisu
         ));
     // Gib die ID (den Index) des eben registrierten Objekts zurück
@@ -539,7 +543,8 @@ function registerScrollbarSlider(
 function newScrollbarArrow(
     x, y, 
     width, height,
-    direction
+    direction,
+    invisibleExpr
     ) {
     this.isA = 'ScrollbarArrow';
 
@@ -548,17 +553,21 @@ function newScrollbarArrow(
     this.width = width;
     this.height = height;
     this.direction = direction;
+
+    this.invisibleExpr = invisibleExpr;
 }
 
 function registerScrollbarArrow(
     x, y, 
     width, height,
-    direction
+    direction,
+    invisibleExpr
     ) {
     drawObjects.push(new newScrollbarArrow(
         x, y,
         width, height,
-        direction
+        direction,
+        invisibleExpr
         ));
     // Gib die ID (den Index) des eben registrierten Objekts zurück
     //Log("registerGroup return "+(drawObjects.length-1))
@@ -607,7 +616,6 @@ function addSubvisuParams(
         subvisuSize
     ) {
         lastElement = drawObjects.pop(); 
-        console.log(lastElement.isA);
         if (!(lastElement.isA == "SubvisuStart")) {
             drawObjects.push(lastElement);
             Log("wrong use of 'addSubvisuParams'-Function, must be after 'registerSubvisuStart'");
@@ -624,7 +632,8 @@ function addSubvisuParams(
 function newSubvisuEnd(
     rectFields,
     showFrame, frameColor,
-    lineWidth
+    lineWidth,
+    invisibleExpr
     ) {
     this.isA = 'SubvisuEnd';
 
@@ -632,17 +641,21 @@ function newSubvisuEnd(
     this.showFrame = showFrame;
     this.frameColor = frameColor;
     this.lineWidth = lineWidth;
+
+    this.invisibleExpr = invisibleExpr;
 }
 
 function registerSubvisuEnd(
     rectFields,
     showFrame, frameColor,
-    lineWidth
+    lineWidth,
+    invisibleExpr
     ) {
     drawObjects.push(new newSubvisuEnd(
         rectFields,
         showFrame, frameColor,
-        lineWidth
+        lineWidth,
+        invisibleExpr
         ));
     // Gib die ID (den Index) des eben registrierten Objekts zurück
     //Log("registerGroup return "+(drawObjects.length-1))
@@ -873,20 +886,23 @@ function registerClickObj_Action(objId, variable, newvalExpr) {
 // Click Increase/Decrease
 
 // constructor
-function clickObj_IncDec(variable, increase, minValExpr, maxValExpr) {
+function clickObj_IncDec(variable, increase, minValExpr, maxValExpr, objId, sliderId) {
     this.isA = 'IncDec';
     this.variable = variable;
     this.increase = increase;
 
     this.minValExpr = minValExpr;
     this.maxValExpr = maxValExpr;
+
+    this.objId = objId;
+    this.sliderId = sliderId;
 }
 
-function registerClickObj_IncDec(objId, variable, increase, minValExpr, maxValExpr) {
+function registerClickObj_IncDec(objId, variable, increase, minValExpr, maxValExpr, sliderId) {
     if(!(objId in clickObject)) {
         clickObject[objId] = []; // Array von Klick-Info
     }
-    clickObject[objId].push(new clickObj_IncDec(variable, increase, minValExpr, maxValExpr));
+    clickObject[objId].push(new clickObj_IncDec(variable, increase, minValExpr, maxValExpr, objId, sliderId));
 }
 
 // ****************************************************************************
@@ -1855,6 +1871,11 @@ function drawAllObjects(ctx, clickContext, objects) {
 
             ctx.closePath();
         } else if (obj.isA == "ScrollbarSlider") {
+            if (obj.invisibleExpr.length > 0) {
+                if (evalExpression(obj.invisibleExpr) > 0) {
+                    continue;
+                }
+            }
             const SCROLLBAR_COLOR_SLIDER_BG = "rgb(150,150,150)";
             const SCROLLBAR_COLOR_SLIDER = "rgb(200,200,200)"
 
@@ -1976,6 +1997,11 @@ function drawAllObjects(ctx, clickContext, objects) {
             clickContext.closePath();
             //ctx.scrollbar(obj.x1, obj.y1, obj.x2, obj.y2, lowerBound, upperBound, tapVar);
         } else if (obj.isA == "ScrollbarArrow") {
+            if (obj.invisibleExpr.length > 0) {
+                if (evalExpression(obj.invisibleExpr) > 0) {
+                    continue;
+                }
+            }
             const SCROLLBAR_COLOR_ARROW = "rgb(0,0,0)";
             const SCROLLBAR_COLOR_ARROWBOX_BG = "rgb(150,150,150)";
             const SCROLLBAR_COLOR_ARROWBOX = "rgb(200,200,200)";
@@ -2007,6 +2033,23 @@ function drawAllObjects(ctx, clickContext, objects) {
             clickContext.closePath();
             
         } else if (obj.isA == "SubvisuStart") {
+            ctx.save();
+            clickContext.save();
+
+            if (obj.invisibleExpr.length > 0) {
+                if (evalExpression(obj.invisibleExpr) > 0) {
+                    ctx.beginPath();
+                    ctx.rect(0,0,0,0);
+                    ctx.clip();
+                    ctx.closePath();
+                    clickContext.beginPath();
+                    clickContext.rect(0,0,0,0);
+                    clickContext.clip();
+                    clickContext.closePath();
+                    continue;
+                }
+            }
+
             var xOffset = obj.rectFields[0];
             var yOffset = obj.rectFields[1];
             var width = obj.rectFields[2] - obj.rectFields[0];
@@ -2017,8 +2060,7 @@ function drawAllObjects(ctx, clickContext, objects) {
                 height -= SUBVISU_SCROLLBAR_WIDTH;
             }
 
-            ctx.save();
-            clickContext.save();
+            
 
             if (obj.clipFrame == "true") {
                 ctx.beginPath();
@@ -2066,6 +2108,12 @@ function drawAllObjects(ctx, clickContext, objects) {
         } else if (obj.isA == "SubvisuEnd") {
             ctx.restore();
             clickContext.restore();
+
+            if (obj.invisibleExpr.length > 0) {
+                if (evalExpression(obj.invisibleExpr) > 0) {
+                    continue;
+                }
+            }
 
             var xOffset = obj.rectFields[0];
             var yOffset = obj.rectFields[1];

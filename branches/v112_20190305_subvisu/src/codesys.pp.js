@@ -1350,7 +1350,8 @@ function parse_visu_elements(content) {
 			registerSubvisuEnd(
 				rectFields,
 				showFrame, frameColor,
-				lineWidth
+				lineWidth,
+				exprInvisible
 			);
 
 			if (fixedFrameScrollable == "true") {
@@ -1401,7 +1402,7 @@ function registerSubvisuScrollbar(subvisuStartId)
 				rectFields[2],
 				rectFields[3]
 			];
-			registerScrollbarRect(rectFieldsScrollbar);
+			registerScrollbarRect(rectFieldsScrollbar, drawObjects[subvisuStartId].invisibleExpr);
 			return;
 		} else if(orientation == "horizontal") {
 			var rectFieldsScrollbar = [
@@ -1418,8 +1419,7 @@ function registerSubvisuScrollbar(subvisuStartId)
 				rectFields[3] - SUBVISU_SCROLLBAR_WIDTH
 			];
 		}
-		registerScrollbarRect(rectFieldsScrollbar);
-		
+		registerScrollbarRect(rectFieldsScrollbar, drawObjects[subvisuStartId].invisibleExpr);
 		var x1 = rectFieldsScrollbar[0];
 		var y1 = rectFieldsScrollbar[1];
 		var x2 = rectFieldsScrollbar[2];
@@ -1453,17 +1453,18 @@ function registerSubvisuScrollbar(subvisuStartId)
 			upperBound = buffer;
 		}		
 
-		objId = registerScrollbarSlider(
+		sliderId = registerScrollbarSlider(
 			xSliderArea, ySliderArea,
 			sliderWidth,
 			sliderAreaWidth, sliderAreaHeight,
 			isHorizontal,
 			lowerBound, upperBound,
-			0
+			0,
+			drawObjects[subvisuStartId].invisibleExpr
 		);
 
 		registerClickObj_Slider(
-			objId, 
+			sliderId, 
 			0, 
 			isHorizontal, 
 			sliderAreaWidth,
@@ -1471,12 +1472,52 @@ function registerSubvisuScrollbar(subvisuStartId)
 			upperBound
 		);
 
-		console.log("x ", drawObjects[subvisuStartId]);
+		objId = registerScrollbarArrow(
+			x1, y1, 
+			arrowboxDimensions[0], arrowboxDimensions[1],
+			(isHorizontal)?"left":"up",
+			drawObjects[subvisuStartId].invisibleExpr
+		);
+
+		registerClickObj_IncDec(
+			objId, 
+			0, 
+			!isHorizontal, 
+			lowerBound, 
+			upperBound,
+			sliderId
+		);
+
+		var x1Arrow, y1Arrow;
+		if (isHorizontal) {
+			x1Arrow = x2 - arrowboxDimensions[0];
+			y1Arrow = y1;
+		} else {
+			x1Arrow = x1;
+			y1Arrow = y2 - arrowboxDimensions[1];
+		}
+
+		objId = registerScrollbarArrow(
+			x1Arrow, y1Arrow,
+			arrowboxDimensions[0], arrowboxDimensions[1],
+			(isHorizontal)?"right":"down",
+			drawObjects[subvisuStartId].invisibleExpr
+		);
+
+		registerClickObj_IncDec(
+			objId, 
+			0, 
+			isHorizontal, 
+			lowerBound, 
+			upperBound,
+			sliderId
+		);
+
 		if (!drawObjects[subvisuStartId].scrollbarSliderIds)
 		{
 			drawObjects[subvisuStartId].scrollbarSliderIds = [];
 		}
-		drawObjects[subvisuStartId].scrollbarSliderIds[(isHorizontal)?"horizontal":"vertical"] = objId;
+		drawObjects[subvisuStartId].scrollbarSliderIds[(isHorizontal)?"horizontal":"vertical"] = sliderId;
 
 		/*
 		registerScrollbarSlider(
@@ -1492,7 +1533,7 @@ function registerSubvisuScrollbar(subvisuStartId)
 				
 }
 
-function registerScrollbarRect(rectFields) {
+function registerScrollbarRect(rectFields, exprInvisible = []) {
 	var has_frame_color = "false";
 	var frame_color = "0,0,0";
 	var frame_color_alarm = "0,0,0";
@@ -1501,15 +1542,11 @@ function registerScrollbarRect(rectFields) {
 	var fill_color = "220,220,220";
 	var fill_color_alarm = "0,0,0";
 	var exprToggleColor = [];
-	var exprXPos = [];
-	var exprYPos = [];
 	var exprLeft = [];
 	var exprTop = [];
 	var exprRight = [];
 	var exprBottom = [];
-	var exprInvisible = [];
 	var exprFrameFlags = [];
-	var exprFrameColor = [];
 
 	var objId = registerSimpleShape(
 		"rectangle",
@@ -1522,11 +1559,9 @@ function registerScrollbarRect(rectFields) {
 		"rgb(" + fill_color + ")",
 		"rgb(" + fill_color_alarm + ")",
 		exprToggleColor,
-		exprXPos, exprYPos,
 		exprLeft, exprTop, exprRight, exprBottom,
 		exprInvisible,
-		exprFrameFlags,
-		exprFrameColor
+		exprFrameFlags
 		);
 }
 
@@ -2170,11 +2205,18 @@ function onClick( e ) {
 					update();
 				}
 			} else if (event.isA == 'IncDec') {
-				if (event.variable != '') {
+				var isSubvisuScrollbar = (typeof(event.variable)) == "number";
+				if (event.variable != '' || isSubvisuScrollbar) {
 					var maxVal = 10;
 					var minVal = 0;
-					if (event.maxValExpr.length > 0) {maxVal = evalExpression(event.maxValExpr);}
-					if (event.minValExpr.length > 0) {minVal = evalExpression(event.minValExpr);}
+					if (typeof(event.variable) == "number") {
+						maxVal = event.maxValExpr;
+						minVal = event.minValExpr;
+					} else {
+						if (event.maxValExpr.length > 0) {maxVal = evalExpression(event.maxValExpr);}
+						if (event.minValExpr.length > 0) {minVal = evalExpression(event.minValExpr);}
+					}
+					
 					
 					var increase = true;
 					if (maxVal > minVal) {
@@ -2187,8 +2229,13 @@ function onClick( e ) {
 						var buffer = maxVal;
 						maxVal = minVal;
 						minVal = buffer;
-					}					
-					var newval = visuVariables[event.variable].value + ((increase)?1:-1);
+					}	
+					if (typeof(event.variable) == "number") {
+						var newval = drawObjects[event.sliderId].tapVarExpr + ((increase)?1:-1);
+					}	else {
+						var newval = visuVariables[event.variable].value + ((increase)?1:-1);
+					}			
+					
 					
 					if (newval > maxVal) {
 						newval = maxVal;
@@ -2197,19 +2244,23 @@ function onClick( e ) {
 						newval = minVal;
 					}
 
-					var req = '|1|1|0|' + visuVariables[event.variable].addrP + '|' + newval + '|';
+					if (typeof(event.variable) == "number") {
+						drawObjects[event.sliderId].tapVarExpr = newval;
+					} else {
+						var req = '|1|1|0|' + visuVariables[event.variable].addrP + '|' + newval + '|';
 
-					$.ajax({
-						type: 'POST',
-						async: false,
-						url: postUrl,
-						data: req,
-						//success: function( data ) {
-						//	Log("success: " + data);
-						//}
-					});
+						$.ajax({
+							type: 'POST',
+							async: false,
+							url: postUrl,
+							data: req,
+							//success: function( data ) {
+							//	Log("success: " + data);
+							//}
+						});
 
-					visuVariables[event.variable].value = newval;
+						visuVariables[event.variable].value = newval;
+					}
 					update();
 				}
 			} else if (event.isA == 'Tap') {
