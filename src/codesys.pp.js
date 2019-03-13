@@ -1196,9 +1196,14 @@ function parse_visu_elements(content) {
 			var exprTop = [];
 			var exprRight = [];
 			var exprBottom = [];
-			var exprInvisible = [];
 			var exprFrameFlags = [];
 			var exprFrameColor = [];
+
+			var exprInvisible = [];
+			var expr_invisible = $myMedia.find('expr-invisible');
+			if (expr_invisible.length) {
+				exprInvisible = parseExpression(expr_invisible);
+			}
 
 			var objId = registerSimpleShape(
 				"rectangle",
@@ -1211,11 +1216,9 @@ function parse_visu_elements(content) {
 				"rgb(" + fill_color + ")",
 				"rgb(" + fill_color_alarm + ")",
 				exprToggleColor,
-				exprXPos, exprYPos,
 				exprLeft, exprTop, exprRight, exprBottom,
 				exprInvisible,
-				exprFrameFlags,
-				exprFrameColor
+				exprFrameFlags
 			);
 
 			
@@ -1268,7 +1271,8 @@ function parse_visu_elements(content) {
 				sliderAreaWidth, sliderAreaHeight,
 				isHorizontal,
 				exprLowerBound, exprUpperBound,
-				exprTapVar
+				exprTapVar,
+				exprInvisible
 			);
 			
 			var additionalInfo = {};
@@ -1283,7 +1287,8 @@ function parse_visu_elements(content) {
 			objId = registerScrollbarArrow(
 				x1, y1, 
 				arrowboxDimensions[0], arrowboxDimensions[1],
-				(isHorizontal)?"left":"up"
+				(isHorizontal)?"left":"up",
+				exprInvisible
 			);
 			additionalInfo = {};
 			additionalInfo.isA = (isHorizontal)?"decreaseValue":"increaseValue";
@@ -1303,7 +1308,8 @@ function parse_visu_elements(content) {
 			objId = registerScrollbarArrow(
 				x1Arrow, y1Arrow,
 				arrowboxDimensions[0], arrowboxDimensions[1],
-				(isHorizontal)?"right":"down"
+				(isHorizontal)?"right":"down",
+				exprInvisible
 			);
 			additionalInfo = {};
 			additionalInfo.isA = (isHorizontal)?"increaseValue":"decreaseValue";
