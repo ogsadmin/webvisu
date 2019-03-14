@@ -496,7 +496,10 @@ function newScrollbarSlider(
     lowerBoundExpr, upperBoundExpr,
     tapVarExpr,
     invisibleExpr,
-    usedForSubvisu
+    usedForSubvisu,
+    lowerBound,
+    upperBound,
+    sliderValue
     ) {
     this.isA = 'ScrollbarSlider';
 
@@ -511,6 +514,10 @@ function newScrollbarSlider(
     this.tapVarExpr = tapVarExpr;
     this.invisibleExpr = invisibleExpr;
     this.usedForSubvisu = usedForSubvisu;
+
+    this.lowerBound = lowerBound;
+    this.upperBound = upperBound;
+    this.sliderValue = sliderValue;
 }
 
 function registerScrollbarSlider(
@@ -520,7 +527,10 @@ function registerScrollbarSlider(
     lowerBoundExpr, upperBoundExpr,
     tapVarExpr,
     invisibleExpr = [],
-    usedForSubvisu = false  // if used for subvisu, there are values in lower- upper- and tapVarExpr
+    usedForSubvisu = false,  // if used for subvisu, the following values are used instead of lowerBoundExpr, upperBoundExpr and tapVarExpr
+    lowerBound = 0,
+    upperBound = 0,
+    sliderValue = 0
     ) {
     drawObjects.push(new newScrollbarSlider(
         x, y, w,
@@ -529,7 +539,10 @@ function registerScrollbarSlider(
         lowerBoundExpr, upperBoundExpr,
         tapVarExpr,
         invisibleExpr,
-        usedForSubvisu
+        usedForSubvisu,
+        lowerBound,
+        upperBound,
+        sliderValue
         ));
     // Gib die ID (den Index) des eben registrierten Objekts zurück
     //Log("registerGroup return "+(drawObjects.length-1))
@@ -898,7 +911,7 @@ function clickObj_IncDec(variable, increase, minValExpr, maxValExpr, objId, slid
     this.sliderId = sliderId;
 }
 
-function registerClickObj_IncDec(objId, variable, increase, minValExpr, maxValExpr, sliderId) {
+function registerClickObj_IncDec(objId, variable, increase, minValExpr, maxValExpr, sliderId = -1) {
     if(!(objId in clickObject)) {
         clickObject[objId] = []; // Array von Klick-Info
     }
@@ -909,24 +922,24 @@ function registerClickObj_IncDec(objId, variable, increase, minValExpr, maxValEx
 // Click Slider
 
 // constructor
-function clickObj_Slider(variable, horizontal, sliderLen, minValExpr, maxValExpr, objId) {
+function clickObj_Slider(variable, horizontal, sliderLen, minValExpr, maxValExpr, sliderId, isSubvisuScrollbar) {
     this.isA = 'Slider';
     this.variable = variable;
-    this.horizontal = horizontal
+    this.horizontal = horizontal;
 
     this.sliderLen = sliderLen;
 
     this.minValExpr = minValExpr;
     this.maxValExpr = maxValExpr;
 
-    this.objId = objId;
+    this.sliderId = (isSubvisuScrollbar)?sliderId:-1;
 }
 
-function registerClickObj_Slider(objId, variable, horizontal, sliderLen, minValExpr, maxValExpr) {
+function registerClickObj_Slider(objId, variable, horizontal, sliderLen, minValExpr, maxValExpr, isSubvisuScrollbar = false) {
     if(!(objId in clickObject)) {
         clickObject[objId] = []; // Array von Klick-Info
     }
-    clickObject[objId].push(new clickObj_Slider(variable, horizontal, sliderLen, minValExpr, maxValExpr, objId));
+    clickObject[objId].push(new clickObj_Slider(variable, horizontal, sliderLen, minValExpr, maxValExpr, objId, isSubvisuScrollbar));
 }
 
 // ****************************************************************************
@@ -1891,10 +1904,10 @@ function drawAllObjects(ctx, clickContext, objects) {
             var upperBound = 10;
             var tapVar = 5;
 
-            if (typeof(obj.tapVarExpr) == "number") {
-                lowerBound = obj.lowerBoundExpr;
-                upperBound = obj.upperBoundExpr;
-                tapVar = obj.tapVarExpr;
+            if (obj.usedForSubvisu) {
+                lowerBound = obj.lowerBound;
+                upperBound = obj.upperBound;
+                tapVar = obj.sliderValue;
             } else {
                 if (obj.lowerBoundExpr.length > 0) {
                     lowerBound = evalExpression(obj.lowerBoundExpr);
@@ -2083,8 +2096,8 @@ function drawAllObjects(ctx, clickContext, objects) {
                     drawObjects[sliderIds["horizontal"]],
                     drawObjects[sliderIds["vertical"]]
                 ];
-                ctx.translate(-sliders[0].tapVarExpr, -sliders[1].tapVarExpr);
-                clickContext.translate(-sliders[0].tapVarExpr, -sliders[1].tapVarExpr);
+                ctx.translate(-sliders[0].sliderValue, -sliders[1].sliderValue);
+                clickContext.translate(-sliders[0].sliderValue, -sliders[1].sliderValue);
             }
             if (obj.fixedFrame == "false" && obj.fixedFrameScrollable == "false") {
                 var scaleFactorX = width / obj.subvisuSize[0];
