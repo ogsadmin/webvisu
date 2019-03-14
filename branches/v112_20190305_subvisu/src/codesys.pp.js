@@ -28,7 +28,7 @@ const VAR_TYPE_REF = 23;
 const VAR_TYPE_NONE = 24;
 
 const SUBVISU_SCROLLBAR_WIDTH = 20;
-
+const emptyExpr = [];
 
 // globale variablen
 var postUrl = '/plc/webvisu.htm';
@@ -1464,18 +1464,21 @@ function registerSubvisuScrollbar(subvisuStartId)
 			sliderWidth,
 			sliderAreaWidth, sliderAreaHeight,
 			isHorizontal,
-			lowerBound, upperBound,
-			0,
-			drawObjects[subvisuStartId].invisibleExpr
+			emptyExpr, emptyExpr,
+			emptyExpr,
+			drawObjects[subvisuStartId].invisibleExpr,
+			true,
+			lowerBound, upperBound
 		);
 
 		registerClickObj_Slider(
 			sliderId, 
-			0, 
+			emptyExpr, 
 			isHorizontal, 
 			sliderAreaWidth,
-			lowerBound, 
-			upperBound
+			emptyExpr, 
+			emptyExpr,
+			true
 		);
 
 		objId = registerScrollbarArrow(
@@ -1487,10 +1490,10 @@ function registerSubvisuScrollbar(subvisuStartId)
 
 		registerClickObj_IncDec(
 			objId, 
-			0, 
+			emptyExpr, 
 			!isHorizontal, 
-			lowerBound, 
-			upperBound,
+			emptyExpr, 
+			emptyExpr,
 			sliderId
 		);
 
@@ -1512,10 +1515,10 @@ function registerSubvisuScrollbar(subvisuStartId)
 
 		registerClickObj_IncDec(
 			objId, 
-			0, 
+			emptyExpr, 
 			isHorizontal, 
-			lowerBound, 
-			upperBound,
+			emptyExpr, 
+			emptyExpr,
 			sliderId
 		);
 
@@ -2211,13 +2214,18 @@ function onClick( e ) {
 					update();
 				}
 			} else if (event.isA == 'IncDec') {
-				var isSubvisuScrollbar = (typeof(event.variable)) == "number";
+				var isSubvisuScrollbar = false;
+				if (event.sliderId >= 0) {
+					var scrollbar = drawObjects[event.sliderId];
+					isSubvisuScrollbar = true;
+				}
+				
 				if (event.variable != '' || isSubvisuScrollbar) {
 					var maxVal = 10;
 					var minVal = 0;
-					if (typeof(event.variable) == "number") {
-						maxVal = event.maxValExpr;
-						minVal = event.minValExpr;
+					if (isSubvisuScrollbar) {
+						maxVal = scrollbar.upperBound;
+						minVal = scrollbar.lowerBound;
 					} else {
 						if (event.maxValExpr.length > 0) {maxVal = evalExpression(event.maxValExpr);}
 						if (event.minValExpr.length > 0) {minVal = evalExpression(event.minValExpr);}
@@ -2236,8 +2244,8 @@ function onClick( e ) {
 						maxVal = minVal;
 						minVal = buffer;
 					}	
-					if (typeof(event.variable) == "number") {
-						var newval = drawObjects[event.sliderId].tapVarExpr + ((increase)?1:-1);
+					if (isSubvisuScrollbar) {
+						var newval = scrollbar.sliderValue + ((increase)?1:-1);
 					}	else {
 						var newval = visuVariables[event.variable].value + ((increase)?1:-1);
 					}			
@@ -2250,8 +2258,8 @@ function onClick( e ) {
 						newval = minVal;
 					}
 
-					if (typeof(event.variable) == "number") {
-						drawObjects[event.sliderId].tapVarExpr = newval;
+					if (isSubvisuScrollbar) {
+					scrollbar.sliderValue = newval;
 					} else {
 						var req = '|1|1|0|' + visuVariables[event.variable].addrP + '|' + newval + '|';
 
@@ -2285,10 +2293,15 @@ function onClick( e ) {
 function calcVariableChange(sliderParams, newCoordinates) {
 	var maxVal = 10;
 	var minVal = 0;
+	var isSubvisuScrollbar = false;
+	if (sliderParams.sliderId >= 0) {
+		isSubvisuScrollbar = true;
+		var scrollbar = drawObjects[sliderParams.sliderId];
+	}
 
-	if (typeof(sliderParams.variable) == "number") {
-		maxVal = sliderParams.maxValExpr;
-		minVal = sliderParams.minValExpr;
+	if (isSubvisuScrollbar) {
+		maxVal = scrollbar.upperBound;
+		minVal = scrollbar.lowerBound;
 	} else {
 		if (sliderParams.maxValExpr.length > 0) {maxVal = evalExpression(sliderParams.maxValExpr);}
 		if (sliderParams.minValExpr.length > 0) {minVal = evalExpression(sliderParams.minValExpr);}
@@ -2311,64 +2324,73 @@ function calcVariableChange(sliderParams, newCoordinates) {
 
 // der MouseMove-Handler
 function onMouseMove(e) {
+	var isSubvisuScrollbar = (moveSlider.sliderId >= 0);
+	if (isSubvisuScrollbar) {
+		var scrollbar = drawObjects[moveSlider.sliderId];
+	}
 	if (!moveSlider) {
 		return;
 	}
 	if (moveSlider.reset) {
-		if (typeof(moveSlider.variable) == "number") {
+		if (isSubvisuScrollbar) {
 			//moveSlider.startVal = drawObjects[moveSlider.objId].tapVarExpr;
-			moveSlider.startVal = moveSlider.variable;
+			moveSlider.startVal = scrollbar.sliderValue;
 		} else {
 			moveSlider.startVal = visuVariables[moveSlider.variable].value;
 		}
 		moveSlider.reset = false;
 	}
-	if (moveSlider) {
-		//console.log(calcVariableChange(moveSlider, [e.offsetX, e.offsetY]));
-		// 0.5 is needed because parseInt() cuts off decimal places
-		var newval = parseInt(moveSlider.startVal + calcVariableChange(moveSlider, [e.offsetX, e.offsetY]) + 0.5); 
-		//console.log(calcVariableChange(moveSlider, [e.offsetX, e.offsetY]));
-		if(typeof(moveSlider.variable) == "number") {
-			maxVal = moveSlider.maxValExpr;
-			minVal = moveSlider.minValExpr;
-		} else {
-			if (moveSlider.maxValExpr.length > 0) {maxVal = evalExpression(moveSlider.maxValExpr);}
-			if (moveSlider.minValExpr.length > 0) {minVal = evalExpression(moveSlider.minValExpr);}
-		}
+	
+	//console.log(calcVariableChange(moveSlider, [e.offsetX, e.offsetY]));
+	// 0.5 is needed because parseInt() cuts off decimal places
+	var newval = parseInt(moveSlider.startVal + calcVariableChange(moveSlider, [e.offsetX, e.offsetY]) + 0.5); 
+	//console.log(calcVariableChange(moveSlider, [e.offsetX, e.offsetY]));
 
-		//console.log(newval);
-		if (minVal > maxVal) {
-			var valBuffer;
-			valBuffer = maxVal;
-			maxVal = minVal;
-			minVal = valBuffer;
-		}
-		if (newval < minVal) {
-			newval = minVal;
-		}
-		if (newval > maxVal) {
-			newval = maxVal;
-		}
+	maxVal = 10;
+	minVal = 0;
 
-		if(typeof(moveSlider.variable) == "number") {
-			drawObjects[moveSlider.objId].tapVarExpr = newval;
-		} else {
-			var req = '|1|1|0|' + visuVariables[event.variable].addrP + '|' + newval + '|';
-
-			$.ajax({
-				type: 'POST',
-				async: false,
-				url: postUrl,
-				data: req,
-				//success: function( data ) {
-				//	Log("success: " + data);
-				//}
-			});
-
-			visuVariables[moveSlider.variable].value = newval;
-		}
-		update();
+	if(isSubvisuScrollbar) {
+		maxVal = scrollbar.upperBound;
+		minVal = scrollbar.lowerBound;
+	} else {
+		if (moveSlider.maxValExpr.length > 0) {maxVal = evalExpression(moveSlider.maxValExpr);}
+		if (moveSlider.minValExpr.length > 0) {minVal = evalExpression(moveSlider.minValExpr);}
 	}
+
+	//console.log(newval);
+	if (minVal > maxVal) {
+		var valBuffer;
+		valBuffer = maxVal;
+		maxVal = minVal;
+		minVal = valBuffer;
+	}
+	if (newval < minVal) {
+		newval = minVal;
+	}
+	if (newval > maxVal) {
+		newval = maxVal;
+	}
+
+	if (isSubvisuScrollbar) {
+		console.log("error in var isSubvisuScrollbar");
+		scrollbar.sliderValue = newval;
+	} else {
+		var req = '|1|1|0|' + visuVariables[event.variable].addrP + '|' + newval + '|';
+
+		$.ajax({
+			type: 'POST',
+			async: false,
+			url: postUrl,
+			data: req,
+			//success: function( data ) {
+			//	Log("success: " + data);
+			//}
+		});
+
+		visuVariables[moveSlider.variable].value = newval;
+	}
+	update();
+	
 }
 
 // der MouseDown-Handler
