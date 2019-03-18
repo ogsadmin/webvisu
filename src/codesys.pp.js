@@ -1341,7 +1341,7 @@ function parse_visu_elements(content) {
 
 			
 
-			var newVisuId = registerSubvisuStart(
+			var newVisuId = registerSubvisu(
 				rectFields,
 				clipFrame,
 				fixedFrame, fixedFrameScrollable, scaleIsotropic,
@@ -1353,7 +1353,7 @@ function parse_visu_elements(content) {
 			var subvisuFilename = getVisuFileName(subvisu);
 			load_visu(subvisuFilename, true);
 
-			registerSubvisuEnd(
+			registerEndSubvisu(
 				rectFields,
 				showFrame, frameColor,
 				lineWidth,
@@ -1395,184 +1395,6 @@ function parse_visu_elements(content) {
 	});
 }
 
-function registerSubvisuScrollbar(subvisuStartId)
-{
-	var rectFields = drawObjects[subvisuStartId].rectFields;
-	var scrollbarsToDraw = ["corner", "horizontal", "vertical"];
-
-	scrollbarsToDraw.forEach(function(orientation) {
-		if(orientation == "corner") {
-			var rectFieldsScrollbar = [
-				rectFields[2] - SUBVISU_SCROLLBAR_WIDTH,
-				rectFields[3] - SUBVISU_SCROLLBAR_WIDTH,
-				rectFields[2],
-				rectFields[3]
-			];
-			registerScrollbarRect(rectFieldsScrollbar, drawObjects[subvisuStartId].invisibleExpr);
-			return;
-		} else if(orientation == "horizontal") {
-			var rectFieldsScrollbar = [
-				rectFields[0],
-				rectFields[3] - SUBVISU_SCROLLBAR_WIDTH,
-				rectFields[2] - SUBVISU_SCROLLBAR_WIDTH,
-				rectFields[3]
-			];
-		} else {
-			var rectFieldsScrollbar = [
-				rectFields[2] - SUBVISU_SCROLLBAR_WIDTH,
-				rectFields[1],
-				rectFields[2],
-				rectFields[3] - SUBVISU_SCROLLBAR_WIDTH
-			];
-		}
-		registerScrollbarRect(rectFieldsScrollbar, drawObjects[subvisuStartId].invisibleExpr);
-		var x1 = rectFieldsScrollbar[0];
-		var y1 = rectFieldsScrollbar[1];
-		var x2 = rectFieldsScrollbar[2];
-		var y2 = rectFieldsScrollbar[3];
-
-		var isHorizontal = ( orientation == "horizontal" );
-
-		var arrowboxDimensions = calcArrowboxDimensions(x2-x1, y2-y1);
-		
-		var lowerBound = 0;
-		var subvisuStartObj = drawObjects[subvisuStartId];
-		if (isHorizontal) {
-			var sliderWidth = arrowboxDimensions[0] / 2;
-			var xSliderArea = x1 + arrowboxDimensions[0];
-			var ySliderArea = y1;
-			var sliderAreaWidth = x2 - x1 - 2 * arrowboxDimensions[0] - sliderWidth;
-			var sliderAreaHeight = y2 - y1;
-			var upperBound = subvisuStartObj.subvisuSize[0] - (rectFields[2] - rectFields[0]) + SUBVISU_SCROLLBAR_WIDTH;
-		} else {
-			var sliderWidth = arrowboxDimensions[1] / 2;
-			var xSliderArea = x1;
-			var ySliderArea = y1 + arrowboxDimensions[1];
-			var sliderAreaWidth = y2 - y1 - 2 * arrowboxDimensions[1] - sliderWidth;
-			var sliderAreaHeight = x2 - x1;
-			var upperBound = subvisuStartObj.subvisuSize[1] - (rectFields[3] - rectFields[1]) + SUBVISU_SCROLLBAR_WIDTH;
-		}
-
-		if (!isHorizontal) {
-			var buffer = lowerBound;
-			lowerBound = upperBound;
-			upperBound = buffer;
-		}		
-
-		sliderId = registerScrollbarSlider(
-			xSliderArea, ySliderArea,
-			sliderWidth,
-			sliderAreaWidth, sliderAreaHeight,
-			isHorizontal,
-			emptyExpr, emptyExpr,
-			emptyExpr,
-			drawObjects[subvisuStartId].invisibleExpr,
-			true,
-			lowerBound, upperBound
-		);
-
-		registerClickObj_Slider(
-			sliderId, 
-			emptyExpr, 
-			isHorizontal, 
-			sliderAreaWidth,
-			emptyExpr, 
-			emptyExpr,
-			true
-		);
-
-		objId = registerScrollbarArrow(
-			x1, y1, 
-			arrowboxDimensions[0], arrowboxDimensions[1],
-			(isHorizontal)?"left":"up",
-			drawObjects[subvisuStartId].invisibleExpr
-		);
-
-		registerClickObj_IncDec(
-			objId, 
-			emptyExpr, 
-			!isHorizontal, 
-			emptyExpr, 
-			emptyExpr,
-			sliderId
-		);
-
-		var x1Arrow, y1Arrow;
-		if (isHorizontal) {
-			x1Arrow = x2 - arrowboxDimensions[0];
-			y1Arrow = y1;
-		} else {
-			x1Arrow = x1;
-			y1Arrow = y2 - arrowboxDimensions[1];
-		}
-
-		objId = registerScrollbarArrow(
-			x1Arrow, y1Arrow,
-			arrowboxDimensions[0], arrowboxDimensions[1],
-			(isHorizontal)?"right":"down",
-			drawObjects[subvisuStartId].invisibleExpr
-		);
-
-		registerClickObj_IncDec(
-			objId, 
-			emptyExpr, 
-			isHorizontal, 
-			emptyExpr, 
-			emptyExpr,
-			sliderId
-		);
-
-		if (!drawObjects[subvisuStartId].scrollbarSliderIds)
-		{
-			drawObjects[subvisuStartId].scrollbarSliderIds = [];
-		}
-		drawObjects[subvisuStartId].scrollbarSliderIds[(isHorizontal)?"horizontal":"vertical"] = sliderId;
-
-		/*
-		registerScrollbarSlider(
-
-		);
-		registerScrollbarArrow(
-
-		);
-		registerScrollbarArrow(
-
-		);*/
-	});
-				
-}
-
-function registerScrollbarRect(rectFields, exprInvisible = []) {
-	var has_frame_color = "false";
-	var frame_color = "0,0,0";
-	var frame_color_alarm = "0,0,0";
-	var line_width = "0";
-	var has_inside_color = "true";
-	var fill_color = "220,220,220";
-	var fill_color_alarm = "0,0,0";
-	var exprToggleColor = [];
-	var exprLeft = [];
-	var exprTop = [];
-	var exprRight = [];
-	var exprBottom = [];
-	var exprFrameFlags = [];
-
-	var objId = registerSimpleShape(
-		"rectangle",
-		rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
-		has_frame_color,
-		"rgb(" + frame_color + ")",
-		"rgb(" + frame_color_alarm + ")",
-		line_width,
-		has_inside_color,
-		"rgb(" + fill_color + ")",
-		"rgb(" + fill_color_alarm + ")",
-		exprToggleColor,
-		exprLeft, exprTop, exprRight, exprBottom,
-		exprInvisible,
-		exprFrameFlags
-		);
-}
 
 function load_dyntextfile_success(content) {
 
@@ -2372,7 +2194,6 @@ function onMouseMove(e) {
 	}
 
 	if (isSubvisuScrollbar) {
-		console.log("error in var isSubvisuScrollbar");
 		scrollbar.sliderValue = newval;
 	} else {
 		var req = '|1|1|0|' + visuVariables[event.variable].addrP + '|' + newval + '|';
