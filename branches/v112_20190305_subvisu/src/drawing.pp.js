@@ -588,16 +588,16 @@ function registerScrollbarArrow(
 }
 
 // ****************************************************************************
-// subvisuStart
+// Subvisu
 
 // constructor
-function newSubvisuStart(
+function newSubvisu(
     rectFields,
     clipFrame, 
     fixedFrame, fixedFrameScrollable, scaleIsotropic,
     invisibleExpr
     ) {
-    this.isA = 'SubvisuStart';
+    this.isA = 'Subvisu';
 
     this.rectFields = rectFields;
     this.clipFrame = clipFrame;
@@ -608,13 +608,13 @@ function newSubvisuStart(
     this.invisibleExpr = invisibleExpr;
 }
 
-function registerSubvisuStart(
+function registerSubvisu(
     rectFields,
     clipFrame,
     fixedFrame, fixedFrameScrollable, scaleIsotropic,
     invisibleExpr
     ) {
-    drawObjects.push(new newSubvisuStart(
+    drawObjects.push(new newSubvisu(
         rectFields,
         clipFrame,
         fixedFrame, fixedFrameScrollable, scaleIsotropic,
@@ -629,9 +629,9 @@ function addSubvisuParams(
         subvisuSize
     ) {
         lastElement = drawObjects.pop(); 
-        if (!(lastElement.isA == "SubvisuStart")) {
+        if (!(lastElement.isA == "Subvisu")) {
             drawObjects.push(lastElement);
-            Log("wrong use of 'addSubvisuParams'-Function, must be after 'registerSubvisuStart'");
+            Log("wrong use of 'addSubvisuParams'-Function, must be after 'registerSubvisu'");
             return;
         }
         lastElement.subvisuSize = subvisuSize;
@@ -639,16 +639,16 @@ function addSubvisuParams(
 }
 
 // ****************************************************************************
-// subvisuEnd
+// EndSubvisu
 
 // constructor
-function newSubvisuEnd(
+function newEndSubvisu(
     rectFields,
     showFrame, frameColor,
     lineWidth,
     invisibleExpr
     ) {
-    this.isA = 'SubvisuEnd';
+    this.isA = 'EndSubvisu';
 
     this.rectFields = rectFields;
     this.showFrame = showFrame;
@@ -658,13 +658,13 @@ function newSubvisuEnd(
     this.invisibleExpr = invisibleExpr;
 }
 
-function registerSubvisuEnd(
+function registerEndSubvisu(
     rectFields,
     showFrame, frameColor,
     lineWidth,
     invisibleExpr
     ) {
-    drawObjects.push(new newSubvisuEnd(
+    drawObjects.push(new newEndSubvisu(
         rectFields,
         showFrame, frameColor,
         lineWidth,
@@ -803,6 +803,200 @@ function registerCanvObj(canvas, ssobj, exprTextDisplay) {
 }
 
 
+function registerSubvisuScrollbar(subvisuId)
+{
+    var subvisu = drawObjects[subvisuId];
+    if (!subvisu.scrollbarSliderIds)
+    {
+        subvisu.scrollbarSliderIds = [];
+    }
+    var rectFields = drawObjects[subvisuId].rectFields;
+
+    var scrollbarsToDraw = [];
+
+    // check which scrollbars have to be drawn
+    if ( (subvisu.subvisuSize[0] - (rectFields[2] - rectFields[0])) > 0 ) {
+        scrollbarsToDraw.push("horizontal");
+    }
+    if ( (subvisu.subvisuSize[1] - (rectFields[3] - rectFields[1])) > 0 ) {
+        scrollbarsToDraw.push("vertical");
+    }
+
+    // if both scrollbars are needed, draw gray square in the corner too
+    drawBothScrollbars = (scrollbarsToDraw.length >= 2);
+    if (drawBothScrollbars) {
+        scrollbarsToDraw.push("corner");
+    }
+
+	scrollbarsToDraw.forEach(function(orientation) {
+		if(orientation == "corner") {
+            // draw gray square in bottom right corner
+			var rectFieldsScrollbar = [
+				rectFields[2] - SUBVISU_SCROLLBAR_WIDTH,
+				rectFields[3] - SUBVISU_SCROLLBAR_WIDTH,
+				rectFields[2],
+				rectFields[3]
+			];
+			registerScrollbarRect(rectFieldsScrollbar, subvisu.invisibleExpr);
+			return;
+		} else if(orientation == "horizontal") {
+            // draw horizontal scrollbar
+			var rectFieldsScrollbar = [
+				rectFields[0],
+				rectFields[3] - ((drawBothScrollbars)?SUBVISU_SCROLLBAR_WIDTH:0),
+				rectFields[2] - SUBVISU_SCROLLBAR_WIDTH,
+				rectFields[3]
+			];
+		} else {
+            // draw vertical scrollbar
+			var rectFieldsScrollbar = [
+				rectFields[2] - SUBVISU_SCROLLBAR_WIDTH,
+				rectFields[1],
+				rectFields[2],
+				rectFields[3] - ((drawBothScrollbars)?SUBVISU_SCROLLBAR_WIDTH:0)
+			];
+		}
+		registerScrollbarRect(rectFieldsScrollbar, subvisu.invisibleExpr);
+		var x1 = rectFieldsScrollbar[0];
+		var y1 = rectFieldsScrollbar[1];
+		var x2 = rectFieldsScrollbar[2];
+		var y2 = rectFieldsScrollbar[3];
+
+		var isHorizontal = ( orientation == "horizontal" );
+
+		var arrowboxDimensions = calcArrowboxDimensions(x2-x1, y2-y1);
+        
+        // scrollbar changes value between 0 and the pixel-difference between subvisu-element-size (minus scrollbar-width) and subvisu-size
+		var lowerBound = 0;
+		if (isHorizontal) {
+			var sliderWidth = arrowboxDimensions[0] / 2;
+			var xSliderArea = x1 + arrowboxDimensions[0];
+			var ySliderArea = y1;
+			var sliderAreaWidth = x2 - x1 - 2 * arrowboxDimensions[0] - sliderWidth;
+			var sliderAreaHeight = y2 - y1;
+			var upperBound = subvisu.subvisuSize[0] - (rectFields[2] - rectFields[0]) + ((drawBothScrollbars)?SUBVISU_SCROLLBAR_WIDTH:0);
+		} else {
+			var sliderWidth = arrowboxDimensions[1] / 2;
+			var xSliderArea = x1;
+			var ySliderArea = y1 + arrowboxDimensions[1];
+			var sliderAreaWidth = y2 - y1 - 2 * arrowboxDimensions[1] - sliderWidth;
+			var sliderAreaHeight = x2 - x1;
+			var upperBound = subvisu.subvisuSize[1] - (rectFields[3] - rectFields[1]) + ((drawBothScrollbars)?SUBVISU_SCROLLBAR_WIDTH:0);
+        }
+        
+        if (upperBound < 0) {
+            upperBound = 0;
+        }
+
+		if (!isHorizontal) {
+			var buffer = lowerBound;
+			lowerBound = upperBound;
+			upperBound = buffer;
+		}		
+
+		sliderId = registerScrollbarSlider(
+			xSliderArea, ySliderArea,
+			sliderWidth,
+			sliderAreaWidth, sliderAreaHeight,
+			isHorizontal,
+			emptyExpr, emptyExpr,
+			emptyExpr,
+			subvisu.invisibleExpr,
+			true,
+			lowerBound, upperBound
+		);
+
+		registerClickObj_Slider(
+			sliderId, 
+			emptyExpr, 
+			isHorizontal, 
+			sliderAreaWidth,
+			emptyExpr, 
+			emptyExpr,
+			true
+		);
+
+		objId = registerScrollbarArrow(
+			x1, y1, 
+			arrowboxDimensions[0], arrowboxDimensions[1],
+			(isHorizontal)?"left":"up",
+			subvisu.invisibleExpr
+		);
+
+		registerClickObj_IncDec(
+			objId, 
+			emptyExpr, 
+			!isHorizontal, 
+			emptyExpr, 
+			emptyExpr,
+			sliderId
+		);
+
+		var x1Arrow, y1Arrow;
+		if (isHorizontal) {
+			x1Arrow = x2 - arrowboxDimensions[0];
+			y1Arrow = y1;
+		} else {
+			x1Arrow = x1;
+			y1Arrow = y2 - arrowboxDimensions[1];
+		}
+
+		objId = registerScrollbarArrow(
+			x1Arrow, y1Arrow,
+			arrowboxDimensions[0], arrowboxDimensions[1],
+			(isHorizontal)?"right":"down",
+			subvisu.invisibleExpr
+		);
+
+		registerClickObj_IncDec(
+			objId, 
+			emptyExpr, 
+			isHorizontal, 
+			emptyExpr, 
+			emptyExpr,
+			sliderId
+		);
+		subvisu.scrollbarSliderIds[(isHorizontal)?"horizontal":"vertical"] = sliderId;
+
+	});
+				
+}
+
+function registerScrollbarRect(rectFields, exprInvisible = []) {
+    // just to make things simpler: most of the parameters of rectangles used as part of a scrollbar
+    //      are always the same, only position and size varies
+	var has_frame_color = "false";
+	var frame_color = "0,0,0";
+	var frame_color_alarm = "0,0,0";
+	var line_width = "0";
+	var has_inside_color = "true";
+	var fill_color = "220,220,220";
+	var fill_color_alarm = "0,0,0";
+	var exprToggleColor = [];
+	var exprLeft = [];
+	var exprTop = [];
+	var exprRight = [];
+	var exprBottom = [];
+	var exprFrameFlags = [];
+
+	var objId = registerSimpleShape(
+		"rectangle",
+		rectFields[0], rectFields[1], rectFields[2] - rectFields[0], rectFields[3] - rectFields[1],
+		has_frame_color,
+		"rgb(" + frame_color + ")",
+		"rgb(" + frame_color_alarm + ")",
+		line_width,
+		has_inside_color,
+		"rgb(" + fill_color + ")",
+		"rgb(" + fill_color_alarm + ")",
+		exprToggleColor,
+		exprLeft, exprTop, exprRight, exprBottom,
+		exprInvisible,
+		exprFrameFlags
+		);
+}
+
+
 /*
 #endif
 */
@@ -932,6 +1126,8 @@ function clickObj_Slider(variable, horizontal, sliderLen, minValExpr, maxValExpr
     this.minValExpr = minValExpr;
     this.maxValExpr = maxValExpr;
 
+    // sliderId is needed when it's a scrollbar for a scrollable subvisu
+    // -1 indicates that it is not
     this.sliderId = (isSubvisuScrollbar)?sliderId:-1;
 }
 
@@ -1002,7 +1198,8 @@ function strformat(format, val) {
     return format;
 }
 
-/* scrollbar helper function, calculates width and height of the arrow boxes at the ends */
+/*  scrollbar helper function, calculates width and height of the arrow boxes at the ends,
+    depending on the dimensions of the scrollbar */
 function calcArrowboxDimensions(scrollbarWidth, scrollbarHeight) {    
     var arrowBoxDimensions = [];
     var isHorizontalScrollbar = (scrollbarWidth > scrollbarHeight);
@@ -1095,7 +1292,7 @@ CanvasRenderingContext2D.prototype.ellipseSector = function (x, y, radiusx, radi
 
     return this;
 }
-CanvasRenderingContext2D.prototype.isoscelesFilledTriangle = function(rectX1, rectY1, rectX2, rectY2, direction, color) {
+CanvasRenderingContext2D.prototype.arrowboxTriangle = function(rectX1, rectY1, rectX2, rectY2, direction, color) {
     // draws an isosceles triangle from the minimal bounding rectangle and 
     // the direction in which the arrow should point
     var width = rectX2 - rectX1;
@@ -1634,22 +1831,16 @@ function drawAllObjects(ctx, clickContext, objects) {
                         countControlPoint++;
                     }
                 }
-                // draw last part if line or quadratic curve
+                // draw last part if line (s)
                 if (countControlPoint == 2) {
                     //Log(ctrlPointx[1] + " " + ctrlPointy[1]);
                     ctx.lineTo(ctrlPointx[1] + left, ctrlPointy[1] + top);
                     clickContext.lineTo(ctrlPointx[1] + left, ctrlPointy[1] + top);
                 } else if (countControlPoint == 0) {
-                    ctx.quadraticCurveTo(
-                            ctrlPointx[1] + left, 
-                            ctrlPointy[1] + top, 
-                            ctrlPointx[2] + left, 
-                            ctrlPointy[2] + top);
-                    clickContext.quadraticCurveTo(
-                            ctrlPointx[1] + left, 
-                            ctrlPointy[1] + top, 
-                            ctrlPointx[2] + left, 
-                            ctrlPointy[2] + top);
+                    ctx.lineTo(ctrlPointx[1] + left, ctrlPointy[1] + top);
+                    ctx.lineTo(ctrlPointx[2] + left, ctrlPointy[2] + top);
+                    clickContext.lineTo(ctrlPointx[1] + left, ctrlPointy[1] + top);
+                    clickContext.lineTo(ctrlPointx[2] + left, ctrlPointy[2] + top);      
                 }
             }
 
@@ -1981,7 +2172,7 @@ function drawAllObjects(ctx, clickContext, objects) {
             ctx.closePath;
 
             ctx.beginPath();
-            /* pseudocode, TO DO 
+            /* pseudocode, TO DO: visual feedback on click (optional)
             if (click) {
                 ctx.save();
                 ctx.translate(1,1);
@@ -1993,7 +2184,7 @@ function drawAllObjects(ctx, clickContext, objects) {
             }
             ctx.fillStyle = SCROLLBAR_COLOR_SLIDER;
             ctx.fill();
-            /* pseudocode, TO DO
+            /* pseudocode, TO DO: visual feedback on click (optional)
             if (click) {
                 ctx.recall();
             } */
@@ -2008,7 +2199,6 @@ function drawAllObjects(ctx, clickContext, objects) {
             }
             clickContext.fill();
             clickContext.closePath();
-            //ctx.scrollbar(obj.x1, obj.y1, obj.x2, obj.y2, lowerBound, upperBound, tapVar);
         } else if (obj.isA == "ScrollbarArrow") {
             if (obj.invisibleExpr.length > 0) {
                 if (evalExpression(obj.invisibleExpr) > 0) {
@@ -2037,7 +2227,7 @@ function drawAllObjects(ctx, clickContext, objects) {
             ctx.fill();
             ctx.closePath();
 
-            ctx.isoscelesFilledTriangle(x + width/4, y + height/4, x+width*3/4, y+height*3/4, direction, SCROLLBAR_COLOR_ARROW);
+            ctx.arrowboxTriangle(x + width/4, y + height/4, x+width*3/4, y+height*3/4, direction, SCROLLBAR_COLOR_ARROW);
 
             clickContext.beginPath();
             clickContext.rect(x, y, width, height);
@@ -2045,7 +2235,7 @@ function drawAllObjects(ctx, clickContext, objects) {
             clickContext.fill();
             clickContext.closePath();
             
-        } else if (obj.isA == "SubvisuStart") {
+        } else if (obj.isA == "Subvisu") {
             ctx.save();
             clickContext.save();
 
@@ -2069,8 +2259,12 @@ function drawAllObjects(ctx, clickContext, objects) {
             var height = obj.rectFields[3] - obj.rectFields[1];
 
             if (obj.fixedFrameScrollable == "true") {
-                width -= SUBVISU_SCROLLBAR_WIDTH;
-                height -= SUBVISU_SCROLLBAR_WIDTH;
+                if (drawObjects[obj.scrollbarSliderIds["vertical"]]) {
+                    width -= SUBVISU_SCROLLBAR_WIDTH;
+                }
+                if (drawObjects[obj.scrollbarSliderIds["horizontal"]]) {
+                    height -= SUBVISU_SCROLLBAR_WIDTH;
+                }
             }
 
             
@@ -2093,8 +2287,8 @@ function drawAllObjects(ctx, clickContext, objects) {
             if (obj.fixedFrameScrollable == "true") {
                 var sliderIds = obj.scrollbarSliderIds;
                 sliders = [
-                    drawObjects[sliderIds["horizontal"]],
-                    drawObjects[sliderIds["vertical"]]
+                    drawObjects[sliderIds["horizontal"]] || {sliderValue:0},
+                    drawObjects[sliderIds["vertical"]] || {sliderValue:0}
                 ];
                 ctx.translate(-sliders[0].sliderValue, -sliders[1].sliderValue);
                 clickContext.translate(-sliders[0].sliderValue, -sliders[1].sliderValue);
@@ -2118,7 +2312,7 @@ function drawAllObjects(ctx, clickContext, objects) {
                 }
             }
 
-        } else if (obj.isA == "SubvisuEnd") {
+        } else if (obj.isA == "EndSubvisu") {
             ctx.restore();
             clickContext.restore();
 
