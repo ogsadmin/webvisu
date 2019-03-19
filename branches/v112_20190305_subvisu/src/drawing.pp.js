@@ -526,12 +526,19 @@ function registerScrollbarSlider(
     isHorizontal,
     lowerBoundExpr, upperBoundExpr,
     tapVarExpr,
-    invisibleExpr = [],
-    usedForSubvisu = false,  // if used for subvisu, the following values are used instead of lowerBoundExpr, upperBoundExpr and tapVarExpr
-    lowerBound = 0,
-    upperBound = 0,
-    sliderValue = 0
+    invisibleExpr,
+    usedForSubvisu,  // if used for subvisu, the following values are used instead of lowerBoundExpr, upperBoundExpr and tapVarExpr
+    lowerBound,
+    upperBound,
+    sliderValue
     ) {
+    // we need this nonsense because IE does not support default values...
+    invisibleExpr = invisibleExpr || [];
+    usedForSubvisu = usedForSubvisu || false;
+    lowerBound = lowerBound || 0;
+    upperBound = upperBound || 0;
+    sliderValue = sliderValue || 0;
+
     drawObjects.push(new newScrollbarSlider(
         x, y, w,
         sliderAreaWidth, sliderAreaHeight,
@@ -962,9 +969,10 @@ function registerSubvisuScrollbar(subvisuId)
 				
 }
 
-function registerScrollbarRect(rectFields, exprInvisible = []) {
+function registerScrollbarRect(rectFields, exprInvisible) {
     // just to make things simpler: most of the parameters of rectangles used as part of a scrollbar
     //      are always the same, only position and size varies
+    exprInvisible = exprInvisible || [];
 	var has_frame_color = "false";
 	var frame_color = "0,0,0";
 	var frame_color_alarm = "0,0,0";
@@ -1105,7 +1113,8 @@ function clickObj_IncDec(variable, increase, minValExpr, maxValExpr, objId, slid
     this.sliderId = sliderId;
 }
 
-function registerClickObj_IncDec(objId, variable, increase, minValExpr, maxValExpr, sliderId = -1) {
+function registerClickObj_IncDec(objId, variable, increase, minValExpr, maxValExpr, sliderId) {
+    if (sliderId == undefined) sliderId = -1;
     if(!(objId in clickObject)) {
         clickObject[objId] = []; // Array von Klick-Info
     }
@@ -1131,7 +1140,8 @@ function clickObj_Slider(variable, horizontal, sliderLen, minValExpr, maxValExpr
     this.sliderId = (isSubvisuScrollbar)?sliderId:-1;
 }
 
-function registerClickObj_Slider(objId, variable, horizontal, sliderLen, minValExpr, maxValExpr, isSubvisuScrollbar = false) {
+function registerClickObj_Slider(objId, variable, horizontal, sliderLen, minValExpr, maxValExpr, isSubvisuScrollbar) {
+    isSubvisuScrollbar = isSubvisuScrollbar || false;
     if(!(objId in clickObject)) {
         clickObject[objId] = []; // Array von Klick-Info
     }
