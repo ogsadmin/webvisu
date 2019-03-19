@@ -1954,7 +1954,7 @@ function onClick( e ) {
 		Log("onClick at X:" + x + " Y:" + y + " on:" + obj.isA);
 
 		for (var eventNo in clickObject[objId]) {
-			event = clickObject[objId][eventNo];
+			var event = clickObject[objId][eventNo];
 			Log("  event " + event.isA);
 
 			if (event.isA == 'Toggle') {
@@ -2168,8 +2168,8 @@ function onMouseMove(e) {
 	var newval = parseInt(moveSlider.startVal + calcVariableChange(moveSlider, [e.offsetX, e.offsetY]) + 0.5); 
 	//console.log(calcVariableChange(moveSlider, [e.offsetX, e.offsetY]));
 
-	maxVal = 10;
-	minVal = 0;
+	var maxVal = 10;
+	var minVal = 0;
 
 	if(isSubvisuScrollbar) {
 		maxVal = scrollbar.upperBound;
@@ -2196,7 +2196,7 @@ function onMouseMove(e) {
 	if (isSubvisuScrollbar) {
 		scrollbar.sliderValue = newval;
 	} else {
-		var req = '|1|1|0|' + visuVariables[event.variable].addrP + '|' + newval + '|';
+		var req = '|1|1|0|' + visuVariables[moveSlider.variable].addrP + '|' + newval + '|';
 
 		$.ajax({
 			type: 'POST',
@@ -2251,7 +2251,7 @@ function onMouseDown(e) {
 		Log("onMouseDown at X:" + x + " Y:" + y + " on:" + obj.isA);
 
 		for (var eventNo in clickObject[objId]) {
-			event = clickObject[objId][eventNo];
+			var event = clickObject[objId][eventNo];
 			Log("  event " + event.isA);
 
 			if (event.isA == 'Tap') {
