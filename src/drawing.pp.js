@@ -6,6 +6,17 @@
    z.B. https://konvajs.github.io/
 */
 
+// fixed colors
+const SCROLLBAR_COLOR_SLIDER_BG = "rgb(150,150,150)";
+const SCROLLBAR_COLOR_SLIDER = "rgb(200,200,200)";
+const SCROLLBAR_COLOR_ARROW = "rgb(0,0,0)";
+const SCROLLBAR_COLOR_ARROWBOX_BG = "rgb(150,150,150)";
+const SCROLLBAR_COLOR_ARROWBOX = "rgb(200,200,200)";
+const TABLE_COLOR_BG = "rgb(230,230,240)";
+const TABLE_COLOR_CELL = "rgb(255,255,255)";
+const TABLE_COLOR_LINES = "rgb(0,0,0)";
+const TABLE_COLOR_TEXT = "rgb(0,0,0)";
+
 var visuVariables = {};
 var drawObjects = [];
 var dynamicTexts = {};
@@ -857,60 +868,92 @@ function registerCanvObj(canvas, ssobj, exprTextDisplay) {
 }
 
 
-function registerSubvisuScrollbar(subvisuId)
+function registerVisuElementScrollbar(elementId, elementRectFields, scrollbarWidth, invisibleExpr)
 {
-    var subvisu = drawObjects[subvisuId];
-    if (!subvisu.scrollbarSliderIds)
-    {
-        subvisu.scrollbarSliderIds = [];
+    var element = drawObjects[elementId];
+    if (element.isA == "Subvisu") {
+        var subElementSize = element.subvisuSize;
+    } else if (element.isA == "Table") {
+        var subElementSize = element.arraySize;
+    } else {
+        Log("scrollbars for wrong element ignored");
+        return;
     }
-    var rectFields = drawObjects[subvisuId].rectFields;
+
+    element.scrollbarSliderIds = [];
+    
+    var rectFields = elementRectFields;
 
     var scrollbarsToDraw = [];
 
+    var horizontal = false;
+    var vertical = false;
     // check which scrollbars have to be drawn
-    if ( (subvisu.subvisuSize[0] - (rectFields[2] - rectFields[0])) > 0 ) {
+    if ( (subElementSize[0] - (rectFields[2] - rectFields[0])) > 0 ) {
         scrollbarsToDraw.push("horizontal");
+        horizontal = true;
     }
-    if ( (subvisu.subvisuSize[1] - (rectFields[3] - rectFields[1])) > 0 ) {
+    if ( (subElementSize[1] - (rectFields[3] - rectFields[1])) > 0 ) {
         scrollbarsToDraw.push("vertical");
+        vertical = true;
+    }
+    // check if the width of the scrollbar has changed anything
+    var drawBothScrollbars = false;
+    if (horizontal && !vertical) {
+        scrollbarsToDraw.push("horizontal");
+        if ( (subElementSize[1] - (rectFields[3] - rectFields[1] - scrollbarWidth)) > 0 ) {
+            scrollbarsToDraw.push("vertical");
+            scrollbarsToDraw.push("corner");
+            drawBothScrollbars = true;
+        }
+    } else if (!horizontal && vertical) {
+        scrollbarsToDraw.push("vertical");
+        if ( (subElementSize[0] - (rectFields[2] - rectFields[0] - scrollbarWidth)) > 0 ) {
+            scrollbarsToDraw.push("horizontal");
+            scrollbarsToDraw.push("corner");
+            drawBothScrollbars = true;
+        }
+    } else if (horizontal && vertical) {
+        drawBothScrollbars = true;
+        scrollbarsToDraw.push("horizontal");
+        scrollbarsToDraw.push("vertical");
+        scrollbarsToDraw.push("corner");
+    } else {
+        // pass
     }
 
-    // if both scrollbars are needed, draw gray square in the corner too
-    drawBothScrollbars = (scrollbarsToDraw.length >= 2);
-    if (drawBothScrollbars) {
-        scrollbarsToDraw.push("corner");
-    }
+    console.log(scrollbarsToDraw);
 
 	scrollbarsToDraw.forEach(function(orientation) {
 		if(orientation == "corner") {
             // draw gray square in bottom right corner
 			var rectFieldsScrollbar = [
-				rectFields[2] - SUBVISU_SCROLLBAR_WIDTH,
-				rectFields[3] - SUBVISU_SCROLLBAR_WIDTH,
+				rectFields[2] - scrollbarWidth,
+				rectFields[3] - scrollbarWidth,
 				rectFields[2],
 				rectFields[3]
 			];
-			registerScrollbarRect(rectFieldsScrollbar, subvisu.invisibleExpr);
+			registerScrollbarRect(rectFieldsScrollbar, invisibleExpr);
 			return;
 		} else if(orientation == "horizontal") {
             // draw horizontal scrollbar
 			var rectFieldsScrollbar = [
 				rectFields[0],
-				rectFields[3] - ((drawBothScrollbars)?SUBVISU_SCROLLBAR_WIDTH:0),
-				rectFields[2] - SUBVISU_SCROLLBAR_WIDTH,
+				rectFields[3] - scrollbarWidth,
+				rectFields[2] - ((drawBothScrollbars)?scrollbarWidth:0),
 				rectFields[3]
 			];
 		} else {
             // draw vertical scrollbar
 			var rectFieldsScrollbar = [
-				rectFields[2] - SUBVISU_SCROLLBAR_WIDTH,
+				rectFields[2] - scrollbarWidth,
 				rectFields[1],
 				rectFields[2],
-				rectFields[3] - ((drawBothScrollbars)?SUBVISU_SCROLLBAR_WIDTH:0)
+				rectFields[3] - ((drawBothScrollbars)?scrollbarWidth:0)
 			];
-		}
-		registerScrollbarRect(rectFieldsScrollbar, subvisu.invisibleExpr);
+        }
+        console.log("rectFieldsScrollbar: ", rectFields, rectFieldsScrollbar);
+		registerScrollbarRect(rectFieldsScrollbar, invisibleExpr);
 		var x1 = rectFieldsScrollbar[0];
 		var y1 = rectFieldsScrollbar[1];
 		var x2 = rectFieldsScrollbar[2];
@@ -928,14 +971,14 @@ function registerSubvisuScrollbar(subvisuId)
 			var ySliderArea = y1;
 			var sliderAreaWidth = x2 - x1 - 2 * arrowboxDimensions[0] - sliderWidth;
 			var sliderAreaHeight = y2 - y1;
-			var upperBound = subvisu.subvisuSize[0] - (rectFields[2] - rectFields[0]) + ((drawBothScrollbars)?SUBVISU_SCROLLBAR_WIDTH:0);
+			var upperBound = subElementSize[0] - (rectFields[2] - rectFields[0]) + ((drawBothScrollbars)?scrollbarWidth:0);
 		} else {
 			var sliderWidth = arrowboxDimensions[1] / 2;
 			var xSliderArea = x1;
 			var ySliderArea = y1 + arrowboxDimensions[1];
 			var sliderAreaWidth = y2 - y1 - 2 * arrowboxDimensions[1] - sliderWidth;
 			var sliderAreaHeight = x2 - x1;
-			var upperBound = subvisu.subvisuSize[1] - (rectFields[3] - rectFields[1]) + ((drawBothScrollbars)?SUBVISU_SCROLLBAR_WIDTH:0);
+			var upperBound = subElementSize[1] - (rectFields[3] - rectFields[1]) + ((drawBothScrollbars)?scrollbarWidth:0);
         }
         
         if (upperBound < 0) {
@@ -955,7 +998,7 @@ function registerSubvisuScrollbar(subvisuId)
 			isHorizontal,
 			emptyExpr, emptyExpr,
 			emptyExpr,
-			subvisu.invisibleExpr,
+			invisibleExpr,
 			true,
 			lowerBound, upperBound
 		);
@@ -974,7 +1017,7 @@ function registerSubvisuScrollbar(subvisuId)
 			x1, y1, 
 			arrowboxDimensions[0], arrowboxDimensions[1],
 			(isHorizontal)?"left":"up",
-			subvisu.invisibleExpr
+			invisibleExpr
 		);
 
 		registerClickObj_IncDec(
@@ -999,7 +1042,7 @@ function registerSubvisuScrollbar(subvisuId)
 			x1Arrow, y1Arrow,
 			arrowboxDimensions[0], arrowboxDimensions[1],
 			(isHorizontal)?"right":"down",
-			subvisu.invisibleExpr
+			invisibleExpr
 		);
 
 		registerClickObj_IncDec(
@@ -1010,7 +1053,7 @@ function registerSubvisuScrollbar(subvisuId)
 			emptyExpr,
 			sliderId
 		);
-		subvisu.scrollbarSliderIds[(isHorizontal)?"horizontal":"vertical"] = sliderId;
+		element.scrollbarSliderIds[(isHorizontal)?"horizontal":"vertical"] = sliderId;
 
 	});
 				
@@ -2138,9 +2181,7 @@ function drawAllObjects(ctx, clickContext, objects) {
                     continue;
                 }
             }
-            const SCROLLBAR_COLOR_SLIDER_BG = "rgb(150,150,150)";
-            const SCROLLBAR_COLOR_SLIDER = "rgb(200,200,200)"
-
+            
             var x = obj.x;
             var y = obj.y;
             var sliderWidth = obj.w;
@@ -2263,9 +2304,6 @@ function drawAllObjects(ctx, clickContext, objects) {
                     continue;
                 }
             }
-            const SCROLLBAR_COLOR_ARROW = "rgb(0,0,0)";
-            const SCROLLBAR_COLOR_ARROWBOX_BG = "rgb(150,150,150)";
-            const SCROLLBAR_COLOR_ARROWBOX = "rgb(200,200,200)";
 
             var x = obj.x;
             var y = obj.y;
@@ -2304,14 +2342,31 @@ function drawAllObjects(ctx, clickContext, objects) {
             var arrayH = obj.arraySize[1];
 
             ctx.save();
+            clickContext.save();
 
             // background
             ctx.beginPath();
             ctx.rect(x,y,w,h);
-            ctx.fillStyle = "rgb(220,220,240)";
+            ctx.fillStyle = TABLE_COLOR_BG;
+            ctx.strokeStyle = TABLE_COLOR_LINES;
             ctx.fill();
+            ctx.stroke();
             ctx.clip();
             ctx.closePath();
+
+            clickContext.beginPath();
+            clickContext.rect(x,y,w,h);
+            clickContext.fillStyle = decimalToColorString(objId);
+            clickContext.fill();
+            clickContext.closePath();
+
+            var sliderIds = obj.scrollbarSliderIds;
+            sliders = [
+                drawObjects[sliderIds["horizontal"]] || {sliderValue:0},
+                drawObjects[sliderIds["vertical"]] || {sliderValue:0}
+            ];
+            ctx.translate(-sliders[0].sliderValue, -sliders[1].sliderValue);
+            clickContext.translate(-sliders[0].sliderValue, -sliders[1].sliderValue);
 
             var cellWidth = 40;
             var cellHeight = obj.cellHeight;
@@ -2320,8 +2375,8 @@ function drawAllObjects(ctx, clickContext, objects) {
             if (obj.hasFirstColumn == "true") {
                 ctx.save();
                 ctx.translate(x,y);
-                ctx.fillStyle = "rgb(220,220,240)";
-                ctx.strokeStyle = "rgb(0,0,0)";
+                ctx.fillStyle = TABLE_COLOR_BG;
+                ctx.strokeStyle = TABLE_COLOR_LINES;
                 
                 for (var i = (obj.hasFirstRow == "true")?0:1; i <= rowCount; i++) {
                     ctx.beginPath();
@@ -2340,7 +2395,7 @@ function drawAllObjects(ctx, clickContext, objects) {
                     
                     ctx.beginPath();
                     ctx.textAlign = "center";
-                    ctx.fillStyle = "rgb(0,0,0)";
+                    ctx.fillStyle = TABLE_COLOR_TEXT;
                     ctx.fillText(i, TABLE_FIRST_COLUMN_WIDTH/2, cellHeight/2);
                     ctx.restore();
                     ctx.closePath();
@@ -2355,12 +2410,12 @@ function drawAllObjects(ctx, clickContext, objects) {
                 ctx.save();
                 var firstCol = true;
                 ctx.translate(x + ((firstCol)?TABLE_FIRST_COLUMN_WIDTH:0), y);
-                ctx.fillStyle = "rgb(220,220,240)";
-                ctx.strokeStyle = "rgb(0,0,0)";
+                ctx.fillStyle = TABLE_COLOR_BG;
+                ctx.strokeStyle = TABLE_COLOR_LINES;
                 
                 var colWidth;
                 for(i = 1; i <= colCount; i++) {
-                    colWidth = obj.columnWidths[i-1]; // read this value for every column seperately
+                    colWidth = obj.columnWidths[i-1];
                     
                     ctx.beginPath();
                     ctx.rect(0, 0, colWidth, cellHeight);
@@ -2373,8 +2428,8 @@ function drawAllObjects(ctx, clickContext, objects) {
 
                     //ctx.beginPath();
                     ctx.textAlign = "center";
-                    ctx.fillStyle = "rgb(0,0,0)";
-                    ctx.fillText(obj.varPlaceholder[i-1], colWidth/2, cellHeight/2);   // we need the column heading here instead of i
+                    ctx.fillStyle = TABLE_COLOR_TEXT;
+                    ctx.fillText(obj.varPlaceholder[i-1], colWidth/2, cellHeight/2);
                     ctx.restore();
                     //ctx.closePath();
 
@@ -2391,11 +2446,12 @@ function drawAllObjects(ctx, clickContext, objects) {
                 y = y + cellHeight;
             }
 
+            // draw cells
             var cellValueVarName, cellValue;
             ctx.save()
             ctx.translate(x,y);
-            ctx.fillStyle = "rgb(255,255,255)";
-            ctx.strokeStyle = "rgb(0,0,0)"
+            ctx.fillStyle = TABLE_COLOR_CELL;
+            ctx.strokeStyle = TABLE_COLOR_LINES;
             for (i = 0; i < colCount; i++) {
                 colWidth = obj.columnWidths[i];
                 ctx.save();
@@ -2413,7 +2469,7 @@ function drawAllObjects(ctx, clickContext, objects) {
 
                     ctx.beginPath;
                     ctx.textAlign = "center";
-                    ctx.fillStyle = "rgb(0,0,0)";
+                    ctx.fillStyle = TABLE_COLOR_TEXT;
                     ctx.fillText(cellValue, colWidth/2, cellHeight/2);
                     ctx.restore();
                     ctx.closePath();
@@ -2426,6 +2482,7 @@ function drawAllObjects(ctx, clickContext, objects) {
             ctx.restore();
 
             ctx.restore();
+            clickContext.restore();
 
         } else if (obj.isA == "Subvisu") {
             ctx.save();
