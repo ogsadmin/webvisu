@@ -595,6 +595,53 @@ function registerScrollbarArrow(
 }
 
 // ****************************************************************************
+// Table
+
+// constructor
+function newTable(
+    rectFields,
+    arraySize,
+    arrayRowsCols,
+    hasFirstRow, hasFirstColumn,
+    columnWidths, cellHeight,
+    varPlaceholder
+    ) {
+    this.isA = 'Table';
+
+    this.rectFields = rectFields;
+    this.arraySize = arraySize;
+
+    this.arrayRowsCols = arrayRowsCols;
+    this.hasFirstRow = hasFirstRow;
+    this.hasFirstColumn = hasFirstColumn;
+    this.columnWidths = columnWidths;
+    this.cellHeight = cellHeight;
+
+    this.varPlaceholder = varPlaceholder;
+}
+
+function registerTable(
+    rectFields,
+    arraySize,
+    arrayRowsCols,
+    hasFirstRow, hasFirstColumn,
+    columnWidths, cellHeight,
+    varPlaceholder
+    ) {
+    drawObjects.push(new newTable(
+        rectFields,
+        arraySize,
+        arrayRowsCols,
+        hasFirstRow, hasFirstColumn,
+        columnWidths, cellHeight,
+        varPlaceholder
+        ));
+    // Gib die ID (den Index) des eben registrierten Objekts zurück
+    //Log("registerGroup return "+(drawObjects.length-1))
+    return drawObjects.length-1;
+}
+
+// ****************************************************************************
 // Subvisu
 
 // constructor
@@ -1637,6 +1684,7 @@ function drawAllObjects(ctx, clickContext, objects) {
             clickContext.fillStyle = decimalToColorString(objId);
             clickContext.strokeStyle = decimalToColorString(objId);
 
+
             try {
                 ctx.drawImage(obj.img, 0, 0, obj.img.width, obj.img.height, obj.x, obj.y, obj.w, obj.h);
             } catch (e) {
@@ -2244,7 +2292,141 @@ function drawAllObjects(ctx, clickContext, objects) {
             clickContext.fillStyle = decimalToColorString(objId);
             clickContext.fill();
             clickContext.closePath();
-            
+
+        } else if (obj.isA == "Table") {
+            var x = obj.rectFields[0];
+            var y = obj.rectFields[1];
+            var w = obj.rectFields[2] - obj.rectFields[0];
+            var h = obj.rectFields[3] - obj.rectFields[1];
+            var rowCount = obj.arrayRowsCols[0];
+            var colCount = obj.arrayRowsCols[1];
+            var arrayW = obj.arraySize[0];
+            var arrayH = obj.arraySize[1];
+
+            ctx.save();
+
+            // background
+            ctx.beginPath();
+            ctx.rect(x,y,w,h);
+            ctx.fillStyle = "rgb(220,220,240)";
+            ctx.fill();
+            ctx.clip();
+            ctx.closePath();
+
+            var cellWidth = 40;
+            var cellHeight = obj.cellHeight;
+
+            // draw first column
+            if (obj.hasFirstColumn == "true") {
+                ctx.save();
+                ctx.translate(x,y);
+                ctx.fillStyle = "rgb(220,220,240)";
+                ctx.strokeStyle = "rgb(0,0,0)";
+                
+                for (var i = (obj.hasFirstRow == "true")?0:1; i <= rowCount; i++) {
+                    ctx.beginPath();
+                    ctx.rect(0, 0, TABLE_FIRST_COLUMN_WIDTH, cellHeight);
+                    ctx.fill();
+                    ctx.stroke();
+                    if (i == 0) { 
+                        ctx.closePath();
+                        ctx.translate(0, cellHeight);
+                        continue 
+                    };
+                    ctx.save();
+                    ctx.clip();
+                    ctx.closePath();
+
+                    
+                    ctx.beginPath();
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = "rgb(0,0,0)";
+                    ctx.fillText(i, TABLE_FIRST_COLUMN_WIDTH/2, cellHeight/2);
+                    ctx.restore();
+                    ctx.closePath();
+
+                    ctx.translate(0,cellHeight);
+                }
+                ctx.restore();
+            }
+
+            // draw first row
+            if (obj.hasFirstRow == "true") {
+                ctx.save();
+                var firstCol = true;
+                ctx.translate(x + ((firstCol)?TABLE_FIRST_COLUMN_WIDTH:0), y);
+                ctx.fillStyle = "rgb(220,220,240)";
+                ctx.strokeStyle = "rgb(0,0,0)";
+                
+                var colWidth;
+                for(i = 1; i <= colCount; i++) {
+                    colWidth = obj.columnWidths[i-1]; // read this value for every column seperately
+                    
+                    ctx.beginPath();
+                    ctx.rect(0, 0, colWidth, cellHeight);
+                    ctx.closePath();
+
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.save();
+                    ctx.clip();
+
+                    //ctx.beginPath();
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = "rgb(0,0,0)";
+                    ctx.fillText(obj.varPlaceholder[i-1], colWidth/2, cellHeight/2);   // we need the column heading here instead of i
+                    ctx.restore();
+                    //ctx.closePath();
+
+                    ctx.translate(colWidth, 0);
+                }
+                
+                ctx.restore();
+            }
+
+            if (obj.hasFirstColumn == "true") {
+                x = x + TABLE_FIRST_COLUMN_WIDTH;
+            }
+            if (obj.hasFirstRow == "true") {
+                y = y + cellHeight;
+            }
+
+            var cellValueVarName, cellValue;
+            ctx.save()
+            ctx.translate(x,y);
+            ctx.fillStyle = "rgb(255,255,255)";
+            ctx.strokeStyle = "rgb(0,0,0)"
+            for (i = 0; i < colCount; i++) {
+                colWidth = obj.columnWidths[i];
+                ctx.save();
+                for (j = 0; j < rowCount; j++) {
+                    cellValueVarName = obj.varPlaceholder[i].replace("INDEX]", "" + (j+1) + "]");
+                    cellValue = visuVariables[cellValueVarName].value;
+                    ctx.beginPath();
+                    ctx.rect(0, 0, colWidth, cellHeight);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.save();
+                    ctx.clip();
+                    
+
+                    ctx.beginPath;
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = "rgb(0,0,0)";
+                    ctx.fillText(cellValue, colWidth/2, cellHeight/2);
+                    ctx.restore();
+                    ctx.closePath();
+
+                    ctx.translate(0, cellHeight);
+                }
+                ctx.restore();
+                ctx.translate(colWidth, 0);
+            }
+            ctx.restore();
+
+            ctx.restore();
+
         } else if (obj.isA == "Subvisu") {
             ctx.save();
             clickContext.save();

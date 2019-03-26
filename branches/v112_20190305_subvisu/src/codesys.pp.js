@@ -28,6 +28,7 @@ const VAR_TYPE_REF = 23;
 const VAR_TYPE_NONE = 24;
 
 const SUBVISU_SCROLLBAR_WIDTH = 20;
+const TABLE_FIRST_COLUMN_WIDTH = 40;
 const emptyExpr = [];
 
 // globale variablen
@@ -622,15 +623,7 @@ function load_subvisu_success(content) {
 		visuName = $myMedia.find('name').text();
 
 		var size = $myMedia.find('size').text();
-		var sizeFields = size.split(',').map(Number);
-		*/
-
-		//$('#canvas').WIDTH = visuSizeX+1;
-		//$('#canvas').HEIGHT = visuSizeY+1;
-
-		// TO DO: Klick-Kontext konfigurieren
-		//clickCanvas.width = visuSizeX + 1;
-		//clickCanvas.height = visuSizeY + 1;
+		var sizeFields = size.split(',').map(Number);*/
 
 		// TO DO: bitmaps, dynamic text
 
@@ -693,7 +686,7 @@ function calculatePiechartRect(points) {
 }
 
 function parse_visu_elements(content) {
-
+	console.log(content);
 	$(content).find(">element").each(function () {
 		// gefundenen abschnitt in variable zwischenspeichern (cachen)
 		var $myMedia = $(this);
@@ -1366,8 +1359,50 @@ function parse_visu_elements(content) {
 
 			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
 			
+		} else if (type == 'array-table') {
+			var exprInvisible = [];
+			var expr_invisible = $myMedia.find('expr-invisible');
+			if (expr_invisible.length) {
+				exprInvisible = parseExpression(expr_invisible);
+			}
 
+			var rect = $myMedia.find('rect').text();
+			var rectFields = rect.split(',').map(Number);	
 			
+			var rowCount = +$myMedia.find('row-count').text();	
+			var rowHeight = +$myMedia.find('row-size').text();
+			var firstRow = $myMedia.find('has-first-row').text();
+			var firstColumn = $myMedia.find('has-first-column').text();
+
+			var columnVarNames = registerArrayVariables($myMedia, rowCount);
+			var columnCount = columnVarNames.length;
+
+			var columnSizes = [];
+			$myMedia.find(">column-list").find('>column').each(function () {
+				columnSizes.push(+$(this).find('column-size').text());
+			});
+
+			var tableWidth = 0;
+			if (firstColumn == "true") {
+				tableWidth += TABLE_FIRST_COLUMN_WIDTH;
+			}
+			columnSizes.forEach(function (colWidth) {
+				tableWidth += colWidth;
+			});
+			var tableHeight = 0;
+			if (firstRow == "true") {
+				tableHeight += rowHeight;
+			}
+			tableHeight += rowCount * rowHeight;
+
+			registerTable(
+				rectFields,
+				[tableWidth, tableHeight],
+				[rowCount, columnCount],
+				firstRow, firstColumn,
+				columnSizes, rowHeight,
+				columnVarNames
+			);
 
 		} else {
 			var exprInvisible = [];
@@ -1393,6 +1428,40 @@ function parse_visu_elements(content) {
 			Log("unknown type: " + type);
 		}
 	});
+}
+
+function registerArrayVariables($myMedia, rowCount) {
+	var arrayVariablePlaceholders = [];
+
+	// get all columns
+	$myMedia.find(">column-list").find(">column").each(function () {
+		arrayVariablePlaceholders.push(parseExpression($(this).find(">expr-column-var"))[0].value);
+	});
+	if (rowCount <= 2) {
+		return arrayVariablePlaceholders;
+	}
+
+	/* 	only the first and second element of an array are stored in the variablelist-Tag
+			we have to register the other ones manually by getting the addresses that contain
+			array-variables and registering the following addresses */
+	arrayVariablePlaceholders.forEach(function (addrPlaceholder) {
+		// check if this column has already been registered
+		var thirdVarInColumn = addrPlaceholder.replace("INDEX]", "3]");
+		if (visuVariables[thirdVarInColumn]) { return; }
+
+		// register missing variables in current column
+		var firstVarInColumn = addrPlaceholder.replace("INDEX]", "1]");
+		var varSize = +visuVariables[firstVarInColumn].numBytes;
+		var firstVarAddr = visuVariables[firstVarInColumn].addr.split(",");
+		var varName, varAddr, varAddrNum;
+		for (i = 3; i <= rowCount; i++) {
+			varName = addrPlaceholder.replace("INDEX]", "" + i + "]");
+			varAddrNum = +firstVarAddr[1] + (i-1) * varSize;
+			varAddr = firstVarAddr[0] + "," + varAddrNum + "," + firstVarAddr[2] + "," + firstVarAddr[3];
+			registerVariable(varName, varAddr, "");
+		}
+	});
+	return arrayVariablePlaceholders;
 }
 
 
