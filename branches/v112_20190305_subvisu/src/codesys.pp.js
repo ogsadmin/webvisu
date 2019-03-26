@@ -1354,17 +1354,12 @@ function parse_visu_elements(content) {
 			);
 
 			if (fixedFrameScrollable == "true") {
-				registerSubvisuScrollbar(newVisuId);
+				registerVisuElementScrollbar(newVisuId, rectFields, SUBVISU_SCROLLBAR_WIDTH, exprInvisible);
 			}
 
 			parseTextInfo($myMedia, centerFields, rectFields, exprInvisible);
 			
 		} else if (type == 'array-table') {
-			var exprInvisible = [];
-			var expr_invisible = $myMedia.find('expr-invisible');
-			if (expr_invisible.length) {
-				exprInvisible = parseExpression(expr_invisible);
-			}
 
 			var rect = $myMedia.find('rect').text();
 			var rectFields = rect.split(',').map(Number);	
@@ -1395,7 +1390,7 @@ function parse_visu_elements(content) {
 			}
 			tableHeight += rowCount * rowHeight;
 
-			registerTable(
+			objId = registerTable(
 				rectFields,
 				[tableWidth, tableHeight],
 				[rowCount, columnCount],
@@ -1403,6 +1398,10 @@ function parse_visu_elements(content) {
 				columnSizes, rowHeight,
 				columnVarNames
 			);
+
+			var scrollbarWidth = +$myMedia.find('slider-size').text();
+			console.log("scrollbarWidth: ", scrollbarWidth);
+			registerVisuElementScrollbar(objId, rectFields, scrollbarWidth, []);
 
 		} else {
 			var exprInvisible = [];
