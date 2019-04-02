@@ -27,9 +27,10 @@ const VAR_TYPE_LREAL = 22;
 const VAR_TYPE_REF = 23;
 const VAR_TYPE_NONE = 24;
 
-const SUBVISU_SCROLLBAR_WIDTH = 20;
+const SUBVISU_SCROLLBAR_WIDTH = 20;	
+const SCROLLBAR_SLIDER_ARROWBOX_WIDTH_RATIO = 0.75;	// the width of the slider compared to the width of the arrowbox
 const TABLE_FIRST_COLUMN_WIDTH = 40;
-const emptyExpr = [];
+const EMPTY_EXPR = [];
 
 // globale variablen
 var postUrl = '/plc/webvisu.htm';
@@ -686,7 +687,6 @@ function calculatePiechartRect(points) {
 }
 
 function parse_visu_elements(content) {
-	console.log(content);
 	$(content).find(">element").each(function () {
 		// gefundenen abschnitt in variable zwischenspeichern (cachen)
 		var $myMedia = $(this);
@@ -1243,15 +1243,16 @@ function parse_visu_elements(content) {
 			var isHorizontal = ( (x2-x1) > (y2-y1) );
 
 			var arrowboxDimensions = calcArrowboxDimensions(x2-x1, y2-y1);
+			
 
 			if (isHorizontal) {
-				var sliderWidth = arrowboxDimensions[0] / 2;
+				var sliderWidth = arrowboxDimensions[0] * SCROLLBAR_SLIDER_ARROWBOX_WIDTH_RATIO;
 				var xSliderArea = x1 + arrowboxDimensions[0];
 				var ySliderArea = y1;
 				var sliderAreaWidth = x2 - x1 - 2 * arrowboxDimensions[0] - sliderWidth;
 				var sliderAreaHeight = y2 - y1;
 			} else {
-				var sliderWidth = arrowboxDimensions[1] / 2;
+				var sliderWidth = arrowboxDimensions[1] * SCROLLBAR_SLIDER_ARROWBOX_WIDTH_RATIO;
 				var xSliderArea = x1;
 				var ySliderArea = y1 + arrowboxDimensions[1];
 				var sliderAreaWidth = y2 - y1 - 2 * arrowboxDimensions[1] - sliderWidth;
@@ -1400,7 +1401,6 @@ function parse_visu_elements(content) {
 			);
 
 			var scrollbarWidth = +$myMedia.find('slider-size').text();
-			console.log("scrollbarWidth: ", scrollbarWidth);
 			registerVisuElementScrollbar(objId, rectFields, scrollbarWidth, []);
 
 		} else {
@@ -1432,35 +1432,50 @@ function parse_visu_elements(content) {
 function registerArrayVariables($myMedia, rowCount) {
 	var arrayVariablePlaceholders = [];
 
-	// get all columns
+	// get all column variable placeholders (yes, all of them)
 	$myMedia.find(">column-list").find(">column").each(function () {
-		arrayVariablePlaceholders.push(parseExpression($(this).find(">expr-column-var"))[0].value);
+		var varPlaceholderExpr = $(this).find(">expr-column-var");
+		var varPlaceholder = parseExpression(varPlaceholderExpr)[0].value;
+		arrayVariablePlaceholders.push(varPlaceholder);
 	});
-	if (rowCount <= 2) {
-		return arrayVariablePlaceholders;
+
+	if (rowCount > 2) {
+		/* 	only the first and second element of an array are stored in the variablelist-Tag
+				we have to register the other ones manually by getting the addresses that contain
+				array-variables and registering the following addresses */
+		arrayVariablePlaceholders.forEach(function (addrPlaceholder) {
+			// check if this column has already been registered
+			var thirdVarInColumn = addrPlaceholder.replace("INDEX]", "3]");
+			if (visuVariables[thirdVarInColumn]) { return; }
+
+			// register missing variables in current column
+			var firstVarInColumn = addrPlaceholder.replace("INDEX]", "1]");
+			var varSize = +visuVariables[firstVarInColumn].numBytes;
+			var firstVarAddr = visuVariables[firstVarInColumn].addr;
+			
+			var varName, varAddr, varAddrNum;
+			for (i = 3; i <= rowCount; i++) {
+				varName = addrPlaceholder.replace("INDEX]", "" + i + "]");
+				varAddr = getArrayVarAddr(firstVarAddr, i, varSize);
+				registerVariable(varName, varAddr, "");
+			}
+		});
 	}
-
-	/* 	only the first and second element of an array are stored in the variablelist-Tag
-			we have to register the other ones manually by getting the addresses that contain
-			array-variables and registering the following addresses */
-	arrayVariablePlaceholders.forEach(function (addrPlaceholder) {
-		// check if this column has already been registered
-		var thirdVarInColumn = addrPlaceholder.replace("INDEX]", "3]");
-		if (visuVariables[thirdVarInColumn]) { return; }
-
-		// register missing variables in current column
-		var firstVarInColumn = addrPlaceholder.replace("INDEX]", "1]");
-		var varSize = +visuVariables[firstVarInColumn].numBytes;
-		var firstVarAddr = visuVariables[firstVarInColumn].addr.split(",");
-		var varName, varAddr, varAddrNum;
-		for (i = 3; i <= rowCount; i++) {
-			varName = addrPlaceholder.replace("INDEX]", "" + i + "]");
-			varAddrNum = +firstVarAddr[1] + (i-1) * varSize;
-			varAddr = firstVarAddr[0] + "," + varAddrNum + "," + firstVarAddr[2] + "," + firstVarAddr[3];
-			registerVariable(varName, varAddr, "");
-		}
-	});
+	
 	return arrayVariablePlaceholders;
+
+	function getArrayVarAddr (addrFirstVarInColumn, positionInColumn, varSize) {
+		/* 	address is in the form of a,b,c,d where b is increased step by step by the size of the
+				 variable in the array (in bytes) */
+		var addr = addrFirstVarInColumn.split(",");
+		// convert all addr-values from string to integer
+		addr.forEach( function (value, index) {
+			addr[index] = parseInt(value);
+		});
+		addr[1] += (positionInColumn - 1) * varSize;
+		var addrString = "" + addr[0] + "," + addr[1] + "," + addr[2] + "," + addr[3];
+		return addrString;
+	}
 }
 
 
@@ -2231,10 +2246,8 @@ function onMouseMove(e) {
 		moveSlider.reset = false;
 	}
 	
-	//console.log(calcVariableChange(moveSlider, [e.offsetX, e.offsetY]));
-	// 0.5 is needed because parseInt() cuts off decimal places
+	// 0.5 is needed because parseInt() cuts off decimal places but we need a rounded value
 	var newval = parseInt(moveSlider.startVal + calcVariableChange(moveSlider, [e.offsetX, e.offsetY]) + 0.5); 
-	//console.log(calcVariableChange(moveSlider, [e.offsetX, e.offsetY]));
 
 	var maxVal = 10;
 	var minVal = 0;
@@ -2247,7 +2260,6 @@ function onMouseMove(e) {
 		if (moveSlider.minValExpr.length > 0) {minVal = evalExpression(moveSlider.minValExpr);}
 	}
 
-	//console.log(newval);
 	if (minVal > maxVal) {
 		var valBuffer;
 		valBuffer = maxVal;
