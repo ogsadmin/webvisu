@@ -40,7 +40,7 @@ var visuDynTextDefaultLanguage = 'english';
 var visuBestFit = false;
 
 // globale variablen
-var updateInterval = 500;
+var updateInterval = 100;
 var updateIntervalId;
 var plcDir = "../PLC";
 var startVisu = "plc_visu";
@@ -922,8 +922,6 @@ function registerVisuElementScrollbar(elementId, elementRectFields, scrollbarWid
         // pass
     }
 
-    console.log(scrollbarsToDraw);
-
 	scrollbarsToDraw.forEach(function(orientation) {
 		if(orientation == "corner") {
             // draw gray square in bottom right corner
@@ -952,7 +950,6 @@ function registerVisuElementScrollbar(elementId, elementRectFields, scrollbarWid
 				rectFields[3] - ((drawBothScrollbars)?scrollbarWidth:0)
 			];
         }
-        console.log("rectFieldsScrollbar: ", rectFields, rectFieldsScrollbar);
 		registerScrollbarRect(rectFieldsScrollbar, invisibleExpr);
 		var x1 = rectFieldsScrollbar[0];
 		var y1 = rectFieldsScrollbar[1];
@@ -966,20 +963,29 @@ function registerVisuElementScrollbar(elementId, elementRectFields, scrollbarWid
         // scrollbar changes value between 0 and the pixel-difference between subvisu-element-size (minus scrollbar-width) and subvisu-size
 		var lowerBound = 0;
 		if (isHorizontal) {
-			var sliderWidth = arrowboxDimensions[0] / 2;
 			var xSliderArea = x1 + arrowboxDimensions[0];
 			var ySliderArea = y1;
-			var sliderAreaWidth = x2 - x1 - 2 * arrowboxDimensions[0] - sliderWidth;
+			var sliderAreaWidthTotal = x2 - x1 - 2 * arrowboxDimensions[0];
 			var sliderAreaHeight = y2 - y1;
 			var upperBound = subElementSize[0] - (rectFields[2] - rectFields[0]) + ((drawBothScrollbars)?scrollbarWidth:0);
 		} else {
-			var sliderWidth = arrowboxDimensions[1] / 2;
 			var xSliderArea = x1;
 			var ySliderArea = y1 + arrowboxDimensions[1];
-			var sliderAreaWidth = y2 - y1 - 2 * arrowboxDimensions[1] - sliderWidth;
+			var sliderAreaWidthTotal = y2 - y1 - 2 * arrowboxDimensions[1];
 			var sliderAreaHeight = x2 - x1;
 			var upperBound = subElementSize[1] - (rectFields[3] - rectFields[1]) + ((drawBothScrollbars)?scrollbarWidth:0);
         }
+
+        // mimimum slider width depending on scrollbar length
+        var sliderWidthMin = sliderAreaWidthTotal / 5;
+
+        // slider width dynamically depending on range
+        var sliderRange = upperBound - lowerBound;
+        var sliderWidth = sliderAreaWidthTotal - (sliderRange * 0.2 + (1/0.2));
+        if (sliderWidth < sliderWidthMin) {
+            sliderWidth = sliderWidthMin;
+        }
+        var sliderAreaWidth = sliderAreaWidthTotal - sliderWidth;
         
         if (upperBound < 0) {
             upperBound = 0;
@@ -996,8 +1002,8 @@ function registerVisuElementScrollbar(elementId, elementRectFields, scrollbarWid
 			sliderWidth,
 			sliderAreaWidth, sliderAreaHeight,
 			isHorizontal,
-			emptyExpr, emptyExpr,
-			emptyExpr,
+			EMPTY_EXPR, EMPTY_EXPR,
+			EMPTY_EXPR,
 			invisibleExpr,
 			true,
 			lowerBound, upperBound
@@ -1005,11 +1011,11 @@ function registerVisuElementScrollbar(elementId, elementRectFields, scrollbarWid
 
 		registerClickObj_Slider(
 			sliderId, 
-			emptyExpr, 
+			EMPTY_EXPR, 
 			isHorizontal, 
 			sliderAreaWidth,
-			emptyExpr, 
-			emptyExpr,
+			EMPTY_EXPR, 
+			EMPTY_EXPR,
 			true
 		);
 
@@ -1022,10 +1028,10 @@ function registerVisuElementScrollbar(elementId, elementRectFields, scrollbarWid
 
 		registerClickObj_IncDec(
 			objId, 
-			emptyExpr, 
+			EMPTY_EXPR, 
 			!isHorizontal, 
-			emptyExpr, 
-			emptyExpr,
+			EMPTY_EXPR, 
+			EMPTY_EXPR,
 			sliderId
 		);
 
@@ -1047,10 +1053,10 @@ function registerVisuElementScrollbar(elementId, elementRectFields, scrollbarWid
 
 		registerClickObj_IncDec(
 			objId, 
-			emptyExpr, 
+			EMPTY_EXPR, 
 			isHorizontal, 
-			emptyExpr, 
-			emptyExpr,
+			EMPTY_EXPR, 
+			EMPTY_EXPR,
 			sliderId
 		);
 		element.scrollbarSliderIds[(isHorizontal)?"horizontal":"vertical"] = sliderId;
@@ -2338,8 +2344,21 @@ function drawAllObjects(ctx, clickContext, objects) {
             var h = obj.rectFields[3] - obj.rectFields[1];
             var rowCount = obj.arrayRowsCols[0];
             var colCount = obj.arrayRowsCols[1];
+            var cellHeight = obj.cellHeight;
             var arrayW = obj.arraySize[0];
             var arrayH = obj.arraySize[1];
+
+            var hasFirstRow = (obj.hasFirstRow == "true");
+            var hasFirstCol = (obj.hasFirstColumn == "true");
+
+            var firstRowH = hasFirstRow ? cellHeight : 0;
+            var firstColW = hasFirstCol ? TABLE_FIRST_COLUMN_WIDTH : 0;
+
+            var sliderIds = obj.scrollbarSliderIds;
+            var sliders = [
+                drawObjects[sliderIds["horizontal"]] || {sliderValue:0},
+                drawObjects[sliderIds["vertical"]] || {sliderValue:0}
+            ];
 
             ctx.save();
             clickContext.save();
@@ -2360,45 +2379,27 @@ function drawAllObjects(ctx, clickContext, objects) {
             clickContext.fill();
             clickContext.closePath();
 
-            var sliderIds = obj.scrollbarSliderIds;
-            sliders = [
-                drawObjects[sliderIds["horizontal"]] || {sliderValue:0},
-                drawObjects[sliderIds["vertical"]] || {sliderValue:0}
-            ];
-            ctx.translate(-sliders[0].sliderValue, -sliders[1].sliderValue);
-            clickContext.translate(-sliders[0].sliderValue, -sliders[1].sliderValue);
-
-            var cellWidth = 40;
-            var cellHeight = obj.cellHeight;
-
             // draw first column
-            if (obj.hasFirstColumn == "true") {
+            if (hasFirstCol) {
                 ctx.save();
-                ctx.translate(x,y);
+
+                ctx.translate(x, y + firstRowH - sliders[1].sliderValue);
                 ctx.fillStyle = TABLE_COLOR_BG;
                 ctx.strokeStyle = TABLE_COLOR_LINES;
                 
-                for (var i = (obj.hasFirstRow == "true")?0:1; i <= rowCount; i++) {
+                for (var i = 1; i <= rowCount; i++) {
                     ctx.beginPath();
                     ctx.rect(0, 0, TABLE_FIRST_COLUMN_WIDTH, cellHeight);
                     ctx.fill();
                     ctx.stroke();
-                    if (i == 0) { 
-                        ctx.closePath();
-                        ctx.translate(0, cellHeight);
-                        continue 
-                    };
                     ctx.save();
                     ctx.clip();
                     ctx.closePath();
 
-                    
-                    ctx.beginPath();
                     ctx.textAlign = "center";
                     ctx.fillStyle = TABLE_COLOR_TEXT;
                     ctx.fillText(i, TABLE_FIRST_COLUMN_WIDTH/2, cellHeight/2);
                     ctx.restore();
-                    ctx.closePath();
 
                     ctx.translate(0,cellHeight);
                 }
@@ -2406,16 +2407,16 @@ function drawAllObjects(ctx, clickContext, objects) {
             }
 
             // draw first row
-            if (obj.hasFirstRow == "true") {
+            if (hasFirstRow) {
                 ctx.save();
-                var firstCol = true;
-                ctx.translate(x + ((firstCol)?TABLE_FIRST_COLUMN_WIDTH:0), y);
+
+                ctx.translate(x + firstColW - sliders[0].sliderValue, y);
                 ctx.fillStyle = TABLE_COLOR_BG;
                 ctx.strokeStyle = TABLE_COLOR_LINES;
                 
-                var colWidth;
-                for(i = 1; i <= colCount; i++) {
-                    colWidth = obj.columnWidths[i-1];
+                var colWidth = 0;
+                for(i = 0; i < colCount; i++) {
+                    colWidth = obj.columnWidths[i];
                     
                     ctx.beginPath();
                     ctx.rect(0, 0, colWidth, cellHeight);
@@ -2426,12 +2427,10 @@ function drawAllObjects(ctx, clickContext, objects) {
                     ctx.save();
                     ctx.clip();
 
-                    //ctx.beginPath();
                     ctx.textAlign = "center";
                     ctx.fillStyle = TABLE_COLOR_TEXT;
-                    ctx.fillText(obj.varPlaceholder[i-1], colWidth/2, cellHeight/2);
+                    ctx.fillText(obj.varPlaceholder[i], colWidth/2, cellHeight/2);
                     ctx.restore();
-                    //ctx.closePath();
 
                     ctx.translate(colWidth, 0);
                 }
@@ -2439,17 +2438,43 @@ function drawAllObjects(ctx, clickContext, objects) {
                 ctx.restore();
             }
 
-            if (obj.hasFirstColumn == "true") {
-                x = x + TABLE_FIRST_COLUMN_WIDTH;
+            // draw top left corner
+            if (hasFirstCol && hasFirstRow) {
+                ctx.beginPath();
+                ctx.rect(x, y, TABLE_FIRST_COLUMN_WIDTH, cellHeight);
+                ctx.closePath();
+
+                ctx.fillStyle = TABLE_COLOR_BG;
+                ctx.fill();
+                ctx.strokeStyle = TABLE_COLOR_LINES;
+                ctx.stroke();
             }
-            if (obj.hasFirstRow == "true") {
-                y = y + cellHeight;
-            }
+
+            var contentX = x + firstColW;
+            var contentY = y + firstRowH;
+            var contentW = w - firstColW;
+            var contentH = h - firstRowH;
+
+            // change clipping so that first column and row are always visible
+            ctx.beginPath();
+            ctx.rect(contentX, contentY, contentW, contentH);
+            ctx.clip();
+            ctx.closePath();
+
+            /*
+            clickContext.beginPath();
+            clickContext.rect(contentX, contentY, contentW, contentH);
+            clickContext.clip();
+            clickContext.closePath();
+            */
+
+            ctx.translate(-sliders[0].sliderValue, -sliders[1].sliderValue);
+            clickContext.translate(-sliders[0].sliderValue, -sliders[1].sliderValue);
 
             // draw cells
             var cellValueVarName, cellValue;
-            ctx.save()
-            ctx.translate(x,y);
+            ctx.save();
+            ctx.translate(contentX, contentY);
             ctx.fillStyle = TABLE_COLOR_CELL;
             ctx.strokeStyle = TABLE_COLOR_LINES;
             for (i = 0; i < colCount; i++) {
