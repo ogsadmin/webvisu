@@ -1057,7 +1057,6 @@ function parse_visu_elements(content) {
 			}
 		} else if (type == 'piechart') {
 			var polyCount = parseInt($myMedia.find('poly-count').text());
-			var polyShape = "";
 			var points = [];
 			$myMedia.find('point').each(function () {
 				var val = $(this).text();
@@ -1131,7 +1130,6 @@ function parse_visu_elements(content) {
 			}
 
 			var objId = registerPiechart(
-				polyShape,
 				points,
 				has_frame_color,
 				"rgb(" + frame_color + ")",
@@ -1411,7 +1409,6 @@ function parse_visu_elements(content) {
 			}
 
 			var rectFields = [];
-			var centerFields = [];
 			var rect = $myMedia.find('rect').text();
 
 			if (rect) {
