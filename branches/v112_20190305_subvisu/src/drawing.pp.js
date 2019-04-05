@@ -428,7 +428,6 @@ function registerPolygon(
 
 // constructor
 function newPiechart(
-    polyShape,
     points,
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
@@ -440,8 +439,6 @@ function newPiechart(
     angle1Expr, angle2Expr
     ) {
     this.isA = 'Piechart';
-    this.polyShape = polyShape;
-
     this.points = points;
 
     this.hasInsideColor = hasInsideColor;
@@ -468,7 +465,6 @@ function newPiechart(
 }
 
 function registerPiechart(
-    polyShape,
     points,
     hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
     hasInsideColor, fillStyle, fillStyleAlarm,
@@ -480,7 +476,6 @@ function registerPiechart(
     angle1Expr, angle2Expr
     ) {
     drawObjects.push(new newPiechart(
-            polyShape,
             points,
             hasFrameColor, strokeStyle, strokeStyleAlarm, lineWidth,
             hasInsideColor, fillStyle, fillStyleAlarm,
@@ -1489,7 +1484,13 @@ function evalExpression(expr) {
             //Log("push var " + expr[i].value + " ( " + visuVariables[expr[i].value].value + " ) ");
             result.push(visuVariables[expr[i].value].value);
         } else if (expr[i].operation == 'const') {
-            result.push(parseFloat(expr[i].value));
+            var floatResult = parseFloat(expr[i].value);
+            if ( isNaN(floatResult) ) {
+                result.push( (expr[i].value == "TRUE") ? 1 : 0);
+            } else {
+                result.push(parseFloat(expr[i].value));
+            }
+            //console.log(result);
         } else if (expr[i].operation == 'op') {
             if(expr[i].count == 0) {
                 // expr ohne count
@@ -1576,6 +1577,9 @@ function evalExpression(expr) {
         } else {
             Log("error: expression operation < " + expr[i].operation + " > unknown");
         }
+    }
+    if (!result[0]) {
+        
     }
     return result[0];
 }
