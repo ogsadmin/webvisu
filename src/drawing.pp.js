@@ -1226,7 +1226,7 @@ function clickObj_Slider(variable, horizontal, sliderLen, minValExpr, maxValExpr
     this.minValExpr = minValExpr;
     this.maxValExpr = maxValExpr;
 
-    // sliderId is needed when it's a scrollbar for a scrollable subvisu
+    // sliderId is needed when its a scrollbar for a scrollable subvisu
     // -1 indicates that it is not
     this.sliderId = (isSubvisuScrollbar)?sliderId:-1;
 }
